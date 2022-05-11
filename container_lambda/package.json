@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/policy-in-practice/metrics/tree/main/github-webhook"
+    "url": "https://github.com/davidcarboni/scloud"
   },
   "author": "David Carboni",
   "license": "ISC",
