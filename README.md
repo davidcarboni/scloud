@@ -2,6 +2,8 @@
 
 _AWS CDK patterns_
 
+The folder you're likely looking for is: https://github.com/davidcarboni/scloud/tree/main/project/src/scloud
+
 This repo contains a set of AWS CDK patterns packaged as functions.
 
 The aim is to make it easy to put together typical infrastructure building blocks that can be reused (and/or tweaked) across projects.
