@@ -1,0 +1,38 @@
+{
+  "name": "project",
+  "version": "0.1.0",
+  "bin": {
+    "project": "bin/project.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "test": "jest",
+    "cdk": "cdk",
+    "lint": "eslint --fix --ext ts bin lib src",
+    "secrets": "ts-node src/github/secrets.ts"
+  },
+  "devDependencies": {
+    "@types/jest": "*",
+    "@types/node": "*",
+    "aws-cdk": "*",
+    "jest": "*",
+    "ts-jest": "*",
+    "ts-node": "*",
+    "typescript": "*"
+  },
+  "dependencies": {
+    "@octokit/rest": "*",
+    "@octokit/types": "*",
+    "@typescript-eslint/eslint-plugin": "*",
+    "@typescript-eslint/parser": "*",
+    "aws-cdk-lib": "*",
+    "constructs": "*",
+    "eslint": "*",
+    "eslint-config-airbnb-base": "*",
+    "eslint-import-resolver-typescript": "*",
+    "eslint-plugin-import": "*",
+    "source-map-support": "*",
+    "tweetsodium": "*"
+  }
+}
