@@ -1,0 +1,36 @@
+{
+  "name": "github-webhook",
+  "version": "1.0.0",
+  "description": "Processes Github webhook messages.",
+  "scripts": {
+    "compile": "tsc src/*.ts --outdir js",
+    "test": "mocha -r ts-node/register test/**/*.spec.ts",
+    "lint": "eslint --fix --ext ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/policy-in-practice/metrics/tree/main/github-webhook"
+  },
+  "author": "David Carboni",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/chai": "*",
+    "@types/mocha": "*",
+    "@types/node": "*",
+    "@typescript-eslint/eslint-plugin": "*",
+    "@typescript-eslint/parser": "*",
+    "chai": "*",
+    "eslint": "*",
+    "eslint-config-airbnb-base": "*",
+    "eslint-import-resolver-typescript": "*",
+    "eslint-plugin-import": "*",
+    "mocha": "*",
+    "ts-node": "*",
+    "typescript": "*"
+  },
+  "dependencies": {
+    "@types/aws-lambda": "*",
+    "aws-sdk": "*",
+    "axios": "*"
+  }
+}

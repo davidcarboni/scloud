@@ -1,0 +1,38 @@
+{
+  "name": "auth",
+  "version": "1.0.0",
+  "description": "Handles Cognito callbacks.",
+  "main": "src/lambda.ts",
+  "scripts": {
+    "lint": "eslint --fix --ext ts .",
+    "test": "mocha -r ts-node/register test/**/*.spec.ts",
+    "compile": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/davidcarboni/pingmyhouse"
+  },
+  "author": "David Carboni",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/aws-lambda": "*",
+    "@types/chai": "*",
+    "@types/mocha": "*",
+    "@types/node": "*",
+    "@typescript-eslint/eslint-plugin": "*",
+    "@typescript-eslint/parser": "*",
+    "chai": "*",
+    "eslint": "*",
+    "eslint-config-airbnb-base": "*",
+    "eslint-import-resolver-typescript": "*",
+    "eslint-plugin-import": "*",
+    "mocha": "*",
+    "ts-node": "*",
+    "typescript": "*"
+  },
+  "dependencies": {
+    "aws-lambda": "*",
+    "aws-sdk": "*",
+    "axios": "*"
+  }
+}
