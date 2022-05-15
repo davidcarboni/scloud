@@ -35,6 +35,7 @@ export function apiGateway(
   const api = new apigateway.LambdaRestApi(construct, `${name}ApiGateway`, {
     handler: lambda,
     proxy: true,
+    binaryMediaTypes: ['multipart/form-data'],
     domainName: {
       domainName,
       certificate: new DnsValidatedCertificate(construct, `${name}Certificate`, {
