@@ -188,7 +188,7 @@ export function cognitoPool(
   const development = userPoolClient(construct, name, userPool, 'localhost:3000', enableEmail, google, facebook, saml);
 
   // Production client
-  const production = userPoolClient(construct, name, userPool, `${authDomainName}`, enableEmail, google, facebook, saml);
+  const production = userPoolClient(construct, name, userPool, `${domainName || zone.zoneName}`, enableEmail, google, facebook, saml);
 
   // Custom domain
   let domain: UserPoolDomain | undefined;
