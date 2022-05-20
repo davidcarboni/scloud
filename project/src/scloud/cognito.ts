@@ -2,7 +2,8 @@ import { RemovalPolicy } from 'aws-cdk-lib';
 import { DnsValidatedCertificate } from 'aws-cdk-lib/aws-certificatemanager';
 import * as cognito from 'aws-cdk-lib/aws-cognito';
 import {
-  AccountRecovery, UserPool, UserPoolClient,
+  AccountRecovery, CfnUserPoolIdentityProvider, UserPool, UserPoolClient,
+  UserPoolClientIdentityProvider,
   UserPoolDomain,
   UserPoolIdentityProviderFacebook,
   UserPoolIdentityProviderGoogle,
@@ -67,6 +68,27 @@ export function facebookIdp(construct: Construct, name: string, userPool: UserPo
   });
 }
 
+export function samlIdp(construct: Construct, name: string, userPool: UserPool)
+  : CfnUserPoolIdentityProvider {
+  // https://docs.aws.amazon.com/cdk/api/latest/docs/aws-cdk-lib_aws-cognito.CfnUserPoolIdentityProvider.html
+  // https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-cognito-userpoolidentityprovider.html
+
+  return new CfnUserPoolIdentityProvider(construct, `${name}SamlIDP`, {
+    userPoolId: userPool.userPoolId,
+    providerName: name,
+    providerType: 'SAML',
+    attributeMapping: {
+      // https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-settings-attributes.html
+      given_name: 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname',
+      family_name: 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname',
+      email: 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress',
+    },
+    providerDetails: {
+      MetadataURL: process.env.FEDERATION_METADATA_URL,
+    },
+  });
+}
+
 /**
  * Create a Cognito User Pool Client.
  * @param environment Development or production.
@@ -78,24 +100,28 @@ export function userPoolClient(
   name: string,
   userPool: UserPool,
   callbackDomainName: string,
+  enableEmail: boolean,
   google?: UserPoolIdentityProviderGoogle,
   facebook?: UserPoolIdentityProviderFacebook,
+  saml?: CfnUserPoolIdentityProvider,
 ): { client: UserPoolClient, callbackUrl: string; } {
   const environment = callbackDomainName.startsWith('localhost') ? 'develpment' : 'production';
   const protocol = callbackDomainName.startsWith('localhost') ? 'http' : 'https';
   const callbackUrl = `${protocol}://${callbackDomainName}/auth-callback`;
   const logout = `${protocol}://${callbackDomainName}/sign-out`;
 
-  const supportedIdentityProviders = [cognito.UserPoolClientIdentityProvider.COGNITO];
-  if (google) supportedIdentityProviders.push(cognito.UserPoolClientIdentityProvider.GOOGLE);
-  if (facebook) supportedIdentityProviders.push(cognito.UserPoolClientIdentityProvider.FACEBOOK);
+  const identityProviders: cognito.UserPoolClientIdentityProvider[] = [];
+  if (enableEmail) identityProviders.push(UserPoolClientIdentityProvider.COGNITO);
+  if (google) identityProviders.push(UserPoolClientIdentityProvider.GOOGLE);
+  if (facebook) identityProviders.push(UserPoolClientIdentityProvider.FACEBOOK);
+  if (saml) identityProviders.push(UserPoolClientIdentityProvider.custom(saml.providerName));
 
   const client = new UserPoolClient(construct, `${name}UserPoolClient-${environment}`, {
     userPool,
     userPoolClientName: `${name}-${environment.toLowerCase()}`,
     generateSecret: false,
     preventUserExistenceErrors: true,
-    supportedIdentityProviders,
+    supportedIdentityProviders: identityProviders,
     oAuth: {
       callbackUrls: [callbackUrl],
       logoutUrls: [logout],
@@ -111,6 +137,7 @@ export function userPoolClient(
   });
   if (google) client.node.addDependency(google);
   if (facebook) client.node.addDependency(facebook);
+  if (saml) client.node.addDependency(saml);
 
   return { client, callbackUrl };
 }
@@ -128,12 +155,13 @@ export function userPoolClient(
 export function cognitoPool(
   construct: Construct,
   name: string,
-  domainName: string,
   zone: IHostedZone,
   initialPass: boolean,
+  domainName?: string,
+  enableEmail: boolean = false,
 ): CognitoConstructs {
   // Auth domain name
-  const authDomainName = `auth.${domainName}`;
+  const authDomainName = `auth.${domainName || zone.zoneName}`;
 
   // Cognito user pool
   const userPool = new UserPool(construct, 'UserPool', {
@@ -147,12 +175,13 @@ export function cognitoPool(
   // Identity providers
   const google = process.env.GOOGLE_CLIENT_ID ? googleIdp(construct, name, userPool) : undefined;
   const facebook = process.env.FACEBOOK_APP_ID ? facebookIdp(construct, name, userPool) : undefined;
+  const saml = process.env.FEDERATION_METADATA_URL ? samlIdp(construct, name, userPool) : undefined;
 
   // Development client
-  const development = userPoolClient(construct, name, userPool, 'localhost:3000', google, facebook);
+  const development = userPoolClient(construct, name, userPool, 'localhost:3000', enableEmail, google, facebook, saml);
 
   // Production client
-  const production = userPoolClient(construct, name, userPool, `${domainName}`, google, facebook);
+  const production = userPoolClient(construct, name, userPool, `${domainName}`, enableEmail, google, facebook, saml);
 
   // Custom domain
   let domain: UserPoolDomain | undefined;
