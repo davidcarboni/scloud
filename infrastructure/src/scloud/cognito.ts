@@ -73,6 +73,14 @@ export function samlIdp(construct: Construct, name: string, userPool: UserPool)
   // https://docs.aws.amazon.com/cdk/api/latest/docs/aws-cdk-lib_aws-cognito.CfnUserPoolIdentityProvider.html
   // https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-cognito-userpoolidentityprovider.html
 
+  const providerDetails: { [key: string]: string; } = {};
+  if (process.env.FEDERATION_METADATA_URL) {
+    providerDetails.MetadataURL = process.env.FEDERATION_METADATA_URL;
+  }
+  if (process.env.FEDERATION_METADATA_FILE) {
+    providerDetails.MetadataFile = process.env.FEDERATION_METADATA_FILE;
+  }
+
   return new CfnUserPoolIdentityProvider(construct, `${name}SamlIDP`, {
     userPoolId: userPool.userPoolId,
     providerName: name,
@@ -83,9 +91,7 @@ export function samlIdp(construct: Construct, name: string, userPool: UserPool)
       family_name: 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname',
       email: 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress',
     },
-    providerDetails: {
-      MetadataURL: process.env.FEDERATION_METADATA_URL,
-    },
+    providerDetails,
   });
 }
 
@@ -175,13 +181,14 @@ export function cognitoPool(
   // Identity providers
   const google = process.env.GOOGLE_CLIENT_ID ? googleIdp(construct, name, userPool) : undefined;
   const facebook = process.env.FACEBOOK_APP_ID ? facebookIdp(construct, name, userPool) : undefined;
-  const saml = process.env.FEDERATION_METADATA_URL ? samlIdp(construct, name, userPool) : undefined;
+  const saml = process.env.FEDERATION_METADATA_URL
+    || process.env.FEDERATION_METADATA_FILE ? samlIdp(construct, name, userPool) : undefined;
 
   // Development client
   const development = userPoolClient(construct, name, userPool, 'localhost:3000', enableEmail, google, facebook, saml);
 
   // Production client
-  const production = userPoolClient(construct, name, userPool, `${domainName}`, enableEmail, google, facebook, saml);
+  const production = userPoolClient(construct, name, userPool, `${authDomainName}`, enableEmail, google, facebook, saml);
 
   // Custom domain
   let domain: UserPoolDomain | undefined;
