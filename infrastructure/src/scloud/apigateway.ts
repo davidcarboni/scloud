@@ -28,7 +28,7 @@ export function apiGateway(
   environment?: { [key: string]: string; },
   apiDomainName?: string,
 ): { lambda: Function, api: LambdaRestApi; } {
-  const domainName = apiDomainName || `api.${zone.zoneName}`;
+  const domainName = apiDomainName || `${name}.${zone.zoneName}`;
 
   const lambda = zipFunction(construct, name, environment);
 

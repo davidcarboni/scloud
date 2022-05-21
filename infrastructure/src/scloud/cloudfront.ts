@@ -90,12 +90,6 @@ export function cloudFront(
     recordName: domainName,
     target: route53.RecordTarget.fromAlias(new CloudFrontTarget(distribution)),
   });
-  // Do we really need this?
-  // route53patterns.HttpsRedirect (below) generates one, so added here for consistency
-  // new route53.AaaaRecord(construct, `${name}AaaaRecord`, {
-  //   zone,
-  //   target: route53.RecordTarget.fromAlias(new CloudFrontTarget(distribution)),
-  // });
 
   // Redirect www -> zone root
   if (wwwRedirect) {

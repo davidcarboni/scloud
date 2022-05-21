@@ -187,9 +187,10 @@ export function cognitoPool(
 ): CognitoConstructs {
   // Auth domain name
   const authDomainName = `auth.${domainName || zone.zoneName}`;
+  console.log(`${name}: ${authDomainName}`);
 
   // Cognito user pool
-  const userPool = new UserPool(construct, 'UserPool', {
+  const userPool = new UserPool(construct, `${name}UserPool`, {
     userPoolName: name,
     selfSignUpEnabled: true,
     accountRecovery: AccountRecovery.EMAIL_ONLY,
@@ -228,7 +229,7 @@ export function cognitoPool(
     });
 
     // https://stackoverflow.com/a/62075314/723506
-    new ARecord(construct, 'CognitoCustomDomainARecord', {
+    new ARecord(construct, `${name}CognitoCustomDomainARecord`, {
       zone,
       recordName: authDomainName,
       target: RecordTarget.fromAlias(
