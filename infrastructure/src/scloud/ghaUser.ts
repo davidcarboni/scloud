@@ -24,15 +24,17 @@ export default function ghaUser(
   const statements: PolicyStatement[] = [];
 
   // ECR login
-  statements.push(new PolicyStatement({
-    effect: Effect.ALLOW,
-    actions: [
-      'ecr:GetAuthorizationToken',
-    ],
-    resources: [
-      '*',
-    ],
-  }));
+  if (ecrRepositories.length > 0) {
+    statements.push(new PolicyStatement({
+      effect: Effect.ALLOW,
+      actions: [
+        'ecr:GetAuthorizationToken',
+      ],
+      resources: [
+        '*',
+      ],
+    }));
+  }
 
   // ECR repositories
   const repositoryArns = ecrRepositories
@@ -57,7 +59,7 @@ export default function ghaUser(
   }
 
   // Buckets
-  if (buckets) {
+  if (buckets !== undefined && buckets.length > 0) {
     // s3 needs both arn and arn/* to have access to the bucket and to bucket objects
     const bucketArns = buckets
       .filter((bucket) => bucket !== undefined)
@@ -79,7 +81,7 @@ export default function ghaUser(
 
   // Lambda functions
   let lambdaArns: string[] = [];
-  if (lambdas) {
+  if (lambdas !== undefined && lambdas.length > 0) {
     const functionArns = lambdas
       .filter((lambda) => lambda !== undefined)
       .map((lambda) => lambda.functionArn);
@@ -103,7 +105,7 @@ export default function ghaUser(
   }
 
   // Fargate services
-  if (services) {
+  if (services !== undefined && services.length > 0) {
     const serviceArns = services
       .filter((service) => service !== undefined)
       .map((service) => service.serviceArn);
@@ -119,7 +121,7 @@ export default function ghaUser(
   }
 
   // Cloudfront distribution invalidation
-  if (distributions) {
+  if (distributions !== undefined && distributions.length > 0) {
     const distributionArns = distributions
       .filter((distribution) => distribution !== undefined)
       // Not sure where to 'properly' get a distribution ARN from?
