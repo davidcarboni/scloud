@@ -14,16 +14,6 @@ import {
 import { UserPoolDomainTarget } from 'aws-cdk-lib/aws-route53-targets';
 import { Construct } from 'constructs';
 
-export interface IdpConfig {
-  enableEmail?: boolean, // Allow email sign-up/in
-  googleClientId?: string,
-  googleClientSecret?: string,
-  facebookAppId?: string,
-  facebookAppSecret?: string,
-  FederationMetadataUrl?: string, // SAML XML URL
-  FederationMetadataXml?: string, // SAML metadata XML
-}
-
 export interface CognitoConstructs {
   userPool: UserPool,
   domain?: UserPoolDomain,
@@ -35,18 +25,19 @@ export interface CognitoConstructs {
   };
 }
 
-export function googleIdp(
-  construct: Construct,
-  name: string,
-  userPool: UserPool,
-  idpConfig: IdpConfig,
-)
+function env(variableName: string): string {
+  const value = process.env[variableName];
+  if (value) return value;
+  throw new Error(`Missing environment variable: ${variableName}`);
+}
+
+export function googleIdp(construct: Construct, name: string, userPool: UserPool)
   : UserPoolIdentityProviderGoogle {
   // Google identity provider
   return new UserPoolIdentityProviderGoogle(construct, `${name}GoogleIDP`, {
     userPool,
-    clientId: idpConfig.googleClientId || '',
-    clientSecret: idpConfig.googleClientSecret || '',
+    clientId: env('GOOGLE_CLIENT_ID'),
+    clientSecret: env('GOOGLE_CLIENT_SECRET'),
     scopes: ['profile', 'email', 'openid'],
     attributeMapping: {
       email: cognito.ProviderAttribute.GOOGLE_EMAIL,
@@ -61,17 +52,12 @@ export function googleIdp(
   });
 }
 
-export function facebookIdp(
-  construct: Construct,
-  name: string,
-  userPool: UserPool,
-  idpConfig: IdpConfig,
-)
+export function facebookIdp(construct: Construct, name: string, userPool: UserPool)
   : UserPoolIdentityProviderFacebook {
   return new UserPoolIdentityProviderFacebook(construct, `${name}FacebookIDP`, {
     userPool,
-    clientId: idpConfig.facebookAppId || '',
-    clientSecret: idpConfig.facebookAppSecret || '',
+    clientId: env('FACEBOOK_APP_ID'),
+    clientSecret: env('FACEBOOK_APP_SECRET'),
     scopes: ['public_profile', 'email'],
     attributeMapping: {
       email: cognito.ProviderAttribute.FACEBOOK_EMAIL,
@@ -82,22 +68,17 @@ export function facebookIdp(
   });
 }
 
-export function samlIdp(
-  construct: Construct,
-  name: string,
-  userPool: UserPool,
-  idpConfig: IdpConfig,
-)
+export function samlIdp(construct: Construct, name: string, userPool: UserPool)
   : CfnUserPoolIdentityProvider {
   // https://docs.aws.amazon.com/cdk/api/latest/docs/aws-cdk-lib_aws-cognito.CfnUserPoolIdentityProvider.html
   // https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-cognito-userpoolidentityprovider.html
 
   const providerDetails: { [key: string]: string; } = {};
-  if (idpConfig.FederationMetadataUrl) {
-    providerDetails.MetadataURL = idpConfig.FederationMetadataUrl;
+  if (process.env.FEDERATION_METADATA_URL) {
+    providerDetails.MetadataURL = process.env.FEDERATION_METADATA_URL;
   }
-  if (idpConfig.FederationMetadataXml) {
-    providerDetails.MetadataFile = idpConfig.FederationMetadataXml;
+  if (process.env.FEDERATION_METADATA_FILE) {
+    providerDetails.MetadataFile = process.env.FEDERATION_METADATA_FILE;
   }
 
   return new CfnUserPoolIdentityProvider(construct, `${name}SamlIDP`, {
@@ -125,7 +106,7 @@ export function userPoolClient(
   name: string,
   userPool: UserPool,
   callbackDomainName: string,
-  enableEmail?: boolean,
+  enableEmail: boolean,
   google?: UserPoolIdentityProviderGoogle,
   facebook?: UserPoolIdentityProviderFacebook,
   saml?: CfnUserPoolIdentityProvider,
@@ -181,16 +162,16 @@ export function cognitoPool(
   construct: Construct,
   name: string,
   zone: IHostedZone,
-  idpConfig: IdpConfig,
   initialPass: boolean,
   domainName?: string,
+  useCognitoDomain: boolean = false,
+  enableEmail: boolean = false,
 ): CognitoConstructs {
   // Auth domain name
   const authDomainName = `auth.${domainName || zone.zoneName}`;
-  console.log(`${name}: ${authDomainName}`);
 
   // Cognito user pool
-  const userPool = new UserPool(construct, `${name}UserPool`, {
+  const userPool = new UserPool(construct, 'UserPool', {
     userPoolName: name,
     selfSignUpEnabled: true,
     accountRecovery: AccountRecovery.EMAIL_ONLY,
@@ -199,22 +180,20 @@ export function cognitoPool(
   });
 
   // Identity providers
-  const google = idpConfig.googleClientId
-    ? googleIdp(construct, name, userPool, idpConfig) : undefined;
-  const facebook = idpConfig.facebookAppId
-    ? facebookIdp(construct, name, userPool, idpConfig) : undefined;
-  const saml = idpConfig.FederationMetadataUrl || idpConfig.FederationMetadataXml
-    ? samlIdp(construct, name, userPool, idpConfig) : undefined;
+  const google = process.env.GOOGLE_CLIENT_ID ? googleIdp(construct, name, userPool) : undefined;
+  const facebook = process.env.FACEBOOK_APP_ID ? facebookIdp(construct, name, userPool) : undefined;
+  const saml = process.env.FEDERATION_METADATA_URL
+    || process.env.FEDERATION_METADATA_FILE ? samlIdp(construct, name, userPool) : undefined;
 
   // Development client
-  const development = userPoolClient(construct, name, userPool, 'localhost:3000', idpConfig.enableEmail, google, facebook, saml);
+  const development = userPoolClient(construct, name, userPool, 'localhost:3000', enableEmail, google, facebook, saml);
 
   // Production client
-  const production = userPoolClient(construct, name, userPool, `${domainName || zone.zoneName}`, idpConfig.enableEmail, google, facebook, saml);
+  const production = userPoolClient(construct, name, userPool, `${domainName || zone.zoneName}`, enableEmail, google, facebook, saml);
 
   // Custom domain
   let domain: UserPoolDomain | undefined;
-  if (!initialPass) {
+  if (!initialPass && !useCognitoDomain) {
     // Custom domain can only be set up after the initial pass has created an A record at the apex
     domain = new cognito.UserPoolDomain(construct, `${name}UserPoolDomain`, {
       userPool,
@@ -229,12 +208,21 @@ export function cognitoPool(
     });
 
     // https://stackoverflow.com/a/62075314/723506
-    new ARecord(construct, `${name}CognitoCustomDomainARecord`, {
+    new ARecord(construct, 'CognitoCustomDomainARecord', {
       zone,
       recordName: authDomainName,
       target: RecordTarget.fromAlias(
         new UserPoolDomainTarget(domain),
       ),
+    });
+  }
+
+  if (useCognitoDomain) {
+    domain = new cognito.UserPoolDomain(construct, `${name}UserPoolDomain`, {
+      userPool,
+      cognitoDomain: {
+        domainPrefix: domainName || name,
+      },
     });
   }
 
