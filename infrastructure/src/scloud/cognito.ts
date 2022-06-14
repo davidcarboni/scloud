@@ -185,9 +185,10 @@ export function cognitoPool(
   initialPass: boolean,
   domainName?: string,
 ): CognitoConstructs {
-  // Auth domain name
-  const authDomainName = `auth.${domainName || zone.zoneName}`;
-  console.log(`${name}: ${authDomainName}`);
+  // Auth domain name:
+  // AWS recomments auth.<domain> for custom domains
+  // NB at the time of writing there's a hard limit of 4 custom Cognito domains.
+  const authDomainName = domainName || `auth.${zone.zoneName}`;
 
   // Cognito user pool
   const userPool = new UserPool(construct, `${name}UserPool`, {
