@@ -17,5 +17,5 @@ The `cdk.json` file tells the CDK Toolkit how to execute your app.
 
 If you're going to be using a SAML SSO configuration, here are the values you're going to need:
 
- * ACS URL: https://auth.<zone name>/saml2/idpresponse
- * Entity ID: urn:amazon:cognito:sp:<user pool ID>
+ * ACS URL: `https://auth.<zone name>/saml2/idpresponse`
+ * Entity ID: `urn:amazon:cognito:sp:<user pool ID>`
