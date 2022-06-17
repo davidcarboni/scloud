@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 set -eu
 
-# Secrets, including selected AWS profile:
+# Secrets
 for i in $(ls ../secrets/*.sh); do
   echo " - $i"
   source $i
 done
+
+# AWS profile
 if [ -f '../secrets/aws.sh' ]; then
   echo "Using AWS profile: $AWS_PROFILE"
 else
