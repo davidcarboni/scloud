@@ -1,5 +1,7 @@
 # Welcome to your CDK TypeScript project
 
+NB: See `dependencies.sh` for commands to install linter and libraries for interacting with Github
+
 This is a blank project for CDK development with TypeScript.
 
 The `cdk.json` file tells the CDK Toolkit how to execute your app.
