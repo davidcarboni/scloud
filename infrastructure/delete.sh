@@ -1,11 +1,16 @@
 #!/usr/bin/env bash
 set -eu
 
-source ../secrets/aws.sh
-source ../secrets/google.sh
-source ../secrets/facebook.sh
-source ../secrets/slack.sh
-source ../secrets/ecr-repos.sh
+# Secrets, including selected AWS profile:
+for i in $(ls ../secrets/*.sh); do
+  echo " - $i"
+  source $i
+done
+if [ -f '../secrets/aws.sh' ]; then
+  echo "Using AWS profile: $AWS_PROFILE"
+else
+  echo "Using default AWS profile"
+fi
 
 # Delete ECR images
 for repository in "${repositories[@]}"
