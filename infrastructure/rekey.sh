@@ -3,15 +3,15 @@ set -eu
 
 # Secrets
 for i in $(ls ../secrets/*.sh); do
-  echo " - $i"
+  echo " * $i"
   source $i
 done
 
 # AWS profile
-if [ -f '../secrets/aws.sh' ]; then
-  echo "Using AWS profile: $AWS_PROFILE"
-else
+if [ -z "$AWS_PROFILE" ]; then
   echo "Using default AWS profile"
+else
+  echo "Using AWS profile: $AWS_PROFILE"
 fi
 
 npm run lint
