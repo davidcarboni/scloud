@@ -20,16 +20,14 @@ export interface IdpConfig {
   googleClientSecret?: string,
   facebookAppId?: string,
   facebookAppSecret?: string,
-  FederationMetadataUrl?: string, // SAML XML URL
-  FederationMetadataXml?: string, // SAML metadata XML
+  SamlProviderName?: string, // Name in the Cognito hosted UI under "Sign in with your corporate ID"
+  FederationMetadataUrl?: string, // SAML XML URL (e.g. Azure)
+  FederationMetadataXml?: string, // SAML metadata XML (e.g. Google Workspace)
 }
 
 export interface CognitoConstructs {
   userPool: UserPool,
   domain?: UserPoolDomain,
-  development: {
-    client: UserPoolClient, callbackUrl: string;
-  },
   production: {
     client: UserPoolClient, callbackUrl: string;
   };
@@ -102,7 +100,7 @@ export function samlIdp(
 
   return new CfnUserPoolIdentityProvider(construct, `${name}SamlIDP`, {
     userPoolId: userPool.userPoolId,
-    providerName: name,
+    providerName: idpConfig.SamlProviderName || name,
     providerType: 'SAML',
     attributeMapping: {
       // https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-settings-attributes.html
@@ -181,14 +179,15 @@ export function cognitoPool(
   construct: Construct,
   name: string,
   zone: IHostedZone,
-  idpConfig: IdpConfig,
   initialPass: boolean,
+  idpConfig: IdpConfig,
   domainName?: string,
 ): CognitoConstructs {
   // Auth domain name:
-  // AWS recomments auth.<domain> for custom domains
+  // AWS recommends auth.<domain> for custom domains
   // NB at the time of writing there's a hard limit of 4 custom Cognito domains.
-  const authDomainName = domainName || `auth.${zone.zoneName}`;
+  // const authDomainName = domainName || `auth.${zone.zoneName}`;
+  const authDomainName = `auth.${domainName || zone.zoneName}`;
 
   // Cognito user pool
   const userPool = new UserPool(construct, `${name}UserPool`, {
@@ -206,9 +205,6 @@ export function cognitoPool(
     ? facebookIdp(construct, name, userPool, idpConfig) : undefined;
   const saml = idpConfig.FederationMetadataUrl || idpConfig.FederationMetadataXml
     ? samlIdp(construct, name, userPool, idpConfig) : undefined;
-
-  // Development client
-  const development = userPoolClient(construct, name, userPool, 'localhost:3000', idpConfig.enableEmail, google, facebook, saml);
 
   // Production client
   const production = userPoolClient(construct, name, userPool, `${domainName || zone.zoneName}`, idpConfig.enableEmail, google, facebook, saml);
@@ -242,10 +238,6 @@ export function cognitoPool(
   return {
     userPool,
     domain,
-    development: {
-      client: development.client,
-      callbackUrl: development.callbackUrl,
-    },
     production: {
       client: production.client,
       callbackUrl: production.callbackUrl,
