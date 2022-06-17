@@ -29,6 +29,7 @@ export interface CognitoConstructs {
   userPool: UserPool,
   domain?: UserPoolDomain,
   client: UserPoolClient,
+  callbackUrls: string[],
 }
 
 export function googleIdp(
@@ -241,5 +242,6 @@ export function cognitoPool(
     userPool,
     domain,
     client,
+    callbackUrls,
   };
 }
