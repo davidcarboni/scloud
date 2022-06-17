@@ -20,17 +20,15 @@ export interface IdpConfig {
   googleClientSecret?: string,
   facebookAppId?: string,
   facebookAppSecret?: string,
-  SamlProviderName?: string, // Name in the Cognito hosted UI under "Sign in with your corporate ID"
   FederationMetadataUrl?: string, // SAML XML URL (e.g. Azure)
   FederationMetadataXml?: string, // SAML metadata XML (e.g. Google Workspace)
+  SamlProviderName?: string, // Name in the Cognito hosted UI under "Sign in with your corporate ID"
 }
 
 export interface CognitoConstructs {
   userPool: UserPool,
   domain?: UserPoolDomain,
-  production: {
-    client: UserPoolClient, callbackUrl: string;
-  };
+  client: UserPoolClient,
 }
 
 export function googleIdp(
@@ -114,40 +112,33 @@ export function samlIdp(
 
 /**
  * Create a Cognito User Pool Client.
- * @param environment Development or production.
- * @param callbackUrl Authentication callback URL.
+ * @param callbackUrls Authentication callback URL(s).
  * @returns cognito.UserPoolClient
  */
 export function userPoolClient(
   construct: Construct,
   name: string,
   userPool: UserPool,
-  callbackDomainName: string,
+  callbackUrls: string[],
   enableEmail?: boolean,
   google?: UserPoolIdentityProviderGoogle,
   facebook?: UserPoolIdentityProviderFacebook,
   saml?: CfnUserPoolIdentityProvider,
-): { client: UserPoolClient, callbackUrl: string; } {
-  const environment = callbackDomainName.startsWith('localhost') ? 'develpment' : 'production';
-  const protocol = callbackDomainName.startsWith('localhost') ? 'http' : 'https';
-  const callbackUrl = `${protocol}://${callbackDomainName}/auth-callback`;
-  const logout = `${protocol}://${callbackDomainName}/sign-out`;
-
+): UserPoolClient {
   const identityProviders: cognito.UserPoolClientIdentityProvider[] = [];
   if (enableEmail) identityProviders.push(UserPoolClientIdentityProvider.COGNITO);
   if (google) identityProviders.push(UserPoolClientIdentityProvider.GOOGLE);
   if (facebook) identityProviders.push(UserPoolClientIdentityProvider.FACEBOOK);
   if (saml) identityProviders.push(UserPoolClientIdentityProvider.custom(saml.providerName));
 
-  const client = new UserPoolClient(construct, `${name}UserPoolClient-${environment}`, {
+  const client = new UserPoolClient(construct, `${name}UserPoolClient`, {
     userPool,
-    userPoolClientName: `${name}-${environment.toLowerCase()}`,
+    userPoolClientName: name,
     generateSecret: false,
     preventUserExistenceErrors: true,
     supportedIdentityProviders: identityProviders,
     oAuth: {
-      callbackUrls: [callbackUrl],
-      logoutUrls: [logout],
+      callbackUrls,
       flows: {
         authorizationCodeGrant: true,
       },
@@ -162,7 +153,7 @@ export function userPoolClient(
   if (facebook) client.node.addDependency(facebook);
   if (saml) client.node.addDependency(saml);
 
-  return { client, callbackUrl };
+  return client;
 }
 
 /**
@@ -180,6 +171,7 @@ export function cognitoPool(
   name: string,
   zone: IHostedZone,
   initialPass: boolean,
+  callbackUrls: string[],
   idpConfig: IdpConfig,
   domainName?: string,
 ): CognitoConstructs {
@@ -188,6 +180,7 @@ export function cognitoPool(
   // NB at the time of writing there's a hard limit of 4 custom Cognito domains.
   // const authDomainName = domainName || `auth.${zone.zoneName}`;
   const authDomainName = `auth.${domainName || zone.zoneName}`;
+  console.log(`${name}: ${authDomainName}`);
 
   // Cognito user pool
   const userPool = new UserPool(construct, `${name}UserPool`, {
@@ -207,7 +200,16 @@ export function cognitoPool(
     ? samlIdp(construct, name, userPool, idpConfig) : undefined;
 
   // Production client
-  const production = userPoolClient(construct, name, userPool, `${domainName || zone.zoneName}`, idpConfig.enableEmail, google, facebook, saml);
+  const client = userPoolClient(
+    construct,
+    name,
+    userPool,
+    callbackUrls,
+    idpConfig.enableEmail,
+    google,
+    facebook,
+    saml,
+  );
 
   // Custom domain
   let domain: UserPoolDomain | undefined;
@@ -238,9 +240,6 @@ export function cognitoPool(
   return {
     userPool,
     domain,
-    production: {
-      client: production.client,
-      callbackUrl: production.callbackUrl,
-    },
+    client,
   };
 }
