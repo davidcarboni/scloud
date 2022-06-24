@@ -77,8 +77,17 @@ export async function findItems(tableName: string, partitionKey: Key, sortKey: K
       ':sk': sortKey.value,
     },
   };
-  const result = await ddb.query(params).promise();
-  return result.Items || [];
+
+  const result: any[] = [];
+  let items;
+  do {
+    // eslint-disable-next-line no-await-in-loop
+    items = await ddb.query(params).promise();
+    if (items.Items) items.Items.forEach((item) => result.push(item));
+    params.ExclusiveStartKey = items.LastEvaluatedKey;
+  } while (typeof items.LastEvaluatedKey !== 'undefined');
+
+  return result;
 }
 
 /**
@@ -88,8 +97,12 @@ export async function findItems(tableName: string, partitionKey: Key, sortKey: K
  * @param sortKey The starting/ending sort key values
  * @returns An array of items in the given sort key range
  */
-export async function findItemRange(tableName: string, partitionKey: Key, sortKey: Range)
-  : Promise<{ [key: string]: any; }[]> {
+export async function findItemRange(
+  tableName: string,
+  partitionKey: Key,
+  sortKey: Range,
+  attributes?: string[],
+): Promise<{ [key: string]: any; }[]> {
   const params: any = {
     TableName: tableName,
     KeyConditionExpression: `${partitionKey.name} = :pk AND ${sortKey.name} BETWEEN :from AND :to`,
@@ -99,8 +112,18 @@ export async function findItemRange(tableName: string, partitionKey: Key, sortKe
       ':to': sortKey.to,
     },
   };
-  const result = await ddb.query(params).promise();
-  return result.Items || [];
+  if (attributes) params.ProjectionExpression = attributes.join(',');
+
+  const result: any[] = [];
+  let items;
+  do {
+    // eslint-disable-next-line no-await-in-loop
+    items = await ddb.query(params).promise();
+    if (items.Items) items.Items.forEach((item) => result.push(item));
+    params.ExclusiveStartKey = items.LastEvaluatedKey;
+  } while (typeof items.LastEvaluatedKey !== 'undefined');
+
+  return result;
 }
 
 /**
@@ -113,15 +136,14 @@ export async function listItems(tableName: string): Promise<any[]> {
     TableName: tableName,
   };
 
-  const documentClient: DocumentClient = new DocumentClient();
-  const scanResults: any[] = [];
+  const result: any[] = [];
   let items;
   do {
     // eslint-disable-next-line no-await-in-loop
-    items = await documentClient.scan(params).promise();
-    items.Items?.forEach((item) => scanResults.push(item));
+    items = await ddb.scan(params).promise();
+    items.Items?.forEach((item) => result.push(item));
     params.ExclusiveStartKey = items.LastEvaluatedKey;
   } while (typeof items.LastEvaluatedKey !== 'undefined');
 
-  return scanResults;
+  return result;
 }
