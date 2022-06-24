@@ -1,27 +1,8 @@
 import * as awsLambda from 'aws-lambda';
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import { DocumentClient, ScanInput } from 'aws-sdk/clients/dynamodb';
+import { listItems } from './dynamodb';
 
-/**
- * https://stackoverflow.com/questions/44589967/how-to-fetch-scan-all-items-from-aws-dynamodb-using-node-js
- */
-export async function listTable(): Promise<any[]> {
-  const params: ScanInput = {
-    TableName: 'tableName',
-  };
-
-  const documentClient: DocumentClient = new DocumentClient();
-  const scanResults: any[] = [];
-  let items;
-  do {
-    // eslint-disable-next-line no-await-in-loop
-    items = await documentClient.scan(params).promise();
-    items.Items?.forEach((item) => scanResults.push(item));
-    params.ExclusiveStartKey = items.LastEvaluatedKey;
-  } while (typeof items.LastEvaluatedKey !== 'undefined');
-
-  return scanResults;
-}
+export const dummy = '';
 
 /**
  * Lambda handler.
@@ -33,7 +14,7 @@ export async function handler(
 ): Promise<APIGatewayProxyResult> {
   console.log(`Executing ${context.functionName} version: ${process.env.COMMIT_HASH || 'development'}`);
 
-  listTable();
+  await listItems('tableName');
   return {
     statusCode: 200,
     body: 'ok',
