@@ -67,7 +67,7 @@ jobs:
       uses: rtCamp/action-slack-notify@v2
       env:
         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-        SLACK_USERNAME: ZIp Lambda build
+        SLACK_USERNAME: ${{ env.component }} build
         SLACK_COLOR: ${{ job.status }}
         SLACK_ICON_EMOJI: ":github_octocat:"
         SLACK_FOOTER: Github Actions
