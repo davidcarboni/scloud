@@ -82,11 +82,10 @@ export async function findItems(tableName: string, partitionKey: Key, sortKey: K
 }
 
 /**
- *
+ * Selects a range of items between two sort keys
  * @param tableName DynamoDB table name
  * @param partitionKey The partition key to select
- * @param from The starting sort key value
- * @param to The ending sort key value
+ * @param sortKey The starting/ending sort key values
  * @returns An array of items in the given sort key range
  */
 export async function findItemRange(tableName: string, partitionKey: Key, sortKey: Range)
