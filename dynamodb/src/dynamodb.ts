@@ -93,7 +93,7 @@ export async function findItemRange(tableName: string, partitionKey: Key, sortKe
   : Promise<{ [key: string]: any; }[]> {
   const params: any = {
     TableName: tableName,
-    KeyConditionExpression: `${partitionKey.name} = :pk AND ${sortKey.name} BETWEEN :from AND :to :sk )`,
+    KeyConditionExpression: `${partitionKey.name} = :pk AND ${sortKey.name} BETWEEN :from AND :to`,
     ExpressionAttributeValues: {
       ':pk': partitionKey.value,
       ':from': sortKey.from,
