@@ -73,6 +73,7 @@ export default function ghaUser(
         actions: [
           's3:ListBucket',
           's3:PutObject',
+          's3:DeleteObject',
         ],
         resources: bucketArns,
       }));
