@@ -26,9 +26,7 @@ export function queueLambda(
   // new CfnOutput(construct, `${name}QueueUrl`, { value: queue.queueUrl });
 
   const lambda = zipFunction(construct, name, environment);
-  lambda.addEventSource(new SqsEventSource(queue, {
-    reportBatchItemFailures: true,
-  }));
+  lambda.addEventSource(new SqsEventSource(queue, { reportBatchItemFailures: true }));
 
   // Policy enabling message sending to the queue
   const policy = new ManagedPolicy(construct, `${name}SenderPolicy`, {
@@ -69,7 +67,7 @@ export function queueLambdaContainer(
   // new CfnOutput(construct, `${name}QueueUrl`, { value: queue.queueUrl });
 
   const { repository, lambda } = containerFunction(construct, initialPass, name, environment);
-  lambda.addEventSource(new SqsEventSource(queue));
+  lambda.addEventSource(new SqsEventSource(queue, { reportBatchItemFailures: true }));
 
   // Policy enabling message sending to the queue
   const policy = new ManagedPolicy(construct, `${name}SenderPolicy`, {
