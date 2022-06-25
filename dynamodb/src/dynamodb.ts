@@ -67,16 +67,36 @@ export async function putItem(tableName: string, item: { [key: string]: any; }) 
  * @param tableName DynamoDB table name
  * @returns All the items that match the partition key and begin with the sort key
  */
-export async function findItems(tableName: string, partitionKey: Key, sortKey: Key)
+export async function findItems(
+  tableName: string,
+  partitionKey: Key,
+  sortKey: Key,
+  attributes?: string[],
+)
   : Promise<{ [key: string]: any; }[]> {
   const params: any = {
     TableName: tableName,
-    KeyConditionExpression: `${partitionKey.name} = :pk AND begins_with ( ${sortKey.name}, :sk )`,
+    KeyConditionExpression: `#${partitionKey.name} = :pk AND begins_with ( #${sortKey.name}, :sk )`,
     ExpressionAttributeValues: {
       ':pk': partitionKey.value,
       ':sk': sortKey.value,
     },
+    ExpressionAttributeNames: {}, // Computed below
   };
+  const attributeNames = [partitionKey.name, sortKey.name];
+
+  // List of attributes to get
+  if (attributes) {
+    params.ProjectionExpression = attributes.map((attribute) => `#${attribute}`).join(',');
+    attributes.forEach((attribute) => {
+      attributeNames.push(attribute);
+    });
+  }
+
+  // Expression attribute names - this avoids clasking with DDB reserved words
+  attributeNames.forEach((attributeName) => {
+    params.ExpressionAttributeNames[`#${attributeName}`] = `${attributeName}`;
+  });
 
   const result: any[] = [];
   let items;
@@ -105,14 +125,28 @@ export async function findItemRange(
 ): Promise<{ [key: string]: any; }[]> {
   const params: any = {
     TableName: tableName,
-    KeyConditionExpression: `${partitionKey.name} = :pk AND ${sortKey.name} BETWEEN :from AND :to`,
+    KeyConditionExpression: `#${partitionKey.name} = :pk AND #${sortKey.name} BETWEEN :from AND :to`,
     ExpressionAttributeValues: {
       ':pk': partitionKey.value,
       ':from': sortKey.from,
       ':to': sortKey.to,
     },
+    ExpressionAttributeNames: {}, // Computed below
   };
-  if (attributes) params.ProjectionExpression = attributes.join(',');
+  const attributeNames = [partitionKey.name, sortKey.name];
+
+  // List of attributes to get
+  if (attributes) {
+    params.ProjectionExpression = attributes.map((attribute) => `#${attribute}`).join(',');
+    attributes.forEach((attribute) => {
+      attributeNames.push(attribute);
+    });
+  }
+
+  // Expression attribute names - this avoids clasking with DDB reserved words
+  attributeNames.forEach((attributeName) => {
+    params.ExpressionAttributeNames[`#${attributeName}`] = `${attributeName}`;
+  });
 
   const result: any[] = [];
   let items;
