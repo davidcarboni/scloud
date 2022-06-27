@@ -1,0 +1,39 @@
+{
+  "name": "slack-messenger",
+  "version": "1.0.0",
+  "description": "Sends queued messages to Slack.",
+  "main": "src/lambda.ts",
+  "scripts": {
+    "lint": "eslint --fix --ext ts .",
+    "test": "mocha -r ts-node/register test/**/*.spec.ts",
+    "compile": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/davidcarboni/pingmyhouse"
+  },
+  "author": "David Carboni",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/chai": "*",
+    "@types/chai-as-promised": "*",
+    "@types/mocha": "*",
+    "@types/node": "*",
+    "@typescript-eslint/eslint-plugin": "*",
+    "@typescript-eslint/parser": "*",
+    "chai": "*",
+    "chai-as-promised": "*",
+    "eslint": "*",
+    "eslint-config-airbnb-base": "*",
+    "eslint-import-resolver-typescript": "*",
+    "eslint-plugin-import": "*",
+    "mocha": "*",
+    "ts-node": "*",
+    "typescript": "*"
+  },
+  "dependencies": {
+    "@types/aws-lambda": "*",
+    "aws-sdk": "*",
+    "axios": "*"
+  }
+}

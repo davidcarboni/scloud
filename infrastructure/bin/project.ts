@@ -2,7 +2,7 @@
 import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
 import { Tags } from 'aws-cdk-lib';
-import { ProjectStack } from '../lib/project-stack';
+import ProjectStack from '../lib/project-stack';
 
 const app = new cdk.App();
 const stack = new ProjectStack(app, 'ProjectStack', {

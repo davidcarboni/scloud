@@ -10,7 +10,6 @@ import { containerFunction, zipFunction } from './lambdaFunction';
 export function queueLambda(
   construct: Construct,
   name: string,
-  initialPass: boolean,
   environment?: { [key: string]: string; },
 ): { queue: Queue, lambda: Function, policy: ManagedPolicy; } {
   // Message timeout
