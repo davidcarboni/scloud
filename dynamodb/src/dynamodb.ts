@@ -181,3 +181,75 @@ export async function listItems(tableName: string): Promise<any[]> {
 
   return result;
 }
+
+/**
+ * Data migration for a set of DynamoDB iems.
+ * @param table The DDB table to write to
+ * @param page A page of DDB items returned by the scan.
+ * @param update A function that takes a DDB item as a parameter,
+ * updates the object and returns it to be put bach to the table.
+ * @returns The number of updates made
+ */
+export async function migratePage(
+  table: string,
+  page: DocumentClient.ItemList,
+  update: Function,
+): Promise<number> {
+  const batches: Promise<any>[] = [];
+
+  // Filter out any blanks (i.e. items that don't need to be updated)
+  const items = page.map((item) => update(item));
+  let puts = (await Promise.all(items)).filter((item) => item);
+
+  // Process puts
+  const batchSize = 25;
+  while (puts.length > 0) {
+    // Comvert the page of items into batches of 25 items (the ddb batch-size limit)
+    const batch = puts.slice(0, batchSize);
+    puts = puts.slice(batchSize);
+
+    if (batch.length > 0) {
+      // Run the batch
+      batches.push(ddb.batchWrite({
+        RequestItems: {
+          [table]: batch.map((item) => ({ PutRequest: { Item: item } })),
+        },
+      }).promise());
+    }
+  }
+
+  // Await completion of batches
+  await Promise.all(batches);
+
+  console.log(`Processed ${batches.length} batches for ${puts.length} items`);
+  return puts.length;
+}
+
+/**
+ * Data migration for a DynamoDB table.
+ * @param update A function that takes a DDB item as a parameter,
+ * updates the object and returns it to be put bach to the table.
+ * @param sourceTable The DDB table to scan
+ * @param destinationTable (Optional) The DDP table to updated items into,
+ * If not provided, items are put back to the source table.
+ */
+export async function migrate(update: Function, sourceTable: string, destinationTable?: string)
+  : Promise<number> {
+  const params: ScanInput = {
+    TableName: sourceTable,
+    ConsistentRead: true,
+  };
+
+  let count = 0;
+  let result: DocumentClient.ScanOutput;
+  do {
+    // eslint-disable-next-line no-await-in-loop
+    result = await ddb.scan(params).promise();
+    // eslint-disable-next-line no-await-in-loop
+    if (result.Items) count += await migratePage(`${destinationTable || sourceTable}`, result.Items, update);
+    console.log(`Migrated ${count} items`);
+    params.ExclusiveStartKey = result.LastEvaluatedKey;
+  } while (typeof result.LastEvaluatedKey !== 'undefined');
+
+  return count;
+}
