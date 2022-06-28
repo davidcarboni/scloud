@@ -11,10 +11,9 @@ export default class ProjectStack extends Stack {
   }
 
   /**
-   * Infrastructure for metrics/event collection.
+   * Component to send Slack messages.
    */
   slack(): Queue {
-    // Metric message handler
     const { queue } = queueLambda(this, 'slack', {
       SLACK_WEBHOOK: process.env.SLACK_WEBHOOK || '',
     });
