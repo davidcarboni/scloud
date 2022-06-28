@@ -15,21 +15,25 @@ if (fs.existsSync('COMMIT_HASH')) {
 // Any failed messages for retry
 const failedMessageIds: string[] = [];
 
+export async function processMessage(body: string) {
+  if (slackWebhook) {
+    await axios.post(slackWebhook, { text: `${body}` });
+  } else {
+    console.log(`Slack message (mot sent): ${body}`);
+  }
+}
+
 /**
  * Process an SQS messagee
  * @param record A received message.
  */
 export async function processRecord(record: SQSRecord) {
   try {
-    if (slackWebhook) {
-      await axios.post(slackWebhook, { text: `${record.body}` });
-    } else {
-      console.log(`Unsent Slack message: ${record.body}`);
-    }
+    processMessage(record.body);
   } catch (err) {
     // Note this item for retry
     failedMessageIds.push(record.messageId);
-    console.log(`Slack messaging error: ${err}`);
+    console.log(`Message error: ${err} [${record.messageId}]`);
   }
 }
 
