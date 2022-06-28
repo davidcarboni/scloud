@@ -15,14 +15,13 @@
   "author": "David Carboni",
   "license": "ISC",
   "devDependencies": {
+    "@types/aws-lambda": "*",
     "@types/chai": "*",
-    "@types/chai-as-promised": "*",
     "@types/mocha": "*",
     "@types/node": "*",
     "@typescript-eslint/eslint-plugin": "*",
     "@typescript-eslint/parser": "*",
     "chai": "*",
-    "chai-as-promised": "*",
     "eslint": "*",
     "eslint-config-airbnb-base": "*",
     "eslint-import-resolver-typescript": "*",
@@ -32,8 +31,7 @@
     "typescript": "*"
   },
   "dependencies": {
-    "@types/aws-lambda": "*",
-    "aws-sdk": "*",
+    "aws-lambda": "*",
     "axios": "*"
   }
 }
