@@ -30,12 +30,12 @@ export async function handler(event: SQSEvent, context: Context): Promise<SQSBat
 
   // Process incoming message(s)
   // and note any failures
-  const failuredIds: string[] = [];
+  const failedIds: string[] = [];
   const records = event.Records.map(async (record) => {
     try {
       await processMessage(record.body);
     } catch (err) {
-      failuredIds.push(record.messageId);
+      failedIds.push(record.messageId);
       console.error(`Message error: ${err} [${record.messageId}]`);
     }
   });
@@ -43,7 +43,7 @@ export async function handler(event: SQSEvent, context: Context): Promise<SQSBat
 
   // Report on any failred items for retry
   const result: SQSBatchResponse = {
-    batchItemFailures: failuredIds.map((id) => ({ itemIdentifier: id })),
+    batchItemFailures: failedIds.map((id) => ({ itemIdentifier: id })),
   };
   return result;
 }
