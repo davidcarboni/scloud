@@ -1,11 +1,11 @@
-import { Repository } from 'aws-cdk-lib/aws-ecr';
+import { IRepository } from 'aws-cdk-lib/aws-ecr';
 import {
   CfnAccessKey, Effect, Policy, PolicyStatement, User,
 } from 'aws-cdk-lib/aws-iam';
 import { IFunction } from 'aws-cdk-lib/aws-lambda';
-import * as ecs from 'aws-cdk-lib/aws-ecs';
+import { FargateService } from 'aws-cdk-lib/aws-ecs';
 import { CfnOutput, Stack } from 'aws-cdk-lib';
-import { Bucket } from 'aws-cdk-lib/aws-s3';
+import { IBucket } from 'aws-cdk-lib/aws-s3';
 import { Distribution } from 'aws-cdk-lib/aws-cloudfront';
 // import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 
@@ -14,11 +14,11 @@ import { Distribution } from 'aws-cdk-lib/aws-cloudfront';
  */
 export default function ghaUser(
   stack: Stack,
-  ecrRepositories: Repository[],
-  buckets?: Bucket[],
+  ecrRepositories: IRepository[],
+  buckets?: IBucket[],
   lambdas?: IFunction[],
   // edgeLambdas?: cloudfront.experimental.EdgeFunction[],
-  services?: ecs.FargateService[],
+  services?: FargateService[],
   distributions?: Distribution[],
 ): CfnAccessKey | undefined {
   const statements: PolicyStatement[] = [];
