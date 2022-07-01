@@ -3,7 +3,7 @@ import {
   CfnAccessKey, Effect, Policy, PolicyStatement, User,
 } from 'aws-cdk-lib/aws-iam';
 import { IFunction } from 'aws-cdk-lib/aws-lambda';
-import { FargateService } from 'aws-cdk-lib/aws-ecs';
+import { IFargateService } from 'aws-cdk-lib/aws-ecs';
 import { CfnOutput, Stack } from 'aws-cdk-lib';
 import { IBucket } from 'aws-cdk-lib/aws-s3';
 import { Distribution } from 'aws-cdk-lib/aws-cloudfront';
@@ -18,7 +18,7 @@ export default function ghaUser(
   buckets?: IBucket[],
   lambdas?: IFunction[],
   // edgeLambdas?: cloudfront.experimental.EdgeFunction[],
-  services?: FargateService[],
+  services?: IFargateService[],
   distributions?: Distribution[],
 ): CfnAccessKey | undefined {
   const statements: PolicyStatement[] = [];
