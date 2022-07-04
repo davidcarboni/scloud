@@ -22,8 +22,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       component: container_lambda
-      ecrRepoName: ${{ secrets.ECR_METRICS_HANDLER }}
-      lambdaName: ${{ secrets.LAMBDA_METRICS_HANDLER }}
+      ecrRepoName: ${{ secrets.ECR_CONTAINER_LAMBDA }}
+      lambdaName: ${{ secrets.LAMBDA_CONTAINER_LAMBDA }}
 
     steps:
 
