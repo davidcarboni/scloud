@@ -24,7 +24,7 @@ export function queueLambda(
   });
   // new CfnOutput(construct, `${name}QueueUrl`, { value: queue.queueUrl });
 
-  const lambda = zipFunction(construct, name, environment);
+  const lambda = zipFunction(construct, name, environment, 128, 2);
   lambda.addEventSource(new SqsEventSource(queue, { reportBatchItemFailures: true }));
 
   // Policy enabling message sending to the queue

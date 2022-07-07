@@ -22,7 +22,6 @@ import { containerFunction, zipFunction } from './lambdaFunction';
  */
 export function apiGateway(
   construct: Construct,
-  initialPass: boolean,
   name: string,
   zone: route53.IHostedZone,
   environment?: { [key: string]: string; },
@@ -30,7 +29,7 @@ export function apiGateway(
 ): { lambda: Function, api: LambdaRestApi; } {
   const domainName = apiDomainName || `api.${zone.zoneName}`;
 
-  const lambda = zipFunction(construct, name, environment);
+  const lambda = zipFunction(construct, name, environment, 2048, 100);
 
   const api = new apigateway.LambdaRestApi(construct, `${name}ApiGateway`, {
     handler: lambda,
