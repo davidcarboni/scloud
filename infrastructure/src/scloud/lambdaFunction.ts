@@ -41,7 +41,7 @@ export function containerFunction(
 
   const lambda = new DockerImageFunction(construct, `${name}Function`, {
     code,
-    memorySize: 128,
+    memorySize: 256,
     timeout: Duration.seconds(60),
     logRetention: logs.RetentionDays.THREE_MONTHS,
     environment,
@@ -61,13 +61,16 @@ export function zipFunction(
   construct: Construct,
   name: string,
   environment?: { [key: string]: string; },
+  memory: number = 256,
+  concurrency: number = 5,
   handler: string = 'src/lambda.handler',
 ): Function {
   const lambda = new Function(construct, `${name}Function`, {
     runtime: Runtime.NODEJS_14_X,
     code: Code.fromAsset(path.join(__dirname, './lambda')),
     handler,
-    memorySize: 128,
+    memorySize: memory,
+    reservedConcurrentExecutions: concurrency,
     timeout: Duration.seconds(60),
     logRetention: logs.RetentionDays.THREE_MONTHS,
     environment,
@@ -95,7 +98,7 @@ export function edgeFunction(
       runtime: Runtime.NODEJS_14_X,
       code: Code.fromAsset(path.join(__dirname, './edge')),
       handler: 'src/lambda.handler',
-      memorySize: 128,
+      memorySize: 256,
       logRetention: logs.RetentionDays.THREE_MONTHS,
       environment,
     },
