@@ -6,8 +6,7 @@ import { IFunction } from 'aws-cdk-lib/aws-lambda';
 import { IFargateService } from 'aws-cdk-lib/aws-ecs';
 import { CfnOutput, Stack } from 'aws-cdk-lib';
 import { IBucket } from 'aws-cdk-lib/aws-s3';
-import { Distribution } from 'aws-cdk-lib/aws-cloudfront';
-// import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
+import { IDistribution } from 'aws-cdk-lib/aws-cloudfront';
 
 /**
  * A user for Gihud Actions CI/CD.
@@ -19,7 +18,7 @@ export default function ghaUser(
   lambdas?: IFunction[],
   // edgeLambdas?: cloudfront.experimental.EdgeFunction[],
   services?: IFargateService[],
-  distributions?: Distribution[],
+  distributions?: IDistribution[],
 ): CfnAccessKey | undefined {
   const statements: PolicyStatement[] = [];
 
