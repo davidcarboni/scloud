@@ -58,3 +58,32 @@ export async function setOrgSecret(
   }
   return secretName;
 }
+
+/**
+ * Sets a github secret on an organisation
+ * @param octokit Octokit instance
+ * @param org The organisation to set the secret on
+ * @param secretName The secret name
+ * @param secretValue The value to set
+ * @param repoIDs The IDs of the repositoried to give access to the secret
+ * @returns An empty string if succedssful, otherwise the name of the failed secret
+ */
+export async function listRepos(
+  octokit: Octokit,
+  org: string,
+): Promise<string[]> {
+  const repos: string[] = [];
+  try {
+    const response = await octokit.repos.listForOrg({
+      org,
+    });
+
+    if (response.status === 200) {
+      response.data.forEach((repo) => repos.push(repo.name));
+    }
+  } catch (err) {
+    console.log(` - Error listing repositories for ${org}.`);
+    console.log(util.inspect(err));
+  }
+  return repos;
+}
