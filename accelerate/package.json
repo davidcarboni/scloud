@@ -1,0 +1,36 @@
+{
+  "name": "accelerate",
+  "version": "1.0.0",
+  "description": "Processes Github webhook messages to generate Accelerate metrics.",
+  "scripts": {
+    "compile": "tsc",
+    "test": "mocha -r ts-node/register test/**/*.spec.ts",
+    "lint": "eslint --fix --ext ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/davidcarboni/scloud"
+  },
+  "author": "David Carboni",
+  "license": "ISC",
+  "devDependencies": {
+    "@octokit/rest": "*",
+    "@types/chai": "*",
+    "@types/mocha": "*",
+    "@types/node": "*",
+    "@typescript-eslint/eslint-plugin": "*",
+    "@typescript-eslint/parser": "*",
+    "chai": "*",
+    "eslint": "*",
+    "eslint-config-airbnb-base": "*",
+    "eslint-import-resolver-typescript": "*",
+    "eslint-plugin-import": "*",
+    "mocha": "*",
+    "ts-node": "*",
+    "typescript": "*"
+  },
+  "dependencies": {
+    "@types/aws-lambda": "*",
+    "aws-sdk": "*"
+  }
+}
