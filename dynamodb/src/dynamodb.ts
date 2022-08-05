@@ -18,7 +18,7 @@ export interface Range {
 /**
  * Get an item
  * @param tableName DynamoDB table name
- * @param key 1-2 fields: partition key (requierd) and, optionally, sort key
+ * @param key 1-2 fields: partition key (required) and, optionally, sort key
  * @returns The item, if found, or {}
  */
 export async function getItem(tableName: string, key: { [key: string]: any; })
@@ -28,6 +28,21 @@ export async function getItem(tableName: string, key: { [key: string]: any; })
     Key: key,
   }).promise();
   return result.Item ? result.Item : {};
+}
+
+/**
+ * Get an item
+ * @param tableName DynamoDB table name
+ * @param key 1-2 fields: partition key (required) and, optionally, sort key
+ * @returns The item, if found, or {}
+ */
+export async function deleteItem(tableName: string, key: { [key: string]: any; })
+  : Promise<{ [key: string]: any; }> {
+  const result = await ddb.delete({
+    TableName: tableName,
+    Key: key,
+  }).promise();
+  return result.Attributes ? result.Attributes : {};
 }
 
 /**
