@@ -44,19 +44,8 @@ export function cloudFront(
     removalPolicy: RemovalPolicy.DESTROY,
     autoDeleteObjects: true,
     publicReadAccess: true,
-    websiteIndexDocument: 'index.html',
-    websiteErrorDocument: '404.html',
   });
   new CfnOutput(construct, `${name}Bucket`, { value: bucket.bucketName });
-
-  // Edge function for rendering templates
-  // const edgeLambdas = [];
-  // const edgeFunction = lambda.edgeFunction(construct, name);
-  // edgeLambdas.push({
-  //   functionVersion: edgeFunction.currentVersion,
-  //   eventType: LambdaEdgeEventType.VIEWER_REQUEST,
-  //   includeBody: true,
-  // });
 
   const domainName = `${name}.${zone.zoneName}`;
   const distribution = new cloudfront.Distribution(construct, `${name}Distribution`, {
@@ -67,17 +56,7 @@ export function cloudFront(
       allowedMethods: AllowedMethods.ALLOW_ALL,
       viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
       compress: true,
-      // edgeLambdas,
     },
-    //   additionalBehaviors: {
-    //     // https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/distribution-web-values-specify.html#DownloadDistValuesPathPattern
-    //     '*.*': { // Static content files that have a fle extension, including subdirectories
-    //       origin: new origins.S3Origin(bucket),
-    //       allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
-    //       viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-    //       compress: true,
-    //     },
-    //   },
     certificate: new acm.DnsValidatedCertificate(construct, `${name}Certificate`, {
       domainName,
       hostedZone: zone,
