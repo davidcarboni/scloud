@@ -32,12 +32,16 @@ export function containerFunction(
   initialPass: boolean,
   name: string,
   environment?: { [key: string]: string; },
+  tagOrDigest?: string,
+  ecr?: Repository,
 ): { lambda: Function, repository: Repository; } {
   // Repository for function container image
-  const repository = ecrRepository(construct, name);
+  const repository = ecr || ecrRepository(construct, name);
 
   // Container
-  const code = initialPass ? DockerImageCode.fromImageAsset(path.join(__dirname, './container')) : DockerImageCode.fromEcr(repository);
+  const code = initialPass ? DockerImageCode.fromImageAsset(path.join(__dirname, './container')) : DockerImageCode.fromEcr(repository, {
+    tagOrDigest: tagOrDigest || 'latest',
+  });
 
   const lambda = new DockerImageFunction(construct, `${name}Function`, {
     code,
