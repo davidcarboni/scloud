@@ -162,25 +162,22 @@ export function userPoolClient(
  *
  * @param construct CDK construct ("this")
  * @param name The name for the user pool and related resources
- * @param domainName The base domain name - the user pool domain will be auth.${domainName}
- * @param zone The zone to create the 'auth' subdomain in
- * @param pass Whehter this is an initial pass infrastructure create, or an update
+ * @param callbackUrls Allowed callbackUrl values
+ * @param idpConfig Identity provider configuration
+ * @param zone If you want a custom domain, pass the zone to create it in
+ * @param domainName If you're passing a zone, you can pass a domain name,
+ * or leave out for a recommended `auth.${zone.zoneName}`.
+ * If not passing a zone, this will be used as a Cognito domain prefix.
  * @returns Information about the created UserPool
  */
 export function cognitoPool(
   construct: Construct,
   name: string,
-  zone: IHostedZone,
-  initialPass: boolean,
   callbackUrls: string[],
   idpConfig: IdpConfig,
+  zone?: IHostedZone,
   domainName?: string,
 ): CognitoConstructs {
-  // Auth domain name:
-  // AWS recommends auth.<domain> for custom domains
-  // NB at the time of writing there's a hard limit of 4 custom Cognito domains.
-  const authDomainName = domainName || `auth.${zone.zoneName}`;
-
   // Cognito user pool
   const userPool = new UserPool(construct, `${name}UserPool`, {
     userPoolName: name,
@@ -212,7 +209,12 @@ export function cognitoPool(
 
   // Custom domain
   let domain: UserPoolDomain | undefined;
-  if (!initialPass) {
+  if (zone) {
+    // Auth domain name:
+    // AWS recommends auth.<domain> for custom domains
+    // NB at the time of writing there's a hard limit of 4 custom Cognito domains.
+    const authDomainName = domainName || `auth.${zone.zoneName}`;
+
     // Custom domain can only be set up after the initial pass has created an A record at the apex
     domain = new cognito.UserPoolDomain(construct, `${name}UserPoolDomain`, {
       userPool,
@@ -233,6 +235,14 @@ export function cognitoPool(
       target: RecordTarget.fromAlias(
         new UserPoolDomainTarget(domain),
       ),
+    });
+  } else if (domainName) {
+    // Customise the domain prefix
+    domain = new cognito.UserPoolDomain(construct, `${name}UserPoolDomain`, {
+      userPool,
+      cognitoDomain: {
+        domainPrefix: domainName,
+      },
     });
   }
 
