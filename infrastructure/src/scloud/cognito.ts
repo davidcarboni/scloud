@@ -29,7 +29,8 @@ export interface CognitoConstructs {
   userPool: UserPool,
   domain?: UserPoolDomain,
   client: UserPoolClient,
-  callbackUrls: string[],
+  callbackUrl: string,
+  signInUrl?: string,
 }
 
 export function googleIdp(
@@ -84,8 +85,7 @@ export function samlIdp(
   name: string,
   userPool: UserPool,
   idpConfig: IdpConfig,
-)
-  : CfnUserPoolIdentityProvider {
+): CfnUserPoolIdentityProvider {
   // https://docs.aws.amazon.com/cdk/api/latest/docs/aws-cdk-lib_aws-cognito.CfnUserPoolIdentityProvider.html
   // https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-cognito-userpoolidentityprovider.html
 
@@ -113,14 +113,14 @@ export function samlIdp(
 
 /**
  * Create a Cognito User Pool Client.
- * @param callbackUrls Authentication callback URL(s).
+ * @param callbackUrl Authentication callback URL.
  * @returns cognito.UserPoolClient
  */
 export function userPoolClient(
   construct: Construct,
   name: string,
   userPool: UserPool,
-  callbackUrls: string[],
+  callbackUrl: string,
   enableEmail?: boolean,
   google?: UserPoolIdentityProviderGoogle,
   facebook?: UserPoolIdentityProviderFacebook,
@@ -139,7 +139,7 @@ export function userPoolClient(
     preventUserExistenceErrors: true,
     supportedIdentityProviders: identityProviders,
     oAuth: {
-      callbackUrls,
+      callbackUrls: [callbackUrl],
       flows: {
         authorizationCodeGrant: true,
       },
@@ -162,7 +162,7 @@ export function userPoolClient(
  *
  * @param construct CDK construct ("this")
  * @param name The name for the user pool and related resources
- * @param callbackUrls Allowed callbackUrl values
+ * @param callbackUrl Allowed callback URL
  * @param idpConfig Identity provider configuration
  * @param zone If you want a custom domain, pass the zone to create it in
  * @param domainName If you're passing a zone, you can pass a domain name,
@@ -173,7 +173,7 @@ export function userPoolClient(
 export function cognitoPool(
   construct: Construct,
   name: string,
-  callbackUrls: string[],
+  callbackUrl: string,
   idpConfig: IdpConfig,
   zone?: IHostedZone,
   domainName?: string,
@@ -200,7 +200,7 @@ export function cognitoPool(
     construct,
     name,
     userPool,
-    callbackUrls,
+    callbackUrl,
     idpConfig.enableEmail,
     google,
     facebook,
@@ -209,6 +209,7 @@ export function cognitoPool(
 
   // Custom domain
   let domain: UserPoolDomain | undefined;
+  let signInUrl: string | undefined;
   if (zone) {
     // Auth domain name:
     // AWS recommends auth.<domain> for custom domains
@@ -246,10 +247,13 @@ export function cognitoPool(
     });
   }
 
+  if (domain) signInUrl = domain?.signInUrl(client, { redirectUri: callbackUrl });
+
   return {
     userPool,
     domain,
     client,
-    callbackUrls,
+    callbackUrl,
+    signInUrl,
   };
 }
