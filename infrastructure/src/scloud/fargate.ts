@@ -1,13 +1,12 @@
 import { DnsValidatedCertificate } from 'aws-cdk-lib/aws-certificatemanager';
-import * as logs from 'aws-cdk-lib/aws-logs';
 import { RemovalPolicy, Stack } from 'aws-cdk-lib';
 import { ApplicationProtocol } from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import { SubnetType, Vpc } from 'aws-cdk-lib/aws-ec2';
 import { ApplicationLoadBalancedFargateService } from 'aws-cdk-lib/aws-ecs-patterns';
 import { Repository } from 'aws-cdk-lib/aws-ecr';
 import { IHostedZone } from 'aws-cdk-lib/aws-route53';
-import { RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { CfnService, ContainerImage, LogDrivers } from 'aws-cdk-lib/aws-ecs';
+import { RetentionDays } from 'aws-cdk-lib/aws-logs';
 import ecrRepository from './ecrRepository';
 
 interface Deployment {
@@ -77,12 +76,12 @@ export default function fargate(
         environment,
         logDriver: LogDrivers.awsLogs({
           streamPrefix: name,
-          logGroup: new logs.LogGroup(stack, `${name}LogGroup`, {
+          logGroup: new LogGroup(stack, `${name}LogGroup`, {
             // Ensure the log group is deleted when the stack is deleted
             // and that logs aren't retained indefinitely
             logGroupName: `/${stack.stackName}/ecs/${name}`,
             removalPolicy: RemovalPolicy.DESTROY,
-            retention: RetentionDays.ONE_MONTH,
+            retention: RetentionDays.THREE_MONTHS,
           }),
         }),
       },
