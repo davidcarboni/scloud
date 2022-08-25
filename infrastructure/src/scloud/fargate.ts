@@ -6,7 +6,7 @@ import { ApplicationLoadBalancedFargateService } from 'aws-cdk-lib/aws-ecs-patte
 import { Repository } from 'aws-cdk-lib/aws-ecr';
 import { IHostedZone } from 'aws-cdk-lib/aws-route53';
 import { CfnService, ContainerImage, LogDrivers } from 'aws-cdk-lib/aws-ecs';
-import { RetentionDays } from 'aws-cdk-lib/aws-logs';
+import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 import ecrRepository from './ecrRepository';
 
 interface Deployment {
