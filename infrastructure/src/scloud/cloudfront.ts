@@ -63,6 +63,7 @@ export function cloudFront(
       region: 'us-east-1',
     }),
   });
+  new CfnOutput(construct, `${name}DistributionId`, { value: distribution.distributionId });
 
   new route53.ARecord(construct, `${name}ARecord`, {
     zone,
