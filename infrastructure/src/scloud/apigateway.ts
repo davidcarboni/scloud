@@ -11,9 +11,9 @@ import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { CfnOutput, RemovalPolicy } from 'aws-cdk-lib';
 import { RestApiOrigin, S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
 import { AllowedMethods, Distribution, ViewerProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront';
-import { HttpsRedirect } from 'aws-cdk-lib/aws-route53-patterns';
-import * as _ from 'lodash';
+import _ from 'lodash';
 import { containerFunction, zipFunction } from './lambdaFunction';
+import { redirectWww } from './cloudfront';
 
 function output(
   construct: Construct,
@@ -21,7 +21,7 @@ function output(
   name: string,
   value: string,
 ) {
-  const outputName = `${_.capitalize(name)}${type}`;
+  const outputName = `${_.capitalize(name)}${_.capitalize(type)}`;
   new CfnOutput(construct, outputName, { value });
 }
 
@@ -43,23 +43,12 @@ export function webApp(
     autoDeleteObjects: true,
     publicReadAccess: true,
   });
-  output(construct, 'Bucket', name, bucket.bucketName);
-
-  const certificate = new DnsValidatedCertificate(construct, `${name}Certificate`, {
-    domainName,
-    subjectAlternativeNames: [`www.${domainName}`],
-    hostedZone: zone,
-    region: 'us-east-1',
-  });
+  output(construct, 'Static', name, bucket.bucketName);
 
   const api = new apigateway.LambdaRestApi(construct, `${name}ApiGateway`, {
     handler: lambda,
     proxy: true,
     binaryMediaTypes: ['multipart/form-data'],
-    domainName: {
-      domainName,
-      certificate,
-    },
   });
 
   const staticBehavior = {
@@ -82,7 +71,11 @@ export function webApp(
       '/public/': staticBehavior,
       // inxex.html direct from s3 for latency on / route? // '/': staticBehaviour'
     },
-    certificate,
+    certificate: new DnsValidatedCertificate(construct, `${name}Certificate`, {
+      domainName,
+      hostedZone: zone,
+      region: 'us-east-1',
+    }),
   });
   output(construct, 'DistributionId', name, distribution.distributionId);
 
@@ -91,14 +84,7 @@ export function webApp(
     target: route53.RecordTarget.fromAlias(new CloudFrontTarget(distribution)),
     zone,
   });
-
-  // Redirect www -> zone root
-  new HttpsRedirect(construct, `${name}WwwRedirect`, {
-    recordNames: [`www.${domainName}`],
-    targetDomain: domainName,
-    certificate,
-    zone,
-  });
+  redirectWww(construct, name, zone);
 
   return {
     lambda, api, bucket, distribution,
