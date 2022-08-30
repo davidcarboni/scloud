@@ -158,7 +158,10 @@ export function userPoolClient(
 }
 
 /**
- * Authentication setup with Cognito
+ * Authentication setup with Cognito.
+ *
+ * NB: IF you want to use a custom domain, the CDK deployment
+ * will fail unless there's an A record at the zone apex.
  *
  * @param construct CDK construct ("this")
  * @param name The name for the user pool and related resources
