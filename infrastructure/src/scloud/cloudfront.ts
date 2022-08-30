@@ -12,6 +12,7 @@ import {
 } from 'aws-cdk-lib/aws-cloudfront';
 // import { IFunction } from 'aws-cdk-lib/aws-lambda';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
+import { ICertificate } from 'aws-cdk-lib/aws-certificatemanager';
 // import * as lambda from './lambdaFunction';
 
 /**
@@ -115,12 +116,13 @@ export function redirectWww(
   construct: Construct,
   name: string,
   zone: route53.IHostedZone,
+  certificate?: ICertificate,
 ) {
   new route53patterns.HttpsRedirect(construct, `${name}WwwRedirect`, {
     targetDomain: zone.zoneName,
     recordNames: [`www.${zone.zoneName}`],
     zone,
-    certificate: new acm.DnsValidatedCertificate(construct, `${name}WwwCertificate`, {
+    certificate: certificate || new acm.DnsValidatedCertificate(construct, `${name}WwwCertificate`, {
       domainName: `www.${zone.zoneName}`,
       hostedZone: zone,
       // this is required for Cloudfront certificates:
