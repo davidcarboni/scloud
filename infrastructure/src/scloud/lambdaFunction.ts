@@ -49,6 +49,7 @@ export function containerFunction(
     timeout: Duration.seconds(60),
     logRetention: logs.RetentionDays.THREE_MONTHS,
     environment,
+    description: name,
   });
   output(construct, name, lambda);
   return { lambda, repository };
@@ -78,6 +79,7 @@ export function zipFunction(
     timeout: Duration.seconds(60),
     logRetention: logs.RetentionDays.THREE_MONTHS,
     environment,
+    description: name,
   });
   output(construct, name, lambda);
   return lambda;
