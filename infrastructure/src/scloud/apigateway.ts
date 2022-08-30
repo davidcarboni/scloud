@@ -10,7 +10,9 @@ import { ApiGateway, CloudFrontTarget } from 'aws-cdk-lib/aws-route53-targets';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { CfnOutput, RemovalPolicy } from 'aws-cdk-lib';
 import { RestApiOrigin, S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
-import { AllowedMethods, Distribution, ViewerProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront';
+import {
+  AllowedMethods, CachePolicy, Distribution, OriginRequestPolicy, ViewerProtocolPolicy,
+} from 'aws-cdk-lib/aws-cloudfront';
 import _ from 'lodash';
 import { containerFunction, zipFunction } from './lambdaFunction';
 import { redirectWww } from './cloudfront';
@@ -21,7 +23,7 @@ function output(
   name: string,
   value: string,
 ) {
-  const outputName = `${_.capitalize(name)}${_.capitalize(type)}`;
+  const outputName = `${_.lowerFirst(name)}${_.capitalize(type)}`;
   new CfnOutput(construct, outputName, { value });
 }
 
@@ -43,7 +45,7 @@ export function webApp(
     autoDeleteObjects: true,
     publicReadAccess: true,
   });
-  output(construct, 'Static', name, bucket.bucketName);
+  output(construct, 'StaticBucket', name, bucket.bucketName);
 
   const api = new apigateway.LambdaRestApi(construct, `${name}ApiGateway`, {
     handler: lambda,
@@ -58,6 +60,13 @@ export function webApp(
     compress: true,
   };
 
+  const certificate = new DnsValidatedCertificate(construct, `${name}Certificate`, {
+    domainName,
+    subjectAlternativeNames: [`www.${domainName}`],
+    hostedZone: zone,
+    region: 'us-east-1',
+  });
+
   const distribution = new Distribution(construct, `${name}Distribution`, {
     domainNames: [domainName],
     comment: domainName,
@@ -66,16 +75,14 @@ export function webApp(
       allowedMethods: AllowedMethods.ALLOW_ALL,
       viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
       compress: true,
+      cachePolicy: CachePolicy.CACHING_DISABLED,
+      originRequestPolicy: OriginRequestPolicy.ALL_VIEWER,
     },
     additionalBehaviors: {
-      '/public/': staticBehavior,
+      '/public/*': staticBehavior,
       // inxex.html direct from s3 for latency on / route? // '/': staticBehaviour'
     },
-    certificate: new DnsValidatedCertificate(construct, `${name}Certificate`, {
-      domainName,
-      hostedZone: zone,
-      region: 'us-east-1',
-    }),
+    certificate,
   });
   output(construct, 'DistributionId', name, distribution.distributionId);
 
@@ -84,7 +91,7 @@ export function webApp(
     target: route53.RecordTarget.fromAlias(new CloudFrontTarget(distribution)),
     zone,
   });
-  redirectWww(construct, name, zone);
+  redirectWww(construct, name, zone, certificate);
 
   return {
     lambda, api, bucket, distribution,
