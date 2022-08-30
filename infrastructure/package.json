@@ -33,6 +33,7 @@
     "eslint-config-airbnb-base": "*",
     "eslint-import-resolver-typescript": "*",
     "eslint-plugin-import": "*",
+    "lodash": "*",
     "source-map-support": "*",
     "tweetsodium": "*"
   }
