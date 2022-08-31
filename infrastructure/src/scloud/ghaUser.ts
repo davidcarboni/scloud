@@ -1,5 +1,5 @@
 import {
-  CfnAccessKey, Effect, Policy, PolicyStatement, User,
+  CfnAccessKey, ManagedPolicy, PolicyStatement, User,
 } from 'aws-cdk-lib/aws-iam';
 import { CfnOutput, Stack } from 'aws-cdk-lib';
 import { IRepository } from 'aws-cdk-lib/aws-ecr';
@@ -17,18 +17,14 @@ export const ghaResources = {
 };
 
 let user: User;
+let policy: ManagedPolicy;
 
-function addPolicy(stack: Stack, name: string, resources: string[], actions: string[]) {
+function addToPolicy(stack: Stack, name: string, resources: string[], actions: string[]) {
   if (resources.length > 0) {
-    const statement = new PolicyStatement({
+    policy.addStatements(new PolicyStatement({
       actions,
       resources,
-    });
-    const policy = new Policy(stack, `gha${name}`, {
-      policyName: name,
-      statements: [statement],
-    });
-    user.attachInlinePolicy(policy);
+    }));
   }
 }
 
@@ -37,7 +33,11 @@ function addPolicy(stack: Stack, name: string, resources: string[], actions: str
  */
 export function ghaUser(stack: Stack): CfnAccessKey | undefined {
   // A user with the policy attached
-  user = new User(stack, 'ghaUser', { userName: `gha-${stack.stackName.toLowerCase()}` });
+  user = new User(stack, 'ghaUser', { userName: `gha-${stack.stackName}` });
+  policy = new ManagedPolicy(stack, `gha-${stack.stackName}-policy`, {
+    managedPolicyName: `gha-${stack.stackName}-policy`,
+  });
+  user.addManagedPolicy(policy);
 
   // Credentials
   let accessKey: CfnAccessKey | undefined;
@@ -55,8 +55,8 @@ export function ghaUser(stack: Stack): CfnAccessKey | undefined {
   const repositoryArns = ghaResources.repositories
     .filter((repository) => repository)
     .map((repository) => repository.repositoryArn);
-  addPolicy(stack, 'ecrLogin', ['*'], ['ecr:GetAuthorizationToken']);
-  addPolicy(stack, 'ecrRepositories', repositoryArns, [
+  addToPolicy(stack, 'ecrLogin', ['*'], ['ecr:GetAuthorizationToken']);
+  addToPolicy(stack, 'ecrRepositories', repositoryArns, [
     'ecr:GetDownloadUrlForLayer',
     'ecr:BatchGetImage',
     'ecr:BatchDeleteImage',
@@ -72,7 +72,7 @@ export function ghaUser(stack: Stack): CfnAccessKey | undefined {
   const bucketArns = ghaResources.buckets
     .filter((bucket) => bucket)
     .map((bucket) => bucket.bucketArn);
-  addPolicy(stack, 'buckets', bucketArns, [
+  addToPolicy(stack, 'buckets', bucketArns, [
     's3:ListBucket',
     's3:PutObject',
     's3:DeleteObject',
@@ -82,7 +82,7 @@ export function ghaUser(stack: Stack): CfnAccessKey | undefined {
   const lambdaArns = ghaResources.lambdas
     .filter((lambda) => lambda)
     .map((lambda) => lambda.functionArn);
-  addPolicy(stack, 'lambdas', lambdaArns, [
+  addToPolicy(stack, 'lambdas', lambdaArns, [
     'lambda:UpdateFunctionCode',
     // 'lambda:PublishVersion',
   ]);
@@ -91,7 +91,7 @@ export function ghaUser(stack: Stack): CfnAccessKey | undefined {
   const serviceArns = ghaResources.services
     .filter((service) => service)
     .map((service) => service.serviceArn);
-  addPolicy(stack, 'fargateServices', serviceArns, [
+  addToPolicy(stack, 'fargateServices', serviceArns, [
     'ecs:UpdateService',
   ]);
 
@@ -100,7 +100,7 @@ export function ghaUser(stack: Stack): CfnAccessKey | undefined {
     .filter((distribution) => distribution !== undefined)
     // Not sure where to 'properly' get a distribution ARN from?
     .map((distribution) => `arn:aws:cloudfront::${stack.account}:distribution/${distribution.distributionId}`);
-  addPolicy(stack, 'distributions', distributionArns, [
+  addToPolicy(stack, 'distributions', distributionArns, [
     'cloudfront:CreateInvalidation',
   ]);
 
