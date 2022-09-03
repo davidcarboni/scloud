@@ -41,8 +41,8 @@ export default function fargate(
 
   // Container repository
   result.repository = repository || ecrRepository(stack, name);
-
-  // It seems like NAT gateways are costly, so I've set this up to avoid that.
+  // It seems like NAT gateways are costly, so I've set this up to avoid that - only creating one.
+  // At some point we may want to figure out a privte endpoint so that we can retire the NAT.
   // Based on: https://www.binarythinktank.com/blog/truly-serverless-container
   // and https://stackoverflow.com/questions/64299664/how-to-configure-aws-cdk-applicationloadbalancedfargateservice-to-log-parsed-jso
   result.vpc = vpc || new Vpc(stack, `${name}Vpc`, {
@@ -88,7 +88,7 @@ export default function fargate(
       desiredCount: 2,
       vpc: result.vpc,
       // ? https://stackoverflow.com/questions/67301268/aws-fargate-resourceinitializationerror-unable-to-pull-secrets-or-registry-auth
-      ssignPublicIp: true,
+      assignPublicIp: true,
     },
   );
   result.albFargateService.loadBalancer.addRedirect(); // http -> https
