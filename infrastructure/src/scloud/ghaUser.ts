@@ -55,7 +55,7 @@ export function ghaUser(stack: Stack): CfnAccessKey | undefined {
   const repositoryArns = ghaResources.repositories
     .filter((repository) => repository)
     .map((repository) => repository.repositoryArn);
-  addToPolicy(stack, 'ecrLogin', ['*'], ['ecr:GetAuthorizationToken']);
+  if (repositoryArns.length > 0) addToPolicy(stack, 'ecrLogin', ['*'], ['ecr:GetAuthorizationToken']);
   addToPolicy(stack, 'ecrRepositories', repositoryArns, [
     'ecr:GetDownloadUrlForLayer',
     'ecr:BatchGetImage',
