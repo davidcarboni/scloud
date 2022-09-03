@@ -46,7 +46,7 @@ export default function fargate(
   // Based on: https://www.binarythinktank.com/blog/truly-serverless-container
   // and https://stackoverflow.com/questions/64299664/how-to-configure-aws-cdk-applicationloadbalancedfargateservice-to-log-parsed-jso
   result.vpc = vpc || new Vpc(stack, `${name}Vpc`, {
-    natGateways: 0,
+    natGateways: 1,
     subnetConfiguration: [{
       name,
       subnetType: SubnetType.PUBLIC,
@@ -88,7 +88,7 @@ export default function fargate(
       desiredCount: 2,
       vpc: result.vpc,
       // ? https://stackoverflow.com/questions/67301268/aws-fargate-resourceinitializationerror-unable-to-pull-secrets-or-registry-auth
-      // assignPublicIp: true,
+      ssignPublicIp: true,
     },
   );
   result.albFargateService.loadBalancer.addRedirect(); // http -> https
