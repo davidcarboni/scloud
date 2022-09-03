@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 
 function readSecrets(): string[] {
-  const cdkOuputs = '../secrets/cdk-outputs.json';
+  const cdkOuputs = './secrets/cdk-outputs.json';
   // const awsConfig = '~/.aws/credentials';
   if (existsSync(cdkOuputs)) {
     const json = readFileSync(cdkOuputs, 'utf8').trim();
@@ -36,7 +36,7 @@ function readSecrets(): string[] {
     )
     `;
 
-    writeFileSync('../secrets/ecr-repos.sh', script);
+    writeFileSync('./secrets/ecr-repos.sh', script);
   } catch (err) {
     console.error(err);
     throw err;

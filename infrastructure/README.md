@@ -26,6 +26,13 @@ If you're going to be using a SAML SSO configuration, here are the values you're
 
 Check the versions of any dependencies (e.g. `aws-cdk`) and either switch to `*` or make sure there's a `^` in front of them to avoid confusing errors that trace back to slightly mismatched dependencies.
 
+## Ignore infrastructure secrets directory
+
+Add this to `infrastructure/.gitignore`:
+
+    # Ignore infrastructure secrets
+    secrets
+
 ## Configure linting
 
     npm install --save-dev \

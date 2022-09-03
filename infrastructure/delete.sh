@@ -2,7 +2,7 @@
 set -eu
 
 # Secrets
-for i in $(ls ../secrets/*.sh); do
+for i in $(ls ./secrets/*.sh); do
   echo " * $i"
   source $i
 done

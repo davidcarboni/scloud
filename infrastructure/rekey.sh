@@ -2,7 +2,7 @@
 set -eu
 
 # Secrets
-for i in $(ls ../secrets/*.sh); do
+for i in $(ls ./secrets/*.sh); do
   echo " * $i"
   source $i
 done
@@ -16,5 +16,5 @@ fi
 
 npm run lint
 REKEY=true cdk deploy
-cdk deploy --outputs-file ../secrets/cdk-outputs.json
+cdk deploy --outputs-file ./secrets/cdk-outputs.json
 npm run secrets

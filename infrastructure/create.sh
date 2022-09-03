@@ -2,7 +2,7 @@
 set -eu
 
 # Secrets
-for i in $(ls ../secrets/*.sh); do
+for i in $(ls ./secrets/*.sh); do
   echo " * $i"
   source $i
 done
@@ -54,7 +54,7 @@ function gha_build {
 
 # First-pass deploy
 echo "Running deploy initial pass"
-PASS=initial cdk deploy --all --outputs-file ../secrets/cdk-outputs.json --require-approval never
+PASS=initial cdk deploy --all --outputs-file ./secrets/cdk-outputs.json --require-approval never
 
 # Set initial secrets
 npm run secrets
@@ -64,7 +64,7 @@ echo "Giving Github a few seconds..." && sleep 10
 gha_build
 
 # Full deploy
-cdk deploy --all --outputs-file ../secrets/cdk-outputs.json --require-approval never
+cdk deploy --all --outputs-file ./secrets/cdk-outputs.json --require-approval never
 
 # Update secrets
 echo "Setting Github secrets"

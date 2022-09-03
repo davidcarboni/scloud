@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 
 function readSecrets(): { [key: string]: string; } {
-  const cdkOuputs = '../secrets/cdk-outputs.json';
+  const cdkOuputs = './secrets/cdk-outputs.json';
 
   if (fs.existsSync(cdkOuputs)) {
     const json = fs.readFileSync(cdkOuputs, 'utf8').trim();

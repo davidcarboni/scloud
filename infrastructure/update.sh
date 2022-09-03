@@ -2,7 +2,7 @@
 set -eu
 
 # Secrets
-for i in $(ls ../secrets/*.sh); do
+for i in $(ls ./secrets/*.sh); do
   echo " * $i"
   source $i
 done
@@ -18,7 +18,7 @@ echo "Starting infrastructure build: $(date)"
 npm run lint
 
 # Full deploy
-cdk deploy --all --outputs-file ../secrets/cdk-outputs.json
+cdk deploy --all --outputs-file ./secrets/cdk-outputs.json
 
 # Update secrets
 echo "Setting Github secrets"

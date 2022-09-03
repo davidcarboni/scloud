@@ -21,7 +21,7 @@ let repoSecrets: string[];
 function readSecrets(): { [key: string]: string; } {
   const secrets: { [key: string]: string; } = {};
 
-  const cdkOuputs = '../secrets/cdk-outputs.json';
+  const cdkOuputs = './secrets/cdk-outputs.json';
   // const awsConfig = '~/.aws/credentials';
   if (existsSync(cdkOuputs)) {
     const json = readFileSync(cdkOuputs, 'utf8').trim();
@@ -97,7 +97,7 @@ function readSecrets(): { [key: string]: string; } {
     // TODO: Delete "leftover" secrets?
 
     // Useful for debugging secret values being passed to Github:
-    // writeFileSync('../secrets/gha_secrets.txt', JSON.stringify(secrets));
+    // writeFileSync('./secrets/gha_secrets.txt', JSON.stringify(secrets));
   } catch (err) {
     console.error(err);
     throw err;
