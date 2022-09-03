@@ -74,6 +74,9 @@ export function ghaUser(stack: Stack): CfnAccessKey | undefined {
     .map((bucket) => bucket.bucketArn);
   addToPolicy(stack, 'buckets', bucketArns, [
     's3:ListBucket',
+  ]);
+  const objectArns = bucketArns.map((arn) => `${arn}/*`);
+  addToPolicy(stack, 'buckets', objectArns, [
     's3:PutObject',
     's3:DeleteObject',
   ]);
