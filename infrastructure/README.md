@@ -90,7 +90,7 @@ module.exports = {
 ...
 ````
 
-Running `npm run lint` will likely give you the following errors for `project-stack.ts`:
+Running `npm run lint` will likely give you the following errors for `lib/project-stack.ts`:
 
   5:1  error  Prefer default export  import/prefer-default-export
   6:3  error  Useless constructor    no-useless-constructor
@@ -100,6 +100,17 @@ The former is resolved by adding `default` to line 5:
     export default class ProjectStack extends Stack {
 
 The latter is resolved when you start building your stack. For now you can clear it with a `console.log()` if you want.
+
+## Tag everything in the stack
+
+This can be useful for seeing the cost of a stack.
+
+Update `bin/project-stack.ts` something like this:
+
+    const stack = new ProjectStack(app, 'ProjectStack', {
+    ...
+    });
+    Tags.of(stack).add('product', stack.stackName);
 
 ## Configure Typescript
 
