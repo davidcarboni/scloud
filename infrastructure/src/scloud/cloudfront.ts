@@ -13,6 +13,7 @@ import { RestApiOrigin, S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
 import {
   AllowedMethods, CachePolicy, Distribution,
   OriginRequestCookieBehavior,
+  OriginRequestHeaderBehavior,
   OriginRequestPolicy,
   OriginRequestQueryStringBehavior,
   ViewerProtocolPolicy,
@@ -107,12 +108,9 @@ export function webApp(
       compress: true,
       cachePolicy: CachePolicy.CACHING_DISABLED,
       // https://stackoverflow.com/questions/71367982/cloudfront-gives-403-when-origin-request-policy-include-all-headers-querystri
-      // What we would actually want (it seems) it to not pass the host header
+      // OriginRequestHeaderBehavior.all() gives an error so just cookie, user-agent, referer
       originRequestPolicy: new OriginRequestPolicy(construct, `${name}OriginRequestPolicy`, {
-        // headerBehavior: OriginRequestHeaderBehavior.allowList('user-agent'),
-        // headerBehavior: OriginRequestHeaderBehavior.allowList('cookie'),
-        // headerBehavior: OriginRequestHeaderBehavior.allowList('user-agent', 'cookie'),
-        // headerBehavior: OriginRequestHeaderBehavior.all(),
+        headerBehavior: OriginRequestHeaderBehavior.allowList('user-agent', 'User-Agent', 'Referer', 'referer'),
         cookieBehavior: OriginRequestCookieBehavior.all(),
         queryStringBehavior: OriginRequestQueryStringBehavior.all(),
       }),
