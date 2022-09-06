@@ -101,6 +101,7 @@ export function edgeFunction(
     construct,
     `${name}EdgeFunction`,
     {
+      functionName: name, // Resolves "...the resource's physical name must be explicit set..."
       runtime: Runtime.NODEJS_14_X,
       code: Code.fromAsset(path.join(__dirname, './edge')),
       handler: 'src/lambda.handler',
