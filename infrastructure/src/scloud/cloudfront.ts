@@ -13,7 +13,6 @@ import { RestApiOrigin, S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
 import {
   AllowedMethods, CachePolicy, Distribution,
   OriginRequestCookieBehavior,
-  OriginRequestHeaderBehavior,
   OriginRequestPolicy,
   OriginRequestQueryStringBehavior,
   ViewerProtocolPolicy,
@@ -109,13 +108,19 @@ export function webApp(
       cachePolicy: CachePolicy.CACHING_DISABLED,
       // https://stackoverflow.com/questions/71367982/cloudfront-gives-403-when-origin-request-policy-include-all-headers-querystri
       // What we would actually want (it seems) it to not pass the host header
-      // originRequestPolicy: new OriginRequestPolicy(construct, `${name}OriginRequestPolicy`, {
-      //   headerBehavior: OriginRequestHeaderBehavior.allowList('user-agent', 'cookie'),
-      //   // headerBehavior: OriginRequestHeaderBehavior.all(),
-      //   cookieBehavior: OriginRequestCookieBehavior.all(),
-      //   queryStringBehavior: OriginRequestQueryStringBehavior.all(),
-      // }),
-      originRequestPolicy: OriginRequestPolicy.ALL_VIEWER,
+      originRequestPolicy: new OriginRequestPolicy(construct, `${name}OriginRequestPolicy`, {
+        // headerBehavior: OriginRequestHeaderBehavior.allowList('user-agent'),
+        // headerBehavior: OriginRequestHeaderBehavior.allowList('cookie'),
+        // headerBehavior: OriginRequestHeaderBehavior.allowList('user-agent', 'cookie'),
+        // headerBehavior: OriginRequestHeaderBehavior.all(),
+        cookieBehavior: OriginRequestCookieBehavior.all(),
+        queryStringBehavior: OriginRequestQueryStringBehavior.all(),
+      }),
+      // originRequestPolicy: OriginRequestPolicy.USER_AGENT_REFERER_HEADERS,
+      // edgeLambdas: [{
+      //   functionVersion: headerFilter.currentVersion,
+      //   eventType: cloudfront.LambdaEdgeEventType.ORIGIN_REQUEST,
+      // }],
     },
     additionalBehaviors: {
       '/public/*': staticBehavior,
