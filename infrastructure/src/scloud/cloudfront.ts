@@ -11,8 +11,11 @@ import { CloudFrontTarget } from 'aws-cdk-lib/aws-route53-targets';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { RestApiOrigin, S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
 import {
-  AllowedMethods, CachePolicy, Distribution, OriginRequestCookieBehavior,
-  OriginRequestHeaderBehavior, OriginRequestPolicy, OriginRequestQueryStringBehavior,
+  AllowedMethods, CachePolicy, Distribution,
+  OriginRequestCookieBehavior,
+  OriginRequestHeaderBehavior,
+  OriginRequestPolicy,
+  OriginRequestQueryStringBehavior,
   ViewerProtocolPolicy,
 } from 'aws-cdk-lib/aws-cloudfront';
 import { LambdaRestApi } from 'aws-cdk-lib/aws-apigateway';
@@ -62,6 +65,8 @@ export function webApp(
   // Web app handler
   const lambda = zipFunction(construct, name, environment, memory);
 
+  // const headerFilter = edgeFunction(construct, 'headerFilter');
+
   // Static content
   const bucket = new Bucket(construct, `${name}Static`, {
     removalPolicy: RemovalPolicy.DESTROY,
@@ -95,17 +100,22 @@ export function webApp(
     comment: domainName,
     defaultBehavior: {
       origin: new RestApiOrigin(api),
+      //   , {
+      //   customHeaders: { host: '' },
+      // }),
       allowedMethods: AllowedMethods.ALLOW_ALL,
       viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
       compress: true,
       cachePolicy: CachePolicy.CACHING_DISABLED,
       // https://stackoverflow.com/questions/71367982/cloudfront-gives-403-when-origin-request-policy-include-all-headers-querystri
       // What we would actually want (it seems) it to not pass the host header
-      originRequestPolicy: new OriginRequestPolicy(construct, `${name}OriginRequestPolicy`, {
-        headerBehavior: OriginRequestHeaderBehavior.allowList('user-agent'),
-        cookieBehavior: OriginRequestCookieBehavior.all(),
-        queryStringBehavior: OriginRequestQueryStringBehavior.all(),
-      }), // OriginRequestPolicy.ALL_VIEWER,
+      // originRequestPolicy: new OriginRequestPolicy(construct, `${name}OriginRequestPolicy`, {
+      //   headerBehavior: OriginRequestHeaderBehavior.allowList('user-agent', 'cookie'),
+      //   // headerBehavior: OriginRequestHeaderBehavior.all(),
+      //   cookieBehavior: OriginRequestCookieBehavior.all(),
+      //   queryStringBehavior: OriginRequestQueryStringBehavior.all(),
+      // }),
+      originRequestPolicy: OriginRequestPolicy.ALL_VIEWER,
     },
     additionalBehaviors: {
       '/public/*': staticBehavior,
