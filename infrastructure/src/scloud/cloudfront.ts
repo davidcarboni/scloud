@@ -58,9 +58,10 @@ export function webApp(
   name: string,
   zone: route53.IHostedZone,
   environment?: { [key: string]: string; },
+  domain?: string,
   memory: number = 2048,
 ): { lambda: Function, api: LambdaRestApi, bucket: Bucket, distribution: Distribution; } {
-  const domainName = `${zone.zoneName}`;
+  const domainName = domain || `${zone.zoneName}`;
 
   // Web app handler
   const lambda = zipFunction(construct, name, environment, memory);
