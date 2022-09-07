@@ -38,13 +38,16 @@ export function redirectWww(
   name: string,
   zone: route53.IHostedZone,
   certificate?: ICertificate,
+  domain?: string,
 ) {
+  const domainName = domain || `${zone.zoneName}`;
+
   new route53patterns.HttpsRedirect(construct, `${name}WwwRedirect`, {
-    targetDomain: zone.zoneName,
-    recordNames: [`www.${zone.zoneName}`],
+    targetDomain: domainName,
+    recordNames: [`www.${domainName}`],
     zone,
     certificate: certificate || new acm.DnsValidatedCertificate(construct, `${name}WwwCertificate`, {
-      domainName: `www.${zone.zoneName}`,
+      domainName: `www.${domainName}`,
       hostedZone: zone,
       // this is required for Cloudfront certificates:
       // https://docs.aws.amazon.com/cdk/api/v1/docs/aws-cloudfront-readme.html
@@ -134,6 +137,7 @@ export function webApp(
     target: route53.RecordTarget.fromAlias(new CloudFrontTarget(distribution)),
     zone,
   });
+
   redirectWww(construct, name, zone, certificate);
 
   return {
