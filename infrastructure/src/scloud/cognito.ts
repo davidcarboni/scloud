@@ -14,12 +14,19 @@ import {
 import { UserPoolDomainTarget } from 'aws-cdk-lib/aws-route53-targets';
 import { Construct } from 'constructs';
 
+export interface SamlProvider {
+  FederationMetadataUrl?: string, // SAML XML URL (e.g. Azure)
+  FederationMetadataXml?: string, // SAML metadata XML (e.g. Google Workspace)
+  SamlProviderName?: string, // Name in the Cognito hosted UI under "Sign in with your corporate ID"
+}
+
 export interface IdpConfig {
   enableEmail?: boolean, // Allow email sign-up/in
   googleClientId?: string,
   googleClientSecret?: string,
   facebookAppId?: string,
   facebookAppSecret?: string,
+  SamlProviders?: SamlProvider[],
   FederationMetadataUrl?: string, // SAML XML URL (e.g. Azure)
   FederationMetadataXml?: string, // SAML metadata XML (e.g. Google Workspace)
   SamlProviderName?: string, // Name in the Cognito hosted UI under "Sign in with your corporate ID"
@@ -84,22 +91,22 @@ export function samlIdp(
   construct: Construct,
   name: string,
   userPool: UserPool,
-  idpConfig: IdpConfig,
+  samlProvider: SamlProvider,
 ): CfnUserPoolIdentityProvider {
   // https://docs.aws.amazon.com/cdk/api/latest/docs/aws-cdk-lib_aws-cognito.CfnUserPoolIdentityProvider.html
   // https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-cognito-userpoolidentityprovider.html
 
   const providerDetails: { [key: string]: string; } = {};
-  if (idpConfig.FederationMetadataUrl) {
-    providerDetails.MetadataURL = idpConfig.FederationMetadataUrl;
+  if (samlProvider.FederationMetadataUrl) {
+    providerDetails.MetadataURL = samlProvider.FederationMetadataUrl;
   }
-  if (idpConfig.FederationMetadataXml) {
-    providerDetails.MetadataFile = idpConfig.FederationMetadataXml;
+  if (samlProvider.FederationMetadataXml) {
+    providerDetails.MetadataFile = samlProvider.FederationMetadataXml;
   }
 
   return new CfnUserPoolIdentityProvider(construct, `${name}SamlIDP`, {
     userPoolId: userPool.userPoolId,
-    providerName: idpConfig.SamlProviderName || name,
+    providerName: samlProvider.SamlProviderName || name,
     providerType: 'SAML',
     attributeMapping: {
       // https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-settings-attributes.html
@@ -124,13 +131,17 @@ export function userPoolClient(
   enableEmail?: boolean,
   google?: UserPoolIdentityProviderGoogle,
   facebook?: UserPoolIdentityProviderFacebook,
-  saml?: CfnUserPoolIdentityProvider,
+  samls?: CfnUserPoolIdentityProvider[],
 ): UserPoolClient {
   const identityProviders: cognito.UserPoolClientIdentityProvider[] = [];
   if (enableEmail) identityProviders.push(UserPoolClientIdentityProvider.COGNITO);
   if (google) identityProviders.push(UserPoolClientIdentityProvider.GOOGLE);
   if (facebook) identityProviders.push(UserPoolClientIdentityProvider.FACEBOOK);
-  if (saml) identityProviders.push(UserPoolClientIdentityProvider.custom(saml.providerName));
+  if (samls) {
+    samls.forEach((saml) => {
+      identityProviders.push(UserPoolClientIdentityProvider.custom(saml.providerName));
+    });
+  }
 
   const client = new UserPoolClient(construct, `${name}UserPoolClient`, {
     userPool,
@@ -152,7 +163,9 @@ export function userPoolClient(
   });
   if (google) client.node.addDependency(google);
   if (facebook) client.node.addDependency(facebook);
-  if (saml) client.node.addDependency(saml);
+  if (samls) {
+    samls.forEach((saml) => client.node.addDependency(saml));
+  }
 
   return client;
 }
@@ -195,9 +208,21 @@ export function cognitoPool(
     ? googleIdp(construct, name, userPool, idpConfig) : undefined;
   const facebook = idpConfig.facebookAppId
     ? facebookIdp(construct, name, userPool, idpConfig) : undefined;
-  const saml = idpConfig.FederationMetadataUrl || idpConfig.FederationMetadataXml
-    ? samlIdp(construct, name, userPool, idpConfig) : undefined;
+  const saml = [];
 
+  if (idpConfig.FederationMetadataUrl || idpConfig.FederationMetadataXml) {
+    saml.push(samlIdp(construct, name, userPool, idpConfig));
+  }
+  if (idpConfig.SamlProviders) {
+    idpConfig.SamlProviders.forEach((samlProvider) => {
+      saml.push(samlIdp(
+        construct,
+        name,
+        userPool,
+        samlProvider,
+      ));
+    });
+  }
   // Production client
   const client = userPoolClient(
     construct,
