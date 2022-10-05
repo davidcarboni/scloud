@@ -63,6 +63,7 @@ export function webApp(
   environment?: { [key: string]: string; },
   domain?: string,
   memory: number = 2048,
+  www: boolean = true,
 ): { lambda: Function, api: LambdaRestApi, bucket: Bucket, distribution: Distribution; } {
   const domainName = domain || `${zone.zoneName}`;
 
@@ -138,7 +139,7 @@ export function webApp(
     zone,
   });
 
-  redirectWww(construct, name, zone, certificate);
+  if (www) redirectWww(construct, name, zone, certificate);
 
   return {
     lambda, api, bucket, distribution,
