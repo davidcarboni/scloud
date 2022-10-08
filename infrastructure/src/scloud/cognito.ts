@@ -143,12 +143,12 @@ export function userPoolClient(
   if (samls) {
     samls.forEach((saml) => {
       identityProviders.push(UserPoolClientIdentityProvider.custom(saml.providerName));
-      new CfnOutput(construct, `${name}-${saml.providerName}-entityId`, {
+      new CfnOutput(construct, `${name}-${saml.providerName}-EntityId`, {
         value: `urn:amazon:cognito:sp:${userPool.userPoolId}`,
         description: `SAML entity ID for ${saml.providerName}`,
       });
       if (domain) {
-        new CfnOutput(construct, `${name}-${saml.providerName}-acsUrl`, {
+        new CfnOutput(construct, `${name}-${saml.providerName}-AcsUrl`, {
           value: `${domain.baseUrl()}/saml2/idpresponse`,
           description: `SAML ACS URL for ${saml.providerName}`,
         });
