@@ -45,8 +45,8 @@ export function containerFunction(
 
   const lambda = new DockerImageFunction(construct, `${name}Function`, {
     code,
-    memorySize: 256,
-    timeout: Duration.seconds(60),
+    memorySize: 512,
+    timeout: Duration.seconds(900),
     logRetention: logs.RetentionDays.THREE_MONTHS,
     environment,
     description: name,
