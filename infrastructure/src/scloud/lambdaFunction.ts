@@ -34,6 +34,8 @@ export function containerFunction(
   environment?: { [key: string]: string; },
   tagOrDigest?: string,
   ecr?: Repository,
+  memory: number = 512,
+  timeout: number = 60,
 ): { lambda: Function, repository: Repository; } {
   // Repository for function container image
   const repository = ecr || ecrRepository(construct, name);
@@ -45,8 +47,8 @@ export function containerFunction(
 
   const lambda = new DockerImageFunction(construct, `${name}Function`, {
     code,
-    memorySize: 512,
-    timeout: Duration.seconds(900),
+    memorySize: memory,
+    timeout: Duration.seconds(timeout),
     logRetention: logs.RetentionDays.THREE_MONTHS,
     environment,
     description: name,
