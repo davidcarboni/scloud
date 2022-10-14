@@ -26,17 +26,6 @@ module.exports = {
       },
     ],
     'no-new': 'off', // Because CDK likes to 'new' things
-    'max-len': [
-      'error',
-      {
-        code: 150,
-        tabWidth: 2,
-        ignoreComments: true, // comments: 80
-        ignoreUrls: true,
-        ignoreStrings: true,
-        ignoreTemplateLiterals: true,
-      },
-    ],
     'no-console': 'off', // Because we want to print some things out about the stack.
   },
   settings: {
