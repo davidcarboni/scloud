@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+
+cdk init app --language typescript
 
 npm i --save-dev \
   @types/node \
@@ -10,7 +13,6 @@ npm i --save-dev \
   eslint-plugin-import \
   eslint-import-resolver-typescript \
   --
-
 npm i \
   @octokit/rest \
   tweetsodium \
@@ -24,7 +26,7 @@ npm i \
 #   "scripts": {
 #    ...,
 #    "lint": "eslint --fix --ext ts bin lib",
-#    "secrets": "ts-node src/github/secrets.ts"
+#    "secrets": "ts-node src/github/secrets.ts
 #
 # find (regex): "\^?~?\d{1,3}\.\d{1,3}\.\d{1,3}"
 # replace: "*" (except package version)
