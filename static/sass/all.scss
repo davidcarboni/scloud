@@ -1,0 +1,30 @@
+@import url('https://fonts.googleapis.com/css2?family=Playball&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@300&family=Varela+Round&display=swap');
+
+// Colours
+$app-highlight: #236bc2;
+$app-accent: #e71e73;
+$app-neutral-black: #575756;
+$app-neutral-black-blue: #333343;
+$app-neutral-dark: #555577;
+$app-neutral-light: #d7d7d7;
+
+
+// https://github.com/alphagov/govuk-design-system/issues/1019
+$govuk-font-family: "Comfortaa", "HelveticaNeue", "Helvetica Neue", "Arial", "Helvetica", sans-serif;
+$govuk-brand-colour: $app-accent;
+$govuk-header-background: $app-neutral-dark;
+
+@import "node_modules/govuk-frontend/govuk/all";
+
+.govuk-header {
+  background: $app-neutral-black;
+}
+
+.govuk-header__logotype-text {
+  font-family: 'Playball', cursive, "HelveticaNeue", "Helvetica Neue", "Arial", "Helvetica", sans-serif;
+}
+
+.govuk-footer {
+  background: $app-neutral-light;
+}

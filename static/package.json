@@ -1,0 +1,29 @@
+{
+  "name": "auth",
+  "version": "1.0.0",
+  "description": "Website generation.",
+  "main": "",
+  "scripts": {
+    "sass": "node-sass sass -o public/stylesheets",
+    "sass:watch": "node-sass sass -wo public/stylesheets"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/davidcarboni/scloud"
+  },
+  "author": "David Carboni",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "*",
+    "@typescript-eslint/eslint-plugin": "*",
+    "@typescript-eslint/parser": "*",
+    "eslint": "*",
+    "eslint-config-airbnb-base": "*",
+    "eslint-import-resolver-typescript": "*",
+    "eslint-plugin-import": "*",
+    "node-sass": "*",
+    "ts-node": "*",
+    "typescript": "*",
+    "govuk-frontend": "*"
+  }
+}
