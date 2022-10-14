@@ -1,7 +1,7 @@
 {
   "name": "accelerate",
   "version": "1.0.0",
-  "description": "Processes Github webhook messages to generate Accelerate metrics.",
+  "description": "Processes Github webhook messages.",
   "scripts": {
     "compile": "tsc",
     "test": "mocha -r ts-node/register test/**/*.spec.ts",
@@ -14,7 +14,6 @@
   "author": "David Carboni",
   "license": "ISC",
   "devDependencies": {
-    "@octokit/rest": "*",
     "@types/chai": "*",
     "@types/mocha": "*",
     "@types/node": "*",
@@ -30,7 +29,9 @@
     "typescript": "*"
   },
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "*",
     "@types/aws-lambda": "*",
-    "aws-sdk": "*"
+    "aws-sdk": "*",
+    "axios": "*"
   }
 }

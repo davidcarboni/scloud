@@ -1,8 +1,8 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
 import * as AWS from 'aws-sdk';
-import { SQS } from 'aws-sdk';
 import * as fs from 'fs';
 import * as crypto from 'crypto';
+import env from './bumph';
 import slackMessage from './slack';
 
 // The version of the code we're running
@@ -11,7 +11,22 @@ if (fs.existsSync('COMMIT_HASH')) {
   version = fs.readFileSync('COMMIT_HASH').toString();
 }
 
-AWS.config.update({ region: 'eu-west-2' });
+/**
+ * A DynamoDB table item.
+ */
+export type Metric = {
+  metric: string; // github.build
+  date: string; // build completed date
+  repository: string, // Repo name
+  workflow: string, // Workflow filename and path
+  branch: string, // Branch that triggered the workflow
+  user: string, // User who triggered the workflow
+  status: string, // Workflow status (expect 'completed')
+  conclusion: string, // Workflow conclusion (expect 'success')
+  cycleTime?: Number, // Seconds between workflow run creation and last updated time
+  commitHash: string, // Commit hash when the workflow ran
+  url: string, // URL of the workflow run
+};
 
 export interface APIGatewayResponse {
   statusCode: number,
@@ -36,6 +51,7 @@ async function sendMetric(webhook: any, githubEvent: string): Promise<any> {
     const updated = webhook.workflow_run?.updated_at;
     const commitHash = webhook.workflow_run?.head_sha;
     const url = webhook.workflow_run?.html_url;
+    await slackMessage(`${action}: ${repository}[${branch}]/${workflow}`);
 
     // await slackMe(`${action}: ${workflowName} ${repository}[${branch}]/${workflowPath}
     // status:${status} conclusion:${conclusion}`);
@@ -101,9 +117,9 @@ export async function handler(event: APIGatewayProxyEvent, context: Context):
 
   try {
     // Webhooks POSTed from Github
-    if (event.httpMethod === 'POST' && event.headers['X-Hub-Signature-256'] && process.env.WEBHOOK_SECRET) {
+    if (event.httpMethod === 'POST' && event.headers['X-Hub-Signature-256']) {
       const signature = event.headers['X-Hub-Signature-256'];
-      const hmac = crypto.createHmac('sha256', process.env.WEBHOOK_SECRET || '');
+      const hmac = crypto.createHmac('sha256', env('WEBHOOK_SECRET'));
       hmac.update(event.body || '');
       const digest = `sha256=${hmac.digest('hex')}`;
       if (signature === digest) {
@@ -113,10 +129,10 @@ export async function handler(event: APIGatewayProxyEvent, context: Context):
         await slackMessage(`[${signature === digest}] From Github: ${signature} | Computed: ${digest}`);
       }
     } else {
-      await slackMessage(`Invalid Github webhook request: ${event.httpMethod} headers: ${JSON.stringify(event.headers)} X-Hub-Signature-256:${event.headers['X-Hub-Signature-256']} WEBHOOK_SECRET:${process.env.WEBHOOK_SECRET !== undefined}`);
+      console.log(`Invalid Github webhook request: ${event.httpMethod} headers: ${JSON.stringify(event.headers)}`);
     }
   } catch (err: any) {
-    // FYI
+    // FYI but respond ok to Github:
     await slackMessage(`Github webhook error: ${err} [${event.httpMethod} ${event.path}] : ${event.body}`);
   }
 
