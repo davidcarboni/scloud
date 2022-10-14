@@ -25,18 +25,33 @@ jobs:
     - name: Commit hash
       working-directory: static
       run: |
-        echo $(git rev-parse HEAD) > public/COMMIT_HASH
+        echo $(git rev-parse --short HEAD) > public/COMMIT_HASH
+
+    - name: Sass
+      working-directory: static
+      run: |
+        npm ci
+        npm run sass
+
+    - name: Javascript
+      working-directory: static
+      run: |
+        mkdir -p public/javascripts/vendor
+
+        curl https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.js --output public/javascripts/vendor/modernizr.js
+
+        cp node_modules/govuk-frontend/govuk/all.js public/javascripts
 
     - name: Upload to s3
       env:
-        STATIC_BUCKET: ${{ secrets.STATIC_BUCKET }}
+        BUCKET: ${{ secrets.WEB_STATICBUCKET }}
       working-directory: static
       run: |
-        aws s3 sync ./public/ s3://${STATIC_BUCKET}/
+        aws s3 sync --delete ./public/ s3://${BUCKET}/public/
 
     - name: Invalidate Cloudfront
       env:
-        DISTRIBUTION_ID: ${{ secrets.DISTRIBUTION_ID }}
+        DISTRIBUTION_ID: ${{ secrets.WEB_DISTRIBUTIONID }}
       working-directory: static
       run: |
         aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths '/*'
@@ -46,8 +61,7 @@ jobs:
       uses: rtCamp/action-slack-notify@v2
       env:
         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-        SLACK_USERNAME: Static build
+        SLACK_USERNAME: Static content
         SLACK_COLOR: ${{ job.status }}
         SLACK_ICON_EMOJI: ":github_octocat:"
-        SLACK_FOOTER: Github Actions
-        SLACK_CHANNEL: general
+        SLACK_CHANNEL: build
