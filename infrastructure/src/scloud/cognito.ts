@@ -1,4 +1,4 @@
-import { CfnOutput, RemovalPolicy } from 'aws-cdk-lib';
+import { RemovalPolicy } from 'aws-cdk-lib';
 import { DnsValidatedCertificate } from 'aws-cdk-lib/aws-certificatemanager';
 import * as cognito from 'aws-cdk-lib/aws-cognito';
 import {
@@ -20,9 +20,7 @@ export interface SamlProvider {
   SamlProviderName?: string, // Name in the Cognito hosted UI under "Sign in with your corporate ID"
 }
 
-// NB: A single SAML provider can be included in IdpCOnfig,
-// or multiple via the SamlProviders property (hence 'extends'):
-export interface IdpConfig extends SamlProvider {
+export interface IdpConfig {
   enableEmail?: boolean, // Allow email sign-up/in
   googleClientId?: string,
   googleClientSecret?: string,
@@ -106,7 +104,7 @@ export function samlIdp(
     providerDetails.MetadataFile = samlProvider.FederationMetadataXml;
   }
 
-  return new CfnUserPoolIdentityProvider(construct, `${name}SamlIDP`, {
+  return new CfnUserPoolIdentityProvider(construct, `${name}SamlIDP${samlProvider.SamlProviderName}`, {
     userPoolId: userPool.userPoolId,
     providerName: samlProvider.SamlProviderName || name,
     providerType: 'SAML',
@@ -134,7 +132,7 @@ export function userPoolClient(
   google?: UserPoolIdentityProviderGoogle,
   facebook?: UserPoolIdentityProviderFacebook,
   samls?: CfnUserPoolIdentityProvider[],
-  domain?: UserPoolDomain,
+  alternativeCallbackUrl?: string,
 ): UserPoolClient {
   const identityProviders: cognito.UserPoolClientIdentityProvider[] = [];
   if (enableEmail) identityProviders.push(UserPoolClientIdentityProvider.COGNITO);
@@ -143,19 +141,11 @@ export function userPoolClient(
   if (samls) {
     samls.forEach((saml) => {
       identityProviders.push(UserPoolClientIdentityProvider.custom(saml.providerName));
-      new CfnOutput(construct, `${name}-${saml.providerName}-EntityId`, {
-        value: `urn:amazon:cognito:sp:${userPool.userPoolId}`,
-        description: `SAML entity ID for ${saml.providerName}`,
-      });
-      if (domain) {
-        new CfnOutput(construct, `${name}-${saml.providerName}-AcsUrl`, {
-          value: `${domain.baseUrl()}/saml2/idpresponse`,
-          description: `SAML ACS URL for ${saml.providerName}`,
-        });
-      }
     });
   }
 
+  const callbackUrls = [callbackUrl];
+  if (alternativeCallbackUrl) callbackUrls.push(alternativeCallbackUrl);
   const client = new UserPoolClient(construct, `${name}UserPoolClient`, {
     userPool,
     userPoolClientName: name,
@@ -163,7 +153,7 @@ export function userPoolClient(
     preventUserExistenceErrors: true,
     supportedIdentityProviders: identityProviders,
     oAuth: {
-      callbackUrls: [callbackUrl],
+      callbackUrls,
       flows: {
         authorizationCodeGrant: true,
       },
@@ -206,6 +196,7 @@ export function cognitoPool(
   idpConfig: IdpConfig,
   zone?: IHostedZone,
   domainName?: string,
+  alternativeCallbackUrl? : string,
 ): CognitoConstructs {
   // Cognito user pool
   const userPool = new UserPool(construct, `${name}UserPool`, {
@@ -215,6 +206,39 @@ export function cognitoPool(
     signInAliases: { username: false, email: true },
     removalPolicy: RemovalPolicy.DESTROY,
   });
+
+  // Identity providers
+  const google = idpConfig.googleClientId
+    ? googleIdp(construct, name, userPool, idpConfig) : undefined;
+  const facebook = idpConfig.facebookAppId
+    ? facebookIdp(construct, name, userPool, idpConfig) : undefined;
+  const saml = [];
+
+  if (idpConfig.FederationMetadataUrl || idpConfig.FederationMetadataXml) {
+    saml.push(samlIdp(construct, name, userPool, idpConfig));
+  }
+  if (idpConfig.SamlProviders) {
+    idpConfig.SamlProviders.forEach((samlProvider) => {
+      saml.push(samlIdp(
+        construct,
+        name,
+        userPool,
+        samlProvider,
+      ));
+    });
+  }
+  // Production client
+  const client = userPoolClient(
+    construct,
+    name,
+    userPool,
+    callbackUrl,
+    idpConfig.enableEmail,
+    google,
+    facebook,
+    saml,
+    alternativeCallbackUrl,
+  );
 
   // Custom domain
   let domain: UserPoolDomain | undefined;
@@ -256,39 +280,7 @@ export function cognitoPool(
     });
   }
 
-  // Identity providers
-  const google = idpConfig.googleClientId
-    ? googleIdp(construct, name, userPool, idpConfig) : undefined;
-  const facebook = idpConfig.facebookAppId
-    ? facebookIdp(construct, name, userPool, idpConfig) : undefined;
-  const saml = [];
-
-  if (idpConfig.FederationMetadataUrl || idpConfig.FederationMetadataXml) {
-    saml.push(samlIdp(construct, name, userPool, idpConfig));
-  }
-  if (idpConfig.SamlProviders) {
-    idpConfig.SamlProviders.forEach((samlProvider) => {
-      saml.push(samlIdp(
-        construct,
-        name,
-        userPool,
-        samlProvider,
-      ));
-    });
-  }
-  // Production client
-  const client = userPoolClient(
-    construct,
-    name,
-    userPool,
-    callbackUrl,
-    idpConfig.enableEmail,
-    google,
-    facebook,
-    saml,
-    domain,
-  );
-  if (domain) signInUrl = domain.signInUrl(client, { redirectUri: callbackUrl });
+  if (domain) signInUrl = domain?.signInUrl(client, { redirectUri: callbackUrl });
 
   return {
     userPool,
