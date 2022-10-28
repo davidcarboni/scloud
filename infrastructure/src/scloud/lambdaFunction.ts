@@ -70,6 +70,7 @@ export function zipFunction(
   environment?: { [key: string]: string; },
   memory: number = 256,
   concurrency: number = 5,
+  timeout: Duration = Duration.seconds(600),
   handler: string = 'src/lambda.handler',
 ): Function {
   const lambda = new Function(construct, `${name}Function`, {
@@ -78,7 +79,7 @@ export function zipFunction(
     handler,
     memorySize: memory,
     reservedConcurrentExecutions: concurrency,
-    timeout: Duration.seconds(60),
+    timeout,
     logRetention: logs.RetentionDays.THREE_MONTHS,
     environment,
     description: name,

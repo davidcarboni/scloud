@@ -13,10 +13,9 @@ export function queueLambda(
   environment?: { [key: string]: string; },
   memory: number = 128,
   concurrency: number = 2,
+  timeout: Duration = Duration.seconds(600),
 ): { queue: Queue, lambda: Function, policy: ManagedPolicy; } {
-  // Message timeout
-  // This needs to match netween the queue and the lambda:
-  const timeout = Duration.seconds(60);
+  // NB Message timeout needs to match netween the queue and the lambda:
 
   // Incoming message queue
   const queue = new Queue(construct, `${name}Queue`, {
@@ -26,7 +25,7 @@ export function queueLambda(
   });
   // new CfnOutput(construct, `${name}QueueUrl`, { value: queue.queueUrl });
 
-  const lambda = zipFunction(construct, name, environment, memory, concurrency);
+  const lambda = zipFunction(construct, name, environment, memory, concurrency, timeout);
   lambda.addEventSource(new SqsEventSource(queue, { reportBatchItemFailures: true }));
 
   // Policy enabling message sending to the queue
