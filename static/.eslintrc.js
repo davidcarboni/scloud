@@ -25,10 +25,27 @@ module.exports = {
       },
     ],
     quotes: [2, 'single', 'avoid-escape'],
+    'max-len': [
+      'error',
+      {
+        code: 150,
+        tabWidth: 2,
+        ignoreComments: true, // comments: 80
+        ignoreUrls: true,
+        ignoreStrings: true,
+        ignoreTemplateLiterals: true,
+      },
+    ],
     'no-console': 'off', // Because container logging goes to stdout.
   },
   settings: {
+    'import/parsers': {
+      '@typescript-eslint/parser': ['.ts', '.js'],
+    },
     'import/resolver': {
+      typescript: {
+        alwaysTryTypes: true,
+      },
       node: {
         extensions: ['.js', '.ts'],
       },

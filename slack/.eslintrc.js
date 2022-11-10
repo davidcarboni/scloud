@@ -25,6 +25,17 @@ module.exports = {
       },
     ],
     quotes: [2, 'single', 'avoid-escape'],
+    'max-len': [
+      'error',
+      {
+        code: 150,
+        tabWidth: 2,
+        ignoreComments: true, // comments: 80
+        ignoreUrls: true,
+        ignoreStrings: true,
+        ignoreTemplateLiterals: true,
+      },
+    ],
     'no-console': 'off', // Because container logging goes to stdout.
   },
   settings: {
@@ -54,5 +65,5 @@ module.exports = {
       },
     },
   ],
-  ignorePatterns: ['node_modules', 'js'],
+  ignorePatterns: ['node_modules', 'dist'],
 };

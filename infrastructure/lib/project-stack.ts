@@ -1,12 +1,25 @@
 import * as cdk from 'aws-cdk-lib';
-import { StackProps } from 'aws-cdk-lib';
+import { RemovalPolicy, StackProps } from 'aws-cdk-lib';
 import { HostedZone, IHostedZone } from 'aws-cdk-lib/aws-route53';
 import { Queue } from 'aws-cdk-lib/aws-sqs';
 import { Construct } from 'constructs';
+import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
 import { webApp } from '../src/scloud/cloudfront';
 import { CognitoConstructs, cognitoPool } from '../src/scloud/cognito';
+import { ghaResources } from '../src/scloud/ghaUser';
 import { queueLambda } from '../src/scloud/queueLambda';
+import { apiGateway } from '../src/scloud/apigateway';
+import { Function } from 'aws-cdk-lib/aws-lambda';
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
+
+const name = 'project';
+const domainName = 'example.com';
+
+function env(variableName: string): string {
+  const value = process.env[variableName];
+  if (value) return value;
+  throw new Error(`Missing environment variable: ${variableName}`);
+}
 
 export default class SalondcStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -22,13 +35,79 @@ export default class SalondcStack extends cdk.Stack {
   }
 
   /**
-   * Component to send Slack messages.
+   * DNS configuration for the app.
+   */
+  zone(): IHostedZone {
+    // We look up the zones, which are not part of the stack.
+    // This avoids us having to update the registrar because
+    // name servers would change every time this is deleted/recreated
+    return HostedZone.fromHostedZoneAttributes(this, 'zoneCom', {
+      zoneName: domainName,
+      hostedZoneId: 'Z...............',
+    });
+  }
+
+  /**
+   * Infrastructure for metrics/event collection.
    */
   slack(): Queue {
-    const { queue } = queueLambda(this, 'slack', {
-      SLACK_WEBHOOK: process.env.SLACK_WEBHOOK || '',
+    // Metric message handler
+    const { lambda, queue } = queueLambda(this, 'slack', {
+      SLACK_WEBHOOK: env('SLACK_WEBHOOK'),
     });
+    ghaResources.lambdas.push(lambda);
     return queue;
+  }
+
+  /**
+   * Infrastructure for metrics/event collection.
+   */
+  metrics(slackQueue: Queue): Queue {
+    const metric = 'metric';
+    const dateSort = 'dateSort';
+    const ttl = 'ttl';
+
+    // Metrics storage
+    const table = new Table(this, 'metrics', {
+      partitionKey: { name: metric, type: AttributeType.STRING },
+      sortKey: { name: dateSort, type: AttributeType.STRING },
+      timeToLiveAttribute: ttl,
+      billingMode: BillingMode.PAY_PER_REQUEST,
+      removalPolicy: RemovalPolicy.DESTROY,
+    });
+
+    // Metric message handler
+    const { lambda, queue } = queueLambda(this, 'metrics', {
+      PRODUCT: name,
+      COMPONENT: 'metrics',
+      STORAGE_TABLE: table.tableName,
+      PARTITION_KEY: metric,
+      SORT_KEY: dateSort,
+      TTL_ATTRIBUTE: ttl,
+      SLACK_QUEUE_URL: slackQueue.queueUrl,
+    });
+
+    ghaResources.lambdas.push(lambda);
+    table.grantWriteData(lambda);
+    slackQueue.grantSendMessages(lambda);
+
+    return queue;
+  }
+
+  accelerate(zone: IHostedZone, metricsQueue: Queue, slackQueue: Queue): Function {
+    const environment = {
+      PRODUCT: name,
+      COMPONENT: 'accelerate',
+      METRICS_QUEUE_URL: metricsQueue.queueUrl,
+      SLACK_QUEUE_URL: slackQueue.queueUrl,
+      WEBHOOK_SECRET: env('WEBHOOK_SECRET'),
+    };
+    const { lambda } = apiGateway(this, 'accelerate', zone, environment, `accelerate.${zone.zoneName}`);
+    metricsQueue.grantSendMessages(lambda);
+    slackQueue.grantSendMessages(lambda);
+    ghaResources.lambdas.push(lambda);
+    // repositories.push(repository);
+    return lambda;
   }
 
   cognito(zone: IHostedZone): CognitoConstructs {
@@ -51,6 +130,8 @@ export default class SalondcStack extends cdk.Stack {
     const {
       lambda, // api, bucket, distribution,
     } = webApp(this, 'web', zone, {
+      PRODUCT: name,
+      COMPONENT: 'web',
       SIGNIN_URL: cognito.signInUrl || '',
       SLACK_QUEUE: slackQueue.queueUrl,
     });

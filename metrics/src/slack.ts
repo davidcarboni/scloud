@@ -1,11 +1,8 @@
 import * as AWS from 'aws-sdk';
 
-const product = 'product'
-const component = 'ui';
-
 function identifier() {
   // Collect as much information as we have available about this component
-  const segments: (string|undefined)[] = [product, component, process.env.DEPLOYMENT, process.env.COMMIT_HASH];
+  const segments: (string|undefined)[] = [process.env.PRODUCT, process.env.COMPONENT, process.env.DEPLOYMENT, process.env.COMMIT_HASH];
   return segments.filter((segment) => segment).join('/');
 }
 
@@ -14,7 +11,6 @@ function queueUrl(): string {
   if (!url) console.warn('Please set SLACK_QUEUE_URL if you would like to receive Slack notificaitons.');
   return url;
 }
-process.env.COMMIT_HASH = process.env.COMMIT_HASH || 'development';
 
 /**
  * Post an FYI to Slack and don't throw any errors;

@@ -2,31 +2,21 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda
 import * as AWS from 'aws-sdk';
 import * as fs from 'fs';
 import * as crypto from 'crypto';
-import env from './bumph';
 import slackMessage from './slack';
 
 // The version of the code we're running
-let version = process.env.COMMIT_HASH || 'development';
 if (fs.existsSync('COMMIT_HASH')) {
-  version = fs.readFileSync('COMMIT_HASH').toString();
+  process.env.COMMIT_HASH = fs.readFileSync('COMMIT_HASH').toString().trim();
 }
+process.env.COMMIT_HASH = process.env.COMMIT_HASH || 'development';
 
 /**
- * A DynamoDB table item.
+ * A DynamoDB table item representing a metric
  */
 export type Metric = {
   metric: string; // github.build
   date: string; // build completed date
-  repository: string, // Repo name
-  workflow: string, // Workflow filename and path
-  branch: string, // Branch that triggered the workflow
-  user: string, // User who triggered the workflow
-  status: string, // Workflow status (expect 'completed')
-  conclusion: string, // Workflow conclusion (expect 'success')
-  cycleTime?: Number, // Seconds between workflow run creation and last updated time
-  commitHash: string, // Commit hash when the workflow ran
-  url: string, // URL of the workflow run
-};
+} & {[key: string]: any};
 
 export interface APIGatewayResponse {
   statusCode: number,
@@ -113,13 +103,13 @@ async function sendMetric(webhook: any, githubEvent: string): Promise<any> {
  */
 export async function handler(event: APIGatewayProxyEvent, context: Context):
   Promise<APIGatewayProxyResult> {
-  console.log(`Executing ${context.functionName} version: ${version}`);
+  console.log(`Executing ${context.functionName} version: ${process.env.COMMIT_HASH}`);
 
   try {
     // Webhooks POSTed from Github
     if (event.httpMethod === 'POST' && event.headers['X-Hub-Signature-256']) {
       const signature = event.headers['X-Hub-Signature-256'];
-      const hmac = crypto.createHmac('sha256', env('WEBHOOK_SECRET'));
+      const hmac = crypto.createHmac('sha256', process.env.WEBHOOK_SECRET || '');
       hmac.update(event.body || '');
       const digest = `sha256=${hmac.digest('hex')}`;
       if (signature === digest) {

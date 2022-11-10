@@ -1,5 +1,4 @@
 import * as AWS from 'aws-sdk';
-import env from './bumph';
 
 const product = 'project'
 const component = 'accelerate';
