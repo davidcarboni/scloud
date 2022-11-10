@@ -1,6 +1,19 @@
 import * as AWS from 'aws-sdk';
 
-const component = 'scloud/accelerate';
+const product = 'project'
+const component = 'accelerate';
+
+function identifier() {
+  // Collect as much information as we have available about this component
+  const segments: (string|undefined)[] = [product, component, process.env.DEPLOYMENT, process.env.COMMIT_HASH];
+  return segments.filter((segment) => segment).join('/');
+}
+
+function queueUrl(): string {
+  const url = process.env.SLACK_QUEUE_URL || '';
+  if (!url) console.warn('Please set SLACK_QUEUE_URL if you would like to receive Slack notificaitons.');
+  return url;
+}
 
 /**
  * Post an FYI to Slack and don't throw any errors;
@@ -8,12 +21,12 @@ const component = 'scloud/accelerate';
  */
 export default async function slackMessage(message: string) {
   if (message) {
-    const queueUrl = process.env.SLACK_QUEUE_URL || '';
-    if (queueUrl) {
+    const url = queueUrl();
+    if (url) {
       try {
         await new AWS.SQS().sendMessage({
-          MessageBody: `[${component}] ${message}`,
-          QueueUrl: queueUrl,
+          MessageBody: `[${identifier()}] ${message}`,
+          QueueUrl: url,
         }).promise();
       } catch (err) { console.error(err); }
     } else {
