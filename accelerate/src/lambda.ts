@@ -18,84 +18,99 @@ export type Metric = {
   date: string; // build completed date
 } & {[key: string]: any};
 
-export interface APIGatewayResponse {
-  statusCode: number,
-  headers?: { [key: string]: string; },
-  body: string;
-  isBase64Encoded?: boolean,
+async function sendMetric(metric: Metric): Promise<void> {
+  const queueUrl = process.env.METRICS_QUEUE_URL;
+  if (!queueUrl) {
+    await slackMessage(`Metric would be sent: ${JSON.stringify(metric)} (METRICS_QUEUE_URL isn't set)`);
+  } else {
+    try {
+      await new AWS.SQS().sendMessage({
+        MessageBody: JSON.stringify(metric),
+        QueueUrl: queueUrl,
+      }).promise();
+    } catch (err) {
+      await slackMessage(`${err}`);
+    }
+  }
+  return undefined;
 }
 
-async function sendMetric(webhook: any, githubEvent: string): Promise<any> {
-  // TEMP: so we can see the different event names sent by github
-  await slackMessage(`Github webhook received for ${githubEvent}`);
+async function sendBuildMetric(webhook: any): Promise<void> {
+  const { action } = webhook;
+  const created = webhook.workflow_run?.created_at;
+  const updated = webhook.workflow_run?.updated_at;
+  const repository = webhook.repository?.name;
+  const branch = webhook.workflow_run?.head_branch;
+  const workflow = webhook.workflow?.path;
+  const user = webhook.sender?.login;
+  const status = webhook.workflow_run?.status;
+  const conclusion = webhook.workflow_run?.conclusion;
+  const commitHash = webhook.workflow_run?.head_sha;
+  const url = webhook.workflow_run?.html_url;
+  await slackMessage(`${action}: ${repository}[${branch}]/${workflow}`);
 
-  if (githubEvent === 'workflow_run') {
-    const repository = webhook.repository?.name;
-    const branch = webhook.workflow_run?.head_branch;
-    const workflow = webhook.workflow?.path;
-    const user = webhook.sender?.login;
-    const { action } = webhook;
-    const status = webhook.workflow_run?.status;
-    const conclusion = webhook.workflow_run?.conclusion;
-    const created = webhook.workflow_run?.created_at;
-    const updated = webhook.workflow_run?.updated_at;
-    const commitHash = webhook.workflow_run?.head_sha;
-    const url = webhook.workflow_run?.html_url;
-    await slackMessage(`${action}: ${repository}[${branch}]/${workflow}`);
-
-    // await slackMe(`${action}: ${workflowName} ${repository}[${branch}]/${workflowPath}
-    // status:${status} conclusion:${conclusion}`);
-
-    // Workflow events we don't want to report on:
-    if (action !== 'completed') {
-      await slackMessage(`${action}: ${repository}[${branch}] ${workflow}`);
-      return undefined;
-    }
-    if (status !== 'completed') {
-      await slackMessage(`${status}: ${repository}[${branch}] ${workflow}`);
-      return undefined;
-    }
-    if (conclusion !== 'success') {
-      await slackMessage(`${conclusion}: ${repository}[${branch}] ${workflow}`);
-      return undefined;
-    }
-
-    // Cycle time
-    let cycleTime;
-    if (created && updated) {
-      // Start/end in seconds
-      const start = Math.floor(new Date(created).getTime() / 1000);
-      const end = Math.floor(new Date(updated).getTime() / 1000);
-      cycleTime = end - start;
-    }
-
-    const metric = {
-      metric: 'github.build',
-      date: updated || created || new Date().toISOString(),
-      repository,
-      workflow,
-      branch,
-      user,
-      status,
-      conclusion,
-      cycleTime,
-      commitHash,
-      url,
-    };
-
-    const queueUrl = process.env.METRICS_QUEUE_URL || '';
-    if (!queueUrl) {
-      console.log(JSON.stringify(metric));
-      return undefined;
-    }
-    await slackMessage(JSON.stringify(metric));
-    return new SQS().sendMessage({
-      QueueUrl: queueUrl,
-      MessageBody: JSON.stringify(metric),
-    }).promise();
-  } else {
-    await slackMessage(`Unhandled github webhook event: ${githubEvent}`)
+  // Workflow events we don't want to report on:
+  if (action !== 'completed' || status !== 'completed' || conclusion !== 'success') {
+    return undefined;
   }
+
+  // Cycle time
+  let cycleTime;
+  if (created && updated) {
+    // Start/end in seconds
+    const start = Math.floor(new Date(created).getTime() / 1000);
+    const end = Math.floor(new Date(updated).getTime() / 1000);
+    cycleTime = end - start;
+  }
+
+  const metric: Metric = {
+    metric: 'github.build', // PK
+    date: created, // SK
+    repository, // SK
+    branch, // SK
+    workflow, // SK
+    url,
+    created,
+    updated,
+    user,
+    status,
+    conclusion,
+    cycleTime,
+    commitHash,
+  };
+  await sendMetric(metric);
+  return undefined;
+}
+
+async function sendIssueMetric(webhook: any): Promise<void> {
+  const { action } = webhook;
+  const created = webhook.issue?.created_at;
+  const updated = webhook.issue?.updated_at;
+  const repository = webhook.repository?.name;
+  const title = webhook.issue?.title;
+  const user = webhook.sender?.login;
+  const state = webhook.issue?.state;
+  const closed = webhook.issue?.closed_at;
+  const labels: string[] = webhook.issue?.labels.map((label:any) => label.name);
+  const url = webhook.issue?.url;
+  await slackMessage(`${action}: ${repository}/${title}[${labels}]/${state}`);
+
+  const metric: Metric = {
+    metric: 'github.issue', // PK
+    date: created, // SK
+    url, // SK
+    created,
+    updated,
+    action,
+    repository,
+    title,
+    user,
+    state,
+    closed,
+    labels,
+  };
+  await sendMetric(metric);
+  return undefined;
 }
 
 /**
@@ -114,7 +129,10 @@ export async function handler(event: APIGatewayProxyEvent, context: Context):
       const digest = `sha256=${hmac.digest('hex')}`;
       if (signature === digest) {
         const message = JSON.parse(event.body || '');
-        await sendMetric(message, event.headers['X-GitHub-Event'] || 'unknown');
+        const githubEvent = event.headers['X-GitHub-Event'];
+        if (githubEvent === 'workflow_run') await sendBuildMetric(message);
+        else if (githubEvent === 'issues') await sendIssueMetric(message);
+        else await slackMessage(`Unhandled github webhook event: ${githubEvent}\n${JSON.stringify(message)}`);
       } else {
         await slackMessage(`[${signature === digest}] From Github: ${signature} | Computed: ${digest}`);
       }

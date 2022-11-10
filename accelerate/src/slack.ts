@@ -1,11 +1,8 @@
 import * as AWS from 'aws-sdk';
 
-const product = 'project'
-const component = 'accelerate';
-
 function identifier() {
   // Collect as much information as we have available about this component
-  const segments: (string|undefined)[] = [product, component, process.env.DEPLOYMENT, process.env.COMMIT_HASH];
+  const segments: (string|undefined)[] = [process.env.PRODUCT, process.env.COMPONENT, process.env.DEPLOYMENT, process.env.COMMIT_HASH];
   return segments.filter((segment) => segment).join('/');
 }
 
