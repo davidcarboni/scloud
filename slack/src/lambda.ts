@@ -5,10 +5,10 @@ import axios from 'axios';
 import * as fs from 'fs';
 
 // The version of the code we're running
-let commitHash = process.env.COMMIT_HASH || 'development';
 if (fs.existsSync('COMMIT_HASH')) {
-  commitHash = fs.readFileSync('COMMIT_HASH').toString();
+  process.env.COMMIT_HASH = fs.readFileSync('COMMIT_HASH').toString();
 }
+const commitHash = process.env.COMMIT_HASH || 'development';
 
 /**
  * Process the content of an SQS message
@@ -24,7 +24,7 @@ export async function processMessage(body: string) {
  * Lambda handler to process a batch of SQS messages
  */
 export async function handler(event: SQSEvent, context: Context): Promise<SQSBatchResponse> {
-  console.log(`Executing ${context.functionName} version: ${commitHash || 'development'}`);
+  console.log(`Executing ${context.functionName} version: ${commitHash}`);
 
   // Process incoming message(s)
   // and note any failures
@@ -37,6 +37,8 @@ export async function handler(event: SQSEvent, context: Context): Promise<SQSBat
       console.error(`Message error: ${err} [${record.messageId}]`);
     }
   });
+
+  // Should succeed because all exceptions are captured as failed message IDs
   await Promise.all(records);
 
   // Report on any failred items for retry

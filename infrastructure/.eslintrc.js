@@ -15,24 +15,35 @@ module.exports = {
     '@typescript-eslint',
   ],
   rules: {
-    "import/extensions": [
-       "error",
-       "ignorePackages",
-       {
-         "js": "never",
-         "jsx": "never",
-         "ts": "never",
-         "tsx": "never"
-       }
+    'import/extensions': [
+      'error',
+      'ignorePackages',
+      {
+        js: 'never',
+        jsx: 'never',
+        ts: 'never',
+        tsx: 'never',
+      },
     ],
-    "no-new": "off", // Because CDK likes to "new" things
+    'no-new': 'off', // Because CDK likes to 'new' things
+    'max-len': [
+      'error',
+      {
+        code: 150,
+        tabWidth: 2,
+        ignoreComments: true, // comments: 80
+        ignoreUrls: true,
+        ignoreStrings: true,
+        ignoreTemplateLiterals: true,
+      },
+    ],
     'no-console': 'off', // Because we want to print some things out about the stack.
   },
   settings: {
-    "import/resolver": {
-      "node": {
-        "extensions": [".js", ".jsx", ".ts", ".tsx"]
-      }
-    }
+    'import/resolver': {
+      node: {
+        extensions: ['.js', '.jsx', '.ts', '.tsx'],
+      },
+    },
   },
 };

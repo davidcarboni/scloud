@@ -11,7 +11,7 @@ import { CloudFrontTarget } from 'aws-cdk-lib/aws-route53-targets';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { RestApiOrigin, S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
 import {
-  AllowedMethods, CachePolicy, Distribution,
+  AllowedMethods, BehaviorOptions, CachePolicy, Distribution,
   OriginRequestCookieBehavior,
   OriginRequestHeaderBehavior,
   OriginRequestPolicy,
@@ -151,44 +151,50 @@ export function webApp(
  * NB us-east-1 is required for Cloudfront certificates:
  * https://docs.aws.amazon.com/cdk/api/v1/docs/aws-cloudfront-readme.html
  * @param construct Parent CDK construct (typically 'this')
- * @param name The name for this gateway and associated resources
- * @param zone DNS zone to use for this API
- * @param initialPass If the infrastructure is being built from scratch: true;
- * for incremental deployments: false
- * @param environment Environment variables for the backing Lambda function
- * @returns The static website bucket
+ * @param zone DNS zone to use for the distribution - default the zone name will be used as the DNS name.
+ * @param name The domain name for the distribution (and name for associated resources)
+ * @param defaultBehavior By default an s3 bucket will be created, but this parameter can override that default behavior (sic.)
+ * @param wwwRedirect whether a www. subdomain should be created to redirect to the main domain
+ * @returns The distribution and (if created) static bucket
  */
 export function cloudFront(
   construct: Construct,
-  name: string,
   zone: route53.IHostedZone,
+  name?: string,
+  defaultBehavior?: BehaviorOptions,
   wwwRedirect: boolean = true,
   // initialPass: boolean,
   // environment?: { [key: string]: string; },
   // apiDomain?: string,
 ): {
-  bucket: Bucket,
+  bucket?: Bucket,
   distribution: Distribution,
-  // lambda?: IFunction;
 } {
+  let behavior;
+  let bucket;
+  if (defaultBehavior) {
+    behavior = defaultBehavior;
+  } else {
   // Default: Cloudfont -> bucket on domain name
-  const bucket = new s3.Bucket(construct, `${name}`, {
-    removalPolicy: RemovalPolicy.DESTROY,
-    autoDeleteObjects: true,
-    publicReadAccess: true,
-  });
-  new CfnOutput(construct, `${name}Bucket`, { value: bucket.bucketName });
+    bucket = new s3.Bucket(construct, `${name}`, {
+      removalPolicy: RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+      publicReadAccess: true,
+    });
+    new CfnOutput(construct, `${name}Bucket`, { value: bucket.bucketName });
+    behavior = {
+      origin: new origins.S3Origin(bucket),
+      allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
+      viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+      compress: true,
+    };
+  }
 
-  const domainName = `${name}.${zone.zoneName}`;
+  const domainName = name ? `${name}.${zone.zoneName}` : zone.zoneName;
   const distribution = new cloudfront.Distribution(construct, `${name}Distribution`, {
     domainNames: [domainName],
     comment: name,
-    defaultBehavior: {
-      origin: new origins.S3Origin(bucket),
-      allowedMethods: AllowedMethods.ALLOW_ALL,
-      viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-      compress: true,
-    },
+    defaultBehavior: behavior,
     certificate: new acm.DnsValidatedCertificate(construct, `${name}Certificate`, {
       domainName,
       hostedZone: zone,
