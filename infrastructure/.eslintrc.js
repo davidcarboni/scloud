@@ -21,9 +21,7 @@ module.exports = {
       'ignorePackages',
       {
         js: 'never',
-        jsx: 'never',
         ts: 'never',
-        tsx: 'never',
       },
     ],
     quotes: [2, 'single', 'avoid-escape'],
@@ -38,8 +36,8 @@ module.exports = {
         ignoreTemplateLiterals: true,
       },
     ],
-    'no-new': 'off', // Because CDK likes to 'new' things
     'no-console': 'off', // Because we want to print some things out about the stack.
+    'no-new': 'off', // Because CDK likes to 'new' things
   },
   settings: {
     'import/parsers': {
@@ -50,7 +48,7 @@ module.exports = {
         alwaysTryTypes: true,
       },
       node: {
-        extensions: ['.js', '.jsx', '.ts', '.tsx'],
+        extensions: ['.js', '.ts'],
       },
     },
   },
