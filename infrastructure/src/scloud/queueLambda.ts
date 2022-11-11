@@ -11,11 +11,10 @@ export function queueLambda(
   construct: Construct,
   name: string,
   environment?: { [key: string]: string; },
-  memory: number = 128,
-  concurrency: number = 2,
-  timeout: Duration = Duration.seconds(600),
+  lambdaProps?: { timeout?: Duration, [key: string]: any; },
 ): { queue: Queue, lambda: Function, policy: ManagedPolicy; } {
   // NB Message timeout needs to match netween the queue and the lambda:
+  const timeout: Duration = lambdaProps?.timeout || Duration.seconds(60);
 
   // Incoming message queue
   const queue = new Queue(construct, `${name}Queue`, {
@@ -25,7 +24,7 @@ export function queueLambda(
   });
   // new CfnOutput(construct, `${name}QueueUrl`, { value: queue.queueUrl });
 
-  const lambda = zipFunction(construct, name, environment, memory, concurrency, timeout);
+  const lambda = zipFunction(construct, name, environment, { ...lambdaProps, timeout });
   lambda.addEventSource(new SqsEventSource(queue, { reportBatchItemFailures: true }));
 
   // Policy enabling message sending to the queue
@@ -53,10 +52,11 @@ export function queueLambdaContainer(
   name: string,
   initialPass: boolean,
   environment?: { [key: string]: string; },
+  lambdaProps?: { timeout?: Duration, [key: string]: any; },
 ): { repository: Repository, queue: Queue, lambda: Function, policy: ManagedPolicy; } {
   // Message timeout
   // This needs to match netween the queue and the lambda:
-  const timeout = Duration.seconds(60);
+  const timeout: Duration = lambdaProps?.timeout || Duration.seconds(60);
 
   // Incoming message queue
   const queue = new Queue(construct, `${name}Queue`, {
@@ -66,7 +66,7 @@ export function queueLambdaContainer(
   });
   // new CfnOutput(construct, `${name}QueueUrl`, { value: queue.queueUrl });
 
-  const { repository, lambda } = containerFunction(construct, initialPass, name, environment);
+  const { repository, lambda } = containerFunction(construct, initialPass, name, environment, { ...lambdaProps, timeout });
   lambda.addEventSource(new SqsEventSource(queue, { reportBatchItemFailures: true }));
 
   // Policy enabling message sending to the queue

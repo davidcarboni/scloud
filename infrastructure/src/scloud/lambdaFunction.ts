@@ -5,7 +5,7 @@ import {
   Code, DockerImageCode, DockerImageFunction, Function, IFunction, Runtime,
 } from 'aws-cdk-lib/aws-lambda';
 import { Repository } from 'aws-cdk-lib/aws-ecr';
-import { CfnOutput, Duration } from 'aws-cdk-lib';
+import { CfnOutput } from 'aws-cdk-lib';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import ecrRepository from './ecrRepository';
 
@@ -32,26 +32,24 @@ export function containerFunction(
   initialPass: boolean,
   name: string,
   environment?: { [key: string]: string; },
+  lambdaProps?: { [key: string]: any; },
   tagOrDigest?: string,
   ecr?: Repository,
-  memory: number = 512,
-  timeout: number = 60,
 ): { lambda: Function, repository: Repository; } {
   // Repository for function container image
   const repository = ecr || ecrRepository(construct, name);
 
   // Container
   const code = initialPass ? DockerImageCode.fromImageAsset(path.join(__dirname, './container')) : DockerImageCode.fromEcr(repository, {
-    tagOrDigest: tagOrDigest || 'latest',
+    tag: tagOrDigest || 'latest',
   });
 
   const lambda = new DockerImageFunction(construct, `${name}Function`, {
     code,
-    memorySize: memory,
-    timeout: Duration.seconds(timeout),
     logRetention: logs.RetentionDays.THREE_MONTHS,
     environment,
     description: name,
+    ...lambdaProps,
   });
   output(construct, name, lambda);
   return { lambda, repository };
@@ -68,21 +66,16 @@ export function zipFunction(
   construct: Construct,
   name: string,
   environment?: { [key: string]: string; },
-  memory: number = 256,
-  concurrency: number = 5,
-  timeout: Duration = Duration.seconds(600),
-  handler: string = 'src/lambda.handler',
+  lambdaProps?: { [key: string]: any; },
 ): Function {
   const lambda = new Function(construct, `${name}Function`, {
     runtime: Runtime.NODEJS_14_X,
+    handler: 'src/lambda.handler',
     code: Code.fromAsset(path.join(__dirname, './lambda')),
-    handler,
-    memorySize: memory,
-    reservedConcurrentExecutions: concurrency,
-    timeout,
     logRetention: logs.RetentionDays.THREE_MONTHS,
     environment,
     description: name,
+    ...lambdaProps,
   });
   output(construct, name, lambda);
   return lambda;
