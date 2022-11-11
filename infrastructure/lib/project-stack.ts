@@ -4,12 +4,12 @@ import { HostedZone, IHostedZone } from 'aws-cdk-lib/aws-route53';
 import { Queue } from 'aws-cdk-lib/aws-sqs';
 import { Construct } from 'constructs';
 import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
+import { Function } from 'aws-cdk-lib/aws-lambda';
 import { webApp } from '../src/scloud/cloudfront';
 import { CognitoConstructs, cognitoPool } from '../src/scloud/cognito';
 import { ghaResources } from '../src/scloud/ghaUser';
 import { queueLambda } from '../src/scloud/queueLambda';
 import { apiGateway } from '../src/scloud/apigateway';
-import { Function } from 'aws-cdk-lib/aws-lambda';
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
 
 const name = 'project';
