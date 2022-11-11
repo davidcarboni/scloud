@@ -1,6 +1,6 @@
 import { Duration, RemovalPolicy } from 'aws-cdk-lib';
 import { Repository } from 'aws-cdk-lib/aws-ecr';
-import { Function } from 'aws-cdk-lib/aws-lambda';
+import { DockerImageFunctionProps, Function, FunctionProps } from 'aws-cdk-lib/aws-lambda';
 import { Queue, QueueEncryption } from 'aws-cdk-lib/aws-sqs';
 import { Construct } from 'constructs';
 import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
@@ -11,7 +11,7 @@ export function queueLambda(
   construct: Construct,
   name: string,
   environment?: { [key: string]: string; },
-  lambdaProps?: { timeout?: Duration, [key: string]: any; },
+  lambdaProps?: Partial<FunctionProps>,
 ): { queue: Queue, lambda: Function, policy: ManagedPolicy; } {
   // NB Message timeout needs to match netween the queue and the lambda:
   const timeout: Duration = lambdaProps?.timeout || Duration.seconds(60);
@@ -52,7 +52,7 @@ export function queueLambdaContainer(
   name: string,
   initialPass: boolean,
   environment?: { [key: string]: string; },
-  lambdaProps?: { timeout?: Duration, [key: string]: any; },
+  lambdaProps?: Partial<DockerImageFunctionProps>,
 ): { repository: Repository, queue: Queue, lambda: Function, policy: ManagedPolicy; } {
   // Message timeout
   // This needs to match netween the queue and the lambda:

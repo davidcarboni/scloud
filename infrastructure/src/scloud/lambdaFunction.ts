@@ -2,7 +2,7 @@ import * as logs from 'aws-cdk-lib/aws-logs';
 import { Construct } from 'constructs';
 import * as path from 'path';
 import {
-  Code, DockerImageCode, DockerImageFunction, Function, IFunction, Runtime,
+  Code, DockerImageCode, DockerImageFunction, DockerImageFunctionProps, Function, FunctionProps, IFunction, Runtime,
 } from 'aws-cdk-lib/aws-lambda';
 import { Repository } from 'aws-cdk-lib/aws-ecr';
 import { CfnOutput } from 'aws-cdk-lib';
@@ -32,7 +32,7 @@ export function containerFunction(
   initialPass: boolean,
   name: string,
   environment?: { [key: string]: string; },
-  lambdaProps?: { [key: string]: any; },
+  lambdaProps?: Partial<DockerImageFunctionProps>,
   tagOrDigest?: string,
   ecr?: Repository,
 ): { lambda: Function, repository: Repository; } {
@@ -66,7 +66,7 @@ export function zipFunction(
   construct: Construct,
   name: string,
   environment?: { [key: string]: string; },
-  lambdaProps?: { [key: string]: any; },
+  lambdaProps?: Partial<FunctionProps>,
 ): Function {
   const lambda = new Function(construct, `${name}Function`, {
     runtime: Runtime.NODEJS_14_X,
