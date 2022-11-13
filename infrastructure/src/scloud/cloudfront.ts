@@ -68,7 +68,7 @@ export function webApp(
   const domainName = domain || `${zone.zoneName}`;
 
   // Web app handler
-  const lambda = zipFunction(construct, name, environment, memory);
+  const lambda = zipFunction(construct, name, environment, { memorySize: memory });
 
   // const headerFilter = edgeFunction(construct, 'headerFilter');
 
