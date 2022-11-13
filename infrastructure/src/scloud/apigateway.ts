@@ -30,7 +30,7 @@ export function apiGateway(
 ): { lambda: Function, api: LambdaRestApi; } {
   const domainName = apiDomainName || `api.${zone.zoneName}`;
 
-  const lambda = zipFunction(construct, name, environment, memory);
+  const lambda = zipFunction(construct, name, environment, { memorySize: memory });
 
   const api = new apigateway.LambdaRestApi(construct, `${name}ApiGateway`, {
     handler: lambda,
