@@ -33,7 +33,7 @@
   "dependencies": {
     "@octokit/rest": "*",
     "aws-cdk-lib": "*",
-    "aws-lambda": "^1.0.7",
+    "aws-lambda": "*",
     "constructs": "*",
     "lodash": "*",
     "source-map-support": "*",
