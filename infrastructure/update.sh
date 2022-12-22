@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -eu
 
-# Secrets
-for i in $(ls ./secrets/*.sh); do
+# Secrets, including selected AWS profile:
+for i in $(ls secrets/*.sh); do
   echo " * $i"
   source $i
 done
@@ -15,6 +15,9 @@ else
 fi
 
 echo "Starting infrastructure build: $(date)"
+# cdk bootstrap
+
+# Lint
 npm run lint
 
 # Show differences
@@ -27,7 +30,7 @@ case $yn in
 		exit 0;;
 esac
 
-cdk deploy --outputs-file ./secrets/cdk-outputs.json
+cdk deploy --outputs-file secrets/cdk-outputs.json
 
 # Update secrets
 echo "Setting Github secrets"
