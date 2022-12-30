@@ -7,7 +7,7 @@ import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
 import { Function } from 'aws-cdk-lib/aws-lambda';
 import { webApp } from '../src/scloud/cloudfront';
 import { CognitoConstructs, cognitoPool } from '../src/scloud/cognito';
-import { ghaResources } from '../src/scloud/ghaUser';
+import { ghaResources, ghaUser } from '../src/scloud/ghaUser';
 import { queueLambda } from '../src/scloud/queueLambda';
 import { apiGateway } from '../src/scloud/apigateway';
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
@@ -32,6 +32,8 @@ export default class SalondcStack extends cdk.Stack {
     const cognito = this.cognito(zone);
 
     this.web(zone, cognito, slackQueue);
+
+    ghaUser(this);
   }
 
   /**
