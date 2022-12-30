@@ -20,17 +20,18 @@ function env(variableName: string): string {
   if (value) return value;
   throw new Error(`Missing environment variable: ${variableName}`);
 }
-
-export default class SalondcStack extends cdk.Stack {
+export default class ProjectStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
-
-    const slackQueue = this.slack();
 
     const zone = HostedZone.fromHostedZoneAttributes(this, 'zone', {
       zoneName: domainName,
       hostedZoneId: '...',
     });
+
+    const slackQueue = this.slack();
+    const metricsQueue = this.metrics(slackQueue);
+    this.accelerate(zone, metricsQueue, slackQueue);
 
     const cognito = this.cognito(zone);
 
