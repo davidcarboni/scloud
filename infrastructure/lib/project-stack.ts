@@ -57,6 +57,7 @@ export default class SalondcStack extends cdk.Stack {
     const { lambda, queue } = queueLambda(this, 'slack', {
       SLACK_WEBHOOK: env('SLACK_WEBHOOK'),
     });
+
     ghaResources.lambdas.push(lambda);
     return queue;
   }
@@ -93,6 +94,7 @@ export default class SalondcStack extends cdk.Stack {
     table.grantWriteData(lambda);
     slackQueue.grantSendMessages(lambda);
 
+    ghaResources.lambdas.push(lambda);
     return queue;
   }
 
@@ -108,7 +110,8 @@ export default class SalondcStack extends cdk.Stack {
     metricsQueue.grantSendMessages(lambda);
     slackQueue.grantSendMessages(lambda);
     ghaResources.lambdas.push(lambda);
-    // repositories.push(repository);
+
+    ghaResources.lambdas.push(lambda);
     return lambda;
   }
 
@@ -130,7 +133,7 @@ export default class SalondcStack extends cdk.Stack {
 
   web(zone: IHostedZone, cognito: CognitoConstructs, slackQueue: Queue) {
     const {
-      lambda, // api, bucket, distribution,
+      lambda, bucket, // api, distribution,
     } = webApp(this, 'web', zone, {
       PRODUCT: name,
       COMPONENT: 'web',
@@ -139,5 +142,8 @@ export default class SalondcStack extends cdk.Stack {
     });
 
     slackQueue.grantSendMessages(lambda);
+
+    ghaResources.lambdas.push(lambda);
+    ghaResources.buckets.push(bucket);
   }
 }
