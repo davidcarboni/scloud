@@ -1,0 +1,58 @@
+name: npm upgrade
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      # Build when there are changes to this workflow file
+      - '.github/workflows/npm-upgrade.yml'
+  schedule:
+    # A weekly build to pick up updates and security patches for libraries
+    - cron: "0 12 * * 2"
+env:
+  userName: Github actions
+  userEmail: gha@pingmyhouse.co.uk
+
+jobs:
+  dependency-upgrades:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: git setup
+      run: |
+        git config --global user.name "${userName}"
+        git config --global user.email "${userEmail}"
+
+    - name: npm upgrades
+      run: |
+        upgrade () {
+          cd ${GITHUB_WORKSPACE}/$1
+          echo " - Upgrading ${PWD##*/}"
+          npm upgrade
+          git commit -m "Automated upgrade" package-lock.json || true # Ignore error if no change
+        }
+
+        upgrade accelerate
+        upgrade infrastructure
+        upgrade integration-test
+        upgrade metrics
+        upgrade slack
+        upgrade static
+        upgrade web
+
+    - name: git push
+      run: |
+        git pull --rebase # just in case anything else has been pushed
+        git push
+
+    - name: Notify Slack
+      if: failure()
+      uses: rtCamp/action-slack-notify@v2
+      env:
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        SLACK_USERNAME: Pingmyhouse build
+        SLACK_COLOR: ${{ job.status }}
+        SLACK_ICON_EMOJI: ":github_octocat:"
+        SLACK_CHANNEL: build
