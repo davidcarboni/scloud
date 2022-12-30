@@ -27,26 +27,16 @@ export default class SalondcStack extends cdk.Stack {
 
     const slackQueue = this.slack();
 
-    const zone = HostedZone.fromHostedZoneId(this, 'zone', '...');
+    const zone = HostedZone.fromHostedZoneAttributes(this, 'zone', {
+      zoneName: domainName,
+      hostedZoneId: '...',
+    });
 
     const cognito = this.cognito(zone);
 
     this.web(zone, cognito, slackQueue);
 
     ghaUser(this);
-  }
-
-  /**
-   * DNS configuration for the app.
-   */
-  zone(): IHostedZone {
-    // We look up the zones, which are not part of the stack.
-    // This avoids us having to update the registrar because
-    // name servers would change every time this is deleted/recreated
-    return HostedZone.fromHostedZoneAttributes(this, 'zoneCom', {
-      zoneName: domainName,
-      hostedZoneId: 'Z...............',
-    });
   }
 
   /**
