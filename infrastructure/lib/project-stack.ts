@@ -109,7 +109,6 @@ export default class SalondcStack extends cdk.Stack {
     const { lambda } = apiGateway(this, 'accelerate', zone, environment, `accelerate.${zone.zoneName}`);
     metricsQueue.grantSendMessages(lambda);
     slackQueue.grantSendMessages(lambda);
-    ghaResources.lambdas.push(lambda);
 
     ghaResources.lambdas.push(lambda);
     return lambda;
