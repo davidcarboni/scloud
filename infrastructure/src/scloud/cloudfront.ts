@@ -62,6 +62,7 @@ export function webApp(
   zone: route53.IHostedZone,
   environment?: { [key: string]: string; },
   domain?: string,
+  junkPaths?: string[] = ['*.xml', '*.php', '*.aspx'],
   memory: number = 2048,
   www: boolean = true,
 ): { lambda: Function, api: LambdaRestApi, bucket: Bucket, distribution: Distribution; } {
@@ -132,6 +133,15 @@ export function webApp(
     certificate,
   });
   output(construct, 'DistributionId', name, distribution.distributionId);
+
+  // Handle junk requests by routing to the static bucket
+  // so they don't invoke Lambda
+  const junkOrigin = new S3Origin(bucket);
+  const junkOptions = {
+    allowedMethods: AllowedMethods.ALLOW_ALL,
+    viewerProtocolPolicy: ViewerProtocolPolicy.ALLOW_ALL,
+  };
+  junkPaths.forEach((path) => distribution.addBehavior(path, junkOrigin, junkOptions));
 
   new route53.ARecord(construct, `${name}ARecord`, {
     recordName: domainName,
