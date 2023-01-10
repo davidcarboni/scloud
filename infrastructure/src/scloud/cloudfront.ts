@@ -62,7 +62,7 @@ export function webApp(
   zone: route53.IHostedZone,
   environment?: { [key: string]: string; },
   domain?: string,
-  junkPaths?: string[] = ['*.xml', '*.php', '*.aspx'],
+  junkPaths: string[] = ['*.xml', '*.php', '*.aspx'],
   memory: number = 2048,
   www: boolean = true,
 ): { lambda: Function, api: LambdaRestApi, bucket: Bucket, distribution: Distribution; } {
