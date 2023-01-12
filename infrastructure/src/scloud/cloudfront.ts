@@ -62,9 +62,9 @@ export function webApp(
   zone: route53.IHostedZone,
   environment?: { [key: string]: string; },
   domain?: string,
-  junkPaths: string[] = ['*.xml', '*.php', '*.aspx'],
   memory: number = 2048,
   www: boolean = true,
+  junkPaths: string[] = ['*.xml', '*.php', '*.aspx'],
 ): { lambda: Function, api: LambdaRestApi, bucket: Bucket, distribution: Distribution; } {
   const domainName = domain || `${zone.zoneName}`;
 
@@ -128,6 +128,7 @@ export function webApp(
     },
     additionalBehaviors: {
       '/public/*': staticBehavior,
+      '/favicon.ico': staticBehavior, // Chrome seems to request this by default
       // inxex.html direct from s3 for latency on / route? // '/': staticBehaviour'
     },
     certificate,
@@ -136,12 +137,11 @@ export function webApp(
 
   // Handle junk requests by routing to the static bucket
   // so they don't invoke Lambda
-  const junkOrigin = new S3Origin(bucket);
   const junkOptions = {
     allowedMethods: AllowedMethods.ALLOW_ALL,
     viewerProtocolPolicy: ViewerProtocolPolicy.ALLOW_ALL,
   };
-  junkPaths.forEach((path) => distribution.addBehavior(path, junkOrigin, junkOptions));
+  junkPaths.forEach((path) => distribution.addBehavior(path, new S3Origin(bucket), junkOptions));
 
   new route53.ARecord(construct, `${name}ARecord`, {
     recordName: domainName,
