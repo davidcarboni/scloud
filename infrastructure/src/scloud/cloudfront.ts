@@ -64,7 +64,7 @@ export function webApp(
   domain?: string,
   memory: number = 2048,
   www: boolean = true,
-  junkPaths: string[] = ['*.xml', '*.php', '*.aspx', '*.env'],
+  junkPaths: string[] = ['*/wp-includes/*', '*.xml', '*.php', '*.aspx', '*.env'],
 ): { lambda: Function, api: LambdaRestApi, bucket: Bucket, distribution: Distribution; } {
   const domainName = domain || `${zone.zoneName}`;
 
