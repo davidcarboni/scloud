@@ -137,8 +137,9 @@ export async function findItemsIndex(
   partitionKey: Key,
   sortKey?: Key,
 ) : Promise<{ [key: string]: any; }[]> {
-  const params: any = {
+  const params: DocumentClient.QueryInput = {
     TableName: tableName,
+    IndexName: indexName,
     KeyConditionExpression: sortKey ? `#${partitionKey.name} = :pk AND begins_with ( #${sortKey.name}, :sk )` : `#${partitionKey.name} = :pk`,
     ExpressionAttributeValues: {
       ':pk': partitionKey.value,
@@ -147,12 +148,14 @@ export async function findItemsIndex(
   };
   const attributeNames = [partitionKey.name];
   if (sortKey) {
+    params.ExpressionAttributeValues = params.ExpressionAttributeValues || {}; // Some Typrscript issue?
     params.ExpressionAttributeValues[':sk'] = sortKey.value;
     attributeNames.push(sortKey.name);
   }
 
   // Expression attribute names - this avoids clasking with DDB reserved words
   attributeNames.forEach((attributeName) => {
+    params.ExpressionAttributeNames = params.ExpressionAttributeNames || {}; // Some Typrscript issue?
     params.ExpressionAttributeNames[`#${attributeName}`] = `${attributeName}`;
   });
 
