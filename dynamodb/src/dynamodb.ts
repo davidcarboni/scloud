@@ -126,6 +126,49 @@ export async function findItems(
 }
 
 /**
+ * https://stackoverflow.com/questions/44589967/how-to-fetch-scan-all-items-from-aws-dynamodb-using-node-js
+ * @param tableName DynamoDB table name
+ * @param indexName DynamoDB table index
+ * @returns All the items that match the partition key and begin with the sort key
+ */
+export async function findItemsIndex(
+  tableName: string,
+  indexName: string,
+  partitionKey: Key,
+  sortKey?: Key,
+) : Promise<{ [key: string]: any; }[]> {
+  const params: any = {
+    TableName: tableName,
+    KeyConditionExpression: sortKey ? `#${partitionKey.name} = :pk AND begins_with ( #${sortKey.name}, :sk )` : `#${partitionKey.name} = :pk`,
+    ExpressionAttributeValues: {
+      ':pk': partitionKey.value,
+    },
+    ExpressionAttributeNames: {}, // Computed below
+  };
+  const attributeNames = [partitionKey.name];
+  if (sortKey) {
+    params.ExpressionAttributeValues[':sk'] = sortKey.value;
+    attributeNames.push(sortKey.name);
+  }
+
+  // Expression attribute names - this avoids clasking with DDB reserved words
+  attributeNames.forEach((attributeName) => {
+    params.ExpressionAttributeNames[`#${attributeName}`] = `${attributeName}`;
+  });
+
+  const result: any[] = [];
+  let items;
+  do {
+    // eslint-disable-next-line no-await-in-loop
+    items = await ddb.query(params).promise();
+    if (items.Items) items.Items.forEach((item) => result.push(item));
+    params.ExclusiveStartKey = items.LastEvaluatedKey;
+  } while (typeof items.LastEvaluatedKey !== 'undefined');
+
+  return result;
+}
+
+/**
  * Selects a range of items between two sort keys
  * @param tableName DynamoDB table name
  * @param partitionKey The partition key to select
