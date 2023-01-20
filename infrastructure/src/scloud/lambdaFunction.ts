@@ -62,16 +62,42 @@ export function containerFunction(
  * @param environment Environment variables for the Lambda function
  * @returns The lambda, if created, and associated ECR repository
  */
-export function zipFunction(
+export function zipFunctionTypescript(
   construct: Construct,
   name: string,
   environment?: { [key: string]: string; },
   lambdaProps?: Partial<FunctionProps>,
 ): Function {
   const lambda = new Function(construct, `${name}Function`, {
-    runtime: Runtime.NODEJS_14_X,
+    runtime: Runtime.NODEJS_16_X,
     handler: 'src/lambda.handler',
-    code: Code.fromAsset(path.join(__dirname, './lambda')),
+    code: Code.fromAsset(path.join(__dirname, './lambda/nodejs')),
+    logRetention: logs.RetentionDays.THREE_MONTHS,
+    environment,
+    description: name,
+    ...lambdaProps,
+  });
+  output(construct, name, lambda);
+  return lambda;
+}
+
+/**
+ * A Lambda function packaged as a zip file.
+ * @param construct Parent CDK construct (typically 'this')
+ * @param name The name for this function
+ * @param environment Environment variables for the Lambda function
+ * @returns The lambda, if created, and associated ECR repository
+ */
+export function zipFunctionPython(
+  construct: Construct,
+  name: string,
+  environment?: { [key: string]: string; },
+  lambdaProps?: Partial<FunctionProps>,
+): Function {
+  const lambda = new Function(construct, `${name}Function`, {
+    runtime: Runtime.PYTHON_3_9,
+    handler: 'src/lambda.handler',
+    code: Code.fromAsset(path.join(__dirname, './lambda/python')),
     logRetention: logs.RetentionDays.THREE_MONTHS,
     environment,
     description: name,
