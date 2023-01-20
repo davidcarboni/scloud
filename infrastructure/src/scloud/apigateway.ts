@@ -7,7 +7,7 @@ import { LambdaRestApi } from 'aws-cdk-lib/aws-apigateway';
 import { DnsValidatedCertificate } from 'aws-cdk-lib/aws-certificatemanager';
 import { RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { ApiGateway } from 'aws-cdk-lib/aws-route53-targets';
-import { containerFunction, zipFunction } from './lambdaFunction';
+import { containerFunction, zipFunctionTypescript } from './lambdaFunction';
 
 /**
  * An API gateway backed by a Lambda function.
@@ -30,7 +30,7 @@ export function apiGateway(
 ): { lambda: Function, api: LambdaRestApi; } {
   const domainName = apiDomainName || `api.${zone.zoneName}`;
 
-  const lambda = zipFunction(construct, name, environment, { memorySize: memory });
+  const lambda = zipFunctionTypescript(construct, name, environment, { memorySize: memory });
 
   const api = new apigateway.LambdaRestApi(construct, `${name}ApiGateway`, {
     handler: lambda,
