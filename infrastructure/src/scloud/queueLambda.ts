@@ -5,7 +5,7 @@ import { Queue, QueueEncryption } from 'aws-cdk-lib/aws-sqs';
 import { Construct } from 'constructs';
 import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
 import { Effect, ManagedPolicy, PolicyStatement } from 'aws-cdk-lib/aws-iam';
-import { containerFunction, zipFunction } from './lambdaFunction';
+import { containerFunction, zipFunctionTypescript } from './lambdaFunction';
 
 export function queueLambda(
   construct: Construct,
@@ -24,7 +24,7 @@ export function queueLambda(
   });
   // new CfnOutput(construct, `${name}QueueUrl`, { value: queue.queueUrl });
 
-  const lambda = zipFunction(construct, name, environment, { ...lambdaProps, timeout });
+  const lambda = zipFunctionTypescript(construct, name, environment, { ...lambdaProps, timeout });
   lambda.addEventSource(new SqsEventSource(queue, { reportBatchItemFailures: true }));
 
   // Policy enabling message sending to the queue
@@ -52,6 +52,7 @@ export function queueLambdaContainer(
   name: string,
   initialPass: boolean,
   environment?: { [key: string]: string; },
+  ecr?: Repository,
   lambdaProps?: Partial<DockerImageFunctionProps>,
 ): { repository: Repository, queue: Queue, lambda: Function, policy: ManagedPolicy; } {
   // Message timeout
@@ -66,7 +67,7 @@ export function queueLambdaContainer(
   });
   // new CfnOutput(construct, `${name}QueueUrl`, { value: queue.queueUrl });
 
-  const { repository, lambda } = containerFunction(construct, initialPass, name, environment, { ...lambdaProps, timeout });
+  const { repository, lambda } = containerFunction(construct, initialPass, name, environment, { ...lambdaProps, timeout }, 'latest', ecr);
   lambda.addEventSource(new SqsEventSource(queue, { reportBatchItemFailures: true }));
 
   // Policy enabling message sending to the queue

@@ -21,7 +21,7 @@ import {
 import { LambdaRestApi } from 'aws-cdk-lib/aws-apigateway';
 import { Function } from 'aws-cdk-lib/aws-lambda';
 import _ from 'lodash';
-import { zipFunction } from './lambdaFunction';
+import { zipFunctionTypescript } from './lambdaFunction';
 
 function output(
   construct: Construct,
@@ -69,7 +69,7 @@ export function webApp(
   const domainName = domain || `${zone.zoneName}`;
 
   // Web app handler
-  const lambda = zipFunction(construct, name, environment, { memorySize: memory });
+  const lambda = zipFunctionTypescript(construct, name, environment, { memorySize: memory });
 
   // const headerFilter = edgeFunction(construct, 'headerFilter');
 
