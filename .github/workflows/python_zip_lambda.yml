@@ -1,0 +1,70 @@
+name: python_zip_lambda
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+    # Build when there are changes in the directory that holds the component,
+    # or when this workflow file is changed
+    - 'python_zip_lambda/**'
+    - '.github/workflows/python_zip_lambda.yml'
+  schedule:
+    # A weekly build to pick up any security updates
+    # A weekday at mid-day - when someone is likely to be working
+    - cron: "0 12 * * 3"
+  workflow_dispatch:
+    inputs:
+      update_component:
+        description: 'Whether the workflow should attempt to update the lambda function'
+        required: true
+        default: 'yes'
+
+jobs:
+  deploy:
+    name: Lambda
+    runs-on: ubuntu-latest
+    env:
+      component: python_zip_lambda
+      lambdaName: ${{ secrets.LAMBDA_NAME }}
+
+    steps:
+
+    - uses: actions/checkout@v2
+
+    - uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: eu-west-2
+
+    # Lint
+
+    - name: Package
+      working-directory: ./${{ env.component }}
+      run: |
+        cp requirements.txt dist/
+        cd dist
+        pip3 install -r requirements.txt -t .
+        echo $(git rev-parse HEAD) > COMMIT_HASH
+        zip -r function.zip .
+
+    - name: Update Lambda
+      if: ${{ github.event.inputs.update_component != 'no' }}
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        TAG: latest
+      working-directory: ./${{ env.component }}
+      run: |
+        aws lambda update-function-code --function-name=${{ env.lambdaName }} --zip-file fileb://dist/function.zip
+
+    - name: Notify Slack
+      if: failure()
+      uses: rtCamp/action-slack-notify@v2
+      env:
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        SLACK_USERNAME: ${{ env.component }} build
+        SLACK_COLOR: ${{ job.status }}
+        SLACK_ICON_EMOJI: ":github_octocat:"
+        SLACK_FOOTER: Github Actions
+        SLACK_CHANNEL: general
