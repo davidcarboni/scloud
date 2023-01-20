@@ -23,6 +23,8 @@ import { Function } from 'aws-cdk-lib/aws-lambda';
 import _ from 'lodash';
 import { zipFunctionTypescript } from './lambdaFunction';
 
+export const junkPaths: string[] = ['*/wp-includes/*', '*.xml', '*.php', '*.aspx', '*.env', '/.git*', '/.remote*', '/.production*', '/.local*'];
+
 function output(
   construct: Construct,
   type: string,
@@ -64,7 +66,6 @@ export function webApp(
   domain?: string,
   memory: number = 2048,
   www: boolean = true,
-  junkPaths: string[] = ['*/wp-includes/*', '*.xml', '*.php', '*.aspx', '*.env'],
 ): { lambda: Function, api: LambdaRestApi, bucket: Bucket, distribution: Distribution; } {
   const domainName = domain || `${zone.zoneName}`;
 
