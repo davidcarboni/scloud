@@ -103,3 +103,10 @@ function readSecrets(): { [key: string]: string; } {
     throw err;
   }
 })();
+
+// octokit.rest.actions.createRepoVariable({
+//   owner,
+//   repo,
+//   name,
+//   value,
+// });
