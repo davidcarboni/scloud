@@ -23,13 +23,12 @@ export function cloudfrontApiGateway(
   environment?: { [key: string]: string; },
   domain?: string,
   memory: number = 256,
-  routes: string[] = ['/'],
-): { lambda: Function, distribution: Distribution; } {
+  routes: {[path:string]:Function|undefined} = { '/': undefined },
+): { lambdas: {[path:string]:Function}, distribution: Distribution; } {
   const domainName = domain || `${zone.zoneName}`;
 
-  const lambda = zipFunctionTypescript(construct, name, environment, { memorySize: memory });
-
   // Cloudfromt distribution
+  // TODO add a secret so only Cludfront can access APIg
   const distribution = new Distribution(construct, `${name}Distribution`, {
     domainNames: [domainName],
     comment: domainName,
@@ -56,12 +55,7 @@ export function cloudfrontApiGateway(
     }),
   });
 
-  // Handle API requests
-  const apiOrigin = new RestApiOrigin(new apigateway.LambdaRestApi(construct, `${name}Api`, {
-    handler: lambda,
-    proxy: true,
-    description: name,
-  }));
+  // Handle API paths
   const apiOptions = {
     allowedMethods: AllowedMethods.ALLOW_ALL,
     viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
@@ -75,7 +69,20 @@ export function cloudfrontApiGateway(
       queryStringBehavior: OriginRequestQueryStringBehavior.all(),
     }),
   };
-  routes.forEach((path) => distribution.addBehavior(path, apiOrigin, apiOptions));
+  const lambdas :{[path:string]:Function} = {};
+  Object.keys(routes).forEach((path) => {
+    const lambda = routes[path] || zipFunctionTypescript(construct, name, environment, { memorySize: memory });
+    distribution.addBehavior(
+      path,
+      new RestApiOrigin(new apigateway.LambdaRestApi(construct, `${name}${path}`, {
+        handler: lambda,
+        proxy: true,
+        description: name,
+      })),
+      apiOptions,
+    );
+    lambdas[path] = lambda;
+  });
 
   new route53.ARecord(construct, `${name}ARecord`, {
     recordName: domainName,
@@ -83,7 +90,7 @@ export function cloudfrontApiGateway(
     zone,
   });
 
-  return { lambda, distribution };
+  return { lambdas, distribution };
 }
 
 /**
