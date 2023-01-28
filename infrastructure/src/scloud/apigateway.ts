@@ -16,6 +16,20 @@ import { RemovalPolicy } from 'aws-cdk-lib';
 import { RestApiOrigin, S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
 import { containerFunction, zipFunctionTypescript } from './lambdaFunction';
 
+/**
+ * An API gateway behind a Cloudfront distribution.
+ * By default a single Lambda is generated that responds to the / route.
+ * Alternatively you can pass a mapping of routes to functions
+ * (or map to undedfined and functions will be generated for you)
+ * @param construct CDK consrtruct
+ * @param name Name for this set of resources
+ * @param zone
+ * @param environment
+ * @param domain
+ * @param memory
+ * @param routes
+ * @returns
+ */
 export function cloudfrontApiGateway(
   construct: Construct,
   name: string,
