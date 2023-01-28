@@ -23,7 +23,7 @@ import { Function } from 'aws-cdk-lib/aws-lambda';
 import _ from 'lodash';
 import { zipFunctionTypescript } from './lambdaFunction';
 
-export const junkPaths: string[] = ['/wp-includes/*', '*.xml', '*.php', '*.aspx', '*.env', '/.git*', '/.remote*', '/.production*', '/.local*'];
+export const junkPaths: string[] = ['/wp-includes/*', '/wp-admin*', '*.xml', '*.php', '*.aspx', '*.env', '/.git*', '/.remote*', '/.production*', '/.local*'];
 
 function output(
   construct: Construct,
