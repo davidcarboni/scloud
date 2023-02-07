@@ -8,10 +8,10 @@ for i in $(ls secrets/*.sh); do
 done
 
 # AWS profile
-if [ -z "$AWS_PROFILE" ]; then
-  echo "Using default AWS profile"
-else
+if [ -f 'secrets/aws.sh' ]; then
   echo "Using AWS profile: $AWS_PROFILE"
+else
+  echo "Using default AWS profile"
 fi
 
 echo "Starting infrastructure build: $(date)"
