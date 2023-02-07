@@ -31,7 +31,7 @@ function addToPolicy(stack: Stack, name: string, resources: string[], actions: s
 /**
  * A user for Gihud Actions CI/CD.
  */
-export function ghaUser(stack: Stack): CfnAccessKey | undefined {
+export function ghaUser(stack: Stack): {user: User, accessKey: CfnAccessKey | undefined} {
   // A user with the policy attached
   user = new User(stack, 'ghaUser', { userName: `gha-${stack.stackName}` });
   policy = new ManagedPolicy(stack, `gha-${stack.stackName}-policy`, {
@@ -107,5 +107,5 @@ export function ghaUser(stack: Stack): CfnAccessKey | undefined {
     'cloudfront:CreateInvalidation',
   ]);
 
-  return accessKey;
+  return { user, accessKey };
 }
