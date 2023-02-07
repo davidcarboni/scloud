@@ -25,10 +25,10 @@ module.exports = {
       },
     ],
     quotes: [2, 'single', 'avoid-escape'],
-    'max-len': [
+    'max-len': [ // Allow a longer line length
       'error',
       {
-        code: 150,
+        code: 180,
         tabWidth: 2,
         ignoreComments: true, // comments: 80
         ignoreUrls: true,
@@ -36,8 +36,8 @@ module.exports = {
         ignoreTemplateLiterals: true,
       },
     ],
-    'no-console': 'off', // Because we want to print some things out about the stack.
     'no-new': 'off', // Because CDK likes to 'new' things
+    'no-console': 'off', // Because we want to print some things out about the stack.
   },
   settings: {
     'import/parsers': {
@@ -52,19 +52,5 @@ module.exports = {
       },
     },
   },
-  overrides: [
-    {
-      // We lint unit tests differently.
-      files: ['*.spec.ts'],
-      rules: {
-
-        // Avoid mocha/chai "Expected an assignment or function call and instead saw an expression"
-        'no-unused-expressions': 'off',
-
-        // Avoid "* should be listed in the project's dependencies, not devDependencies"
-        'import/no-extraneous-dependencies': 'off',
-      },
-    },
-  ],
-  ignorePatterns: ['node_modules', 'dist'],
+  root: true,
 };
