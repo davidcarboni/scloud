@@ -2,7 +2,6 @@ module.exports = {
   env: {
     es2021: true,
     node: true,
-    mocha: true,
   },
   extends: [
     'airbnb-base',
@@ -40,17 +39,10 @@ module.exports = {
     'no-console': 'off', // Because we want to print some things out about the stack.
   },
   settings: {
-    'import/parsers': {
-      '@typescript-eslint/parser': ['.ts', '.js'],
-    },
     'import/resolver': {
-      typescript: {
-        alwaysTryTypes: true,
-      },
       node: {
         extensions: ['.js', '.ts'],
       },
     },
   },
-  root: true,
 };

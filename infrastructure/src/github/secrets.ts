@@ -3,13 +3,15 @@ import * as gh from './repo';
 
 // Any Cludformation outputs that don't need to be added as GHA secrets:
 const skipList = [
-  'DevelopmentUserPool',
-  'github',
+  'queueArn',
+  'metricsSenderPolicyArn',
+  'githubWebhook',
 ];
 
 // Any secrets to be added from environment variables passed to this script:
 const shellEnvSecrets: string[] = [
-  // 'SLACK_WEBHOOK',
+  'ACTIVECAMPAIGN_URL',
+  'ACTIVECAMPAIGN_KEY',
 ];
 
 // Values from /secrets/github.sh
@@ -21,7 +23,7 @@ let repoSecrets: string[];
 function readSecrets(): { [key: string]: string; } {
   const secrets: { [key: string]: string; } = {};
 
-  const cdkOuputs = './secrets/cdk-outputs.json';
+  const cdkOuputs = 'secrets/cdk-outputs.json';
   // const awsConfig = '~/.aws/credentials';
   if (existsSync(cdkOuputs)) {
     const json = readFileSync(cdkOuputs, 'utf8').trim();
@@ -97,16 +99,9 @@ function readSecrets(): { [key: string]: string; } {
     // TODO: Delete "leftover" secrets?
 
     // Useful for debugging secret values being passed to Github:
-    // writeFileSync('./secrets/gha_secrets.txt', JSON.stringify(secrets));
+    // writeFileSync('secrets/gha_secrets.txt', JSON.stringify(secrets));
   } catch (err) {
     console.error(err);
     throw err;
   }
 })();
-
-// octokit.rest.actions.createRepoVariable({
-//   owner,
-//   repo,
-//   name,
-//   value,
-// });
