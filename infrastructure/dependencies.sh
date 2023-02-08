@@ -15,7 +15,7 @@ npm i --save-dev \
   --
 npm i \
   @octokit/rest \
-  tweetsodium \
+  libsodium-wrappers \
   aws-lambda \
   lodash \
   --

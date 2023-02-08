@@ -37,7 +37,6 @@
     "constructs": "*",
     "libsodium-wrappers": "*",
     "lodash": "*",
-    "source-map-support": "*",
-    "tweetsodium": "*"
+    "source-map-support": "*"
   }
 }

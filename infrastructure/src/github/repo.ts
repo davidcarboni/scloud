@@ -1,5 +1,5 @@
 import { Octokit, RestEndpointMethodTypes } from '@octokit/rest';
-import { encrypt, encryptSodium } from './encrypt';
+import encrypt from './encrypt';
 
 const username = process.env.USERNAME;
 const personalAccessToken = process.env.PERSONAL_ACCESS_TOKEN;
@@ -81,15 +81,12 @@ export async function setSecret(
 ): Promise<string> {
   if (!secretValue) throw new Error(`No value for secret ${secretName}`);
   const publicKey = await getRepoPublicKey(owner, repo);
-  const encryptedValue = encrypt(secretValue, publicKey.key);
-  const encryptedValueSodium = await encryptSodium(secretValue, publicKey.key);
-  console.log(`tweet  : ${encryptedValue}`);
-  console.log(`sodium : ${encryptedValueSodium}`);
+  const encryptedValue = await encrypt(secretValue, publicKey.key);
   const response = await octokit.actions.createOrUpdateRepoSecret({
     owner,
     repo,
     secret_name: secretName,
-    encrypted_value: encryptedValueSodium, // encryptedValue,
+    encrypted_value: encryptedValue, // encryptedValue,
     key_id: publicKey.key_id,
   });
 
