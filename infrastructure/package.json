@@ -1,15 +1,15 @@
 {
-  "name": "project",
+  "name": "metrics",
   "version": "0.1.0",
   "bin": {
-    "project": "bin/project.js"
+    "metrics": "bin/metrics.js"
   },
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
     "test": "jest",
     "cdk": "cdk",
-    "lint": "eslint --fix --ext ts bin lib src",
+    "lint": "eslint --fix --ext ts bin lib",
     "secrets": "ts-node src/github/secrets.ts"
   },
   "devDependencies": {
@@ -17,13 +17,11 @@
     "@types/jest": "*",
     "@types/lodash": "*",
     "@types/node": "*",
-    "@types/source-map-support": "*",
     "@typescript-eslint/eslint-plugin": "*",
     "@typescript-eslint/parser": "*",
     "aws-cdk": "*",
     "eslint": "*",
     "eslint-config-airbnb-base": "*",
-    "eslint-import-resolver-typescript": "*",
     "eslint-plugin-import": "*",
     "jest": "*",
     "ts-jest": "*",
@@ -31,10 +29,13 @@
     "typescript": "*"
   },
   "dependencies": {
+    "@octokit/plugin-throttling": "*",
     "@octokit/rest": "*",
+    "@types/libsodium-wrappers": "*",
     "aws-cdk-lib": "*",
     "aws-lambda": "*",
     "constructs": "*",
+    "libsodium-wrappers": "*",
     "lodash": "*",
     "source-map-support": "*",
     "tweetsodium": "*"
