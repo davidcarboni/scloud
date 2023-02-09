@@ -7,6 +7,7 @@ npm i --save-dev \
   @types/aws-lambda \
   @typescript-eslint/eslint-plugin \
   @typescript-eslint/parser \
+  @types/libsodium-wrappers \
   @types/lodash \
   eslint \
   eslint-config-airbnb-base  \
@@ -18,6 +19,7 @@ npm i \
   libsodium-wrappers \
   aws-lambda \
   lodash \
+  libsodium-wrappers \
   --
 
 #
