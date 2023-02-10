@@ -1,5 +1,4 @@
 import * as s3 from 'aws-cdk-lib/aws-s3';
-import * as acm from 'aws-cdk-lib/aws-certificatemanager';
 import * as route53 from 'aws-cdk-lib/aws-route53';
 import { Construct } from 'constructs';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
@@ -19,7 +18,7 @@ import {
   ViewerProtocolPolicy,
 } from 'aws-cdk-lib/aws-cloudfront';
 import { LambdaRestApi } from 'aws-cdk-lib/aws-apigateway';
-import { Function } from 'aws-cdk-lib/aws-lambda';
+import { Function, FunctionProps } from 'aws-cdk-lib/aws-lambda';
 import _ from 'lodash';
 import { zipFunctionTypescript } from './lambdaFunction';
 
@@ -48,7 +47,7 @@ export function redirectWww(
     targetDomain: domainName,
     recordNames: [`www.${domainName}`],
     zone,
-    certificate: certificate || new acm.DnsValidatedCertificate(construct, `${name}WwwCertificate`, {
+    certificate: certificate || new DnsValidatedCertificate(construct, `${name}WwwCertificate`, {
       domainName: `www.${domainName}`,
       hostedZone: zone,
       // this is required for Cloudfront certificates:
@@ -64,13 +63,13 @@ export function webApp(
   zone: route53.IHostedZone,
   environment?: { [key: string]: string; },
   domain?: string,
-  memory: number = 2048,
+  lambdaProps?: Partial<FunctionProps>,
   www: boolean = true,
 ): { lambda: Function, api: LambdaRestApi, bucket: Bucket, distribution: Distribution; } {
   const domainName = domain || `${zone.zoneName}`;
 
   // Web app handler
-  const lambda = zipFunctionTypescript(construct, name, environment, { memorySize: memory });
+  const lambda = zipFunctionTypescript(construct, name, environment, lambdaProps);
 
   // const headerFilter = edgeFunction(construct, 'headerFilter');
 
@@ -206,7 +205,7 @@ export function cloudFront(
     domainNames: [domainName],
     comment: name,
     defaultBehavior: behavior,
-    certificate: new acm.DnsValidatedCertificate(construct, `${name}Certificate`, {
+    certificate: new DnsValidatedCertificate(construct, `${name}Certificate`, {
       domainName,
       hostedZone: zone,
       region: 'us-east-1',
@@ -226,7 +225,7 @@ export function cloudFront(
       recordNames: [`www.${domainName}`],
       targetDomain: domainName,
       zone,
-      certificate: new acm.DnsValidatedCertificate(construct, `${name}CertificateWww`, {
+      certificate: new DnsValidatedCertificate(construct, `${name}CertificateWww`, {
         domainName: `www.${domainName}`,
         hostedZone: zone,
         region: 'us-east-1',
@@ -249,7 +248,7 @@ export function redirect(
     targetDomain,
     recordNames: [zone.zoneName, `www.${zone.zoneName}`],
     zone,
-    certificate: new acm.DnsValidatedCertificate(construct, `${name}Certificate`, {
+    certificate: new DnsValidatedCertificate(construct, `${name}Certificate`, {
       domainName: zone.zoneName,
       subjectAlternativeNames: [`www.${zone.zoneName}`],
       hostedZone: zone,
