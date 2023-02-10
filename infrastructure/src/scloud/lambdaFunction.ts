@@ -41,7 +41,7 @@ export function containerFunction(
 
   // Container
   const code = initialPass ? DockerImageCode.fromImageAsset(path.join(__dirname, './container')) : DockerImageCode.fromEcr(repository, {
-    tag: tagOrDigest || 'latest',
+    tagOrDigest: tagOrDigest || 'latest',
   });
 
   const lambda = new DockerImageFunction(construct, `${name}Function`, {
