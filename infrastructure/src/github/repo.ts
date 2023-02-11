@@ -86,7 +86,7 @@ export async function setSecret(
     owner,
     repo,
     secret_name: secretName,
-    encrypted_value: encryptedValue, // encryptedValue,
+    encrypted_value: encryptedValue,
     key_id: publicKey.key_id,
   });
 
