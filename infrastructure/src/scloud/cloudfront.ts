@@ -4,7 +4,7 @@ import { Construct } from 'constructs';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
 import * as route53patterns from 'aws-cdk-lib/aws-route53-patterns';
-import { CfnOutput, RemovalPolicy } from 'aws-cdk-lib';
+import { CfnOutput, Duration, RemovalPolicy } from 'aws-cdk-lib';
 import { DnsValidatedCertificate, ICertificate } from 'aws-cdk-lib/aws-certificatemanager';
 import { CloudFrontTarget } from 'aws-cdk-lib/aws-route53-targets';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
@@ -68,8 +68,8 @@ export function webApp(
 ): { lambda: Function, api: LambdaRestApi, bucket: Bucket, distribution: Distribution; } {
   const domainName = domain || `${zone.zoneName}`;
 
-  // Web app handler
-  const lambda = zipFunctionTypescript(construct, name, environment, lambdaProps);
+  // Web app handler - default values can be overridden using lambdaProps
+  const lambda = zipFunctionTypescript(construct, name, environment, { memorySize: 4096, timeout: Duration.seconds(10), ...lambdaProps });
 
   // const headerFilter = edgeFunction(construct, 'headerFilter');
 
