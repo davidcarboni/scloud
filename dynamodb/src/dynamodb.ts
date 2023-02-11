@@ -15,19 +15,16 @@ export interface Range {
   to: any,
 }
 
-/**
- * Get an item
- * @param tableName DynamoDB table name
- * @param key 1-2 fields: partition key (required) and, optionally, sort key
- * @returns The item, if found, or {}
- */
-export async function getItem(tableName: string, key: { [key: string]: any; })
-  : Promise<{ [key: string]: any; }> {
-  const result = await ddb.get({
-    TableName: tableName,
-    Key: key,
-  }).promise();
-  return result.Item ? result.Item : {};
+export function ttlDays(days: number) {
+  const date = new Date();
+  date.setDate(date.getDate() + days);
+  return Math.floor(date.getTime() / 1000.0);
+}
+
+export function ttlYears(years: number) {
+  const date = new Date();
+  date.setFullYear(date.getFullYear() + years);
+  return Math.floor(date.getTime() / 1000.0);
 }
 
 /**
@@ -36,13 +33,28 @@ export async function getItem(tableName: string, key: { [key: string]: any; })
  * @param key 1-2 fields: partition key (required) and, optionally, sort key
  * @returns The item, if found, or {}
  */
+export async function getItem(tableName: string, key: { [key: string]: any; })
+  : Promise<{ [key: string]: any; } | undefined> {
+  const result = await ddb.get({
+    TableName: tableName,
+    Key: key,
+  }).promise();
+  return result.Item;
+}
+
+/**
+ * Delete an item
+ * @param tableName DynamoDB table name
+ * @param key 1-2 fields: partition key (required) and, optionally, sort key
+ * @returns The item, if found, or {}
+ */
 export async function deleteItem(tableName: string, key: { [key: string]: any; })
-  : Promise<{ [key: string]: any; }> {
+  : Promise<{ [key: string]: any; } | undefined> {
   const result = await ddb.delete({
     TableName: tableName,
     Key: key,
   }).promise();
-  return result.Attributes ? result.Attributes : {};
+  return result.Attributes;
 }
 
 /**
@@ -52,8 +64,8 @@ export async function deleteItem(tableName: string, key: { [key: string]: any; }
  * @param id The item ID (partition key)
  * @returns The item, if found, or {}
  */
-export async function getIndex(tableName: string, indexName: string, id: any)
-  : Promise<{ [key: string]: any; }> {
+export async function getIndex(tableName: string, indexName: string, indexKey: string, id: any)
+  : Promise<{ [key: string]: any; } | undefined> {
   const result = await ddb.query({
     TableName: tableName,
     IndexName: indexName,
@@ -62,7 +74,7 @@ export async function getIndex(tableName: string, indexName: string, id: any)
       ':id': id,
     },
   }).promise();
-  return result.Items && result.Items[0] ? result.Items[0] : {};
+  return result.Items && result.Items.length > 0 ? result.Items[0] : undefined;
 }
 
 /**
@@ -88,7 +100,7 @@ export async function findItems(
   sortKey: Key,
   attributes?: string[],
 )
-  : Promise<{ [key: string]: any; }[]> {
+  : Promise<{ [key: string]: any }[]> {
   const params: any = {
     TableName: tableName,
     KeyConditionExpression: `#${partitionKey.name} = :pk AND begins_with ( #${sortKey.name}, :sk )`,
@@ -113,7 +125,7 @@ export async function findItems(
     params.ExpressionAttributeNames[`#${attributeName}`] = `${attributeName}`;
   });
 
-  const result: any[] = [];
+  const result: { [key: string]: any }[] = [];
   let items;
   do {
     // eslint-disable-next-line no-await-in-loop
@@ -140,26 +152,24 @@ export async function findItemsIndex(
   const params: DocumentClient.QueryInput = {
     TableName: tableName,
     IndexName: indexName,
-    KeyConditionExpression: sortKey ? `#${partitionKey.name} = :pk AND begins_with ( #${sortKey.name}, :sk )` : `#${partitionKey.name} = :pk`,
+    KeyConditionExpression: sortKey ? '#pk = :pk AND begins_with ( #sk, :sk )' : '#pk = :pk',
+    ExpressionAttributeNames: {
+      '#pk': partitionKey.name,
+    },
     ExpressionAttributeValues: {
       ':pk': partitionKey.value,
     },
-    ExpressionAttributeNames: {}, // Computed below
   };
-  const attributeNames = [partitionKey.name];
+
+  // Add sort key if specified
   if (sortKey) {
+    params.ExpressionAttributeNames = params.ExpressionAttributeNames || {}; // Some Typrscript issue?
     params.ExpressionAttributeValues = params.ExpressionAttributeValues || {}; // Some Typrscript issue?
+    params.ExpressionAttributeNames['#sk'] = sortKey.name;
     params.ExpressionAttributeValues[':sk'] = sortKey.value;
-    attributeNames.push(sortKey.name);
   }
 
-  // Expression attribute names - this avoids clasking with DDB reserved words
-  attributeNames.forEach((attributeName) => {
-    params.ExpressionAttributeNames = params.ExpressionAttributeNames || {}; // Some Typrscript issue?
-    params.ExpressionAttributeNames[`#${attributeName}`] = `${attributeName}`;
-  });
-
-  const result: any[] = [];
+  const result: { [key: string]: any }[] = [];
   let items;
   do {
     // eslint-disable-next-line no-await-in-loop
@@ -183,7 +193,7 @@ export async function findItemRange(
   partitionKey: Key,
   sortKey: Range,
   attributes?: string[],
-): Promise<{ [key: string]: any; }[]> {
+): Promise<{ [key: string]: any }[]> {
   const params: any = {
     TableName: tableName,
     KeyConditionExpression: `#${partitionKey.name} = :pk AND #${sortKey.name} BETWEEN :from AND :to`,
@@ -209,7 +219,7 @@ export async function findItemRange(
     params.ExpressionAttributeNames[`#${attributeName}`] = `${attributeName}`;
   });
 
-  const result: any[] = [];
+  const result: { [key: string]: any }[] = [];
   let items;
   do {
     // eslint-disable-next-line no-await-in-loop
@@ -226,12 +236,12 @@ export async function findItemRange(
  * @param tableName DynamoDB table name
  * @returns An array containing all the items (could get large!)
  */
-export async function listItems(tableName: string): Promise<any[]> {
+export async function listItems(tableName: string): Promise<{ [key: string]: any }[]> {
   const params: ScanInput = {
     TableName: tableName,
   };
 
-  const result: any[] = [];
+  const result: { [key: string]: any }[] = [];
   let items;
   do {
     // eslint-disable-next-line no-await-in-loop
@@ -261,6 +271,7 @@ export async function migratePage(
   // Filter out any blanks (i.e. items that don't need to be updated)
   const items = page.map((item) => update(item));
   let puts = (await Promise.all(items)).filter((item) => item);
+  const count = puts.length;
 
   // Process puts
   const batchSize = 25;
@@ -282,8 +293,8 @@ export async function migratePage(
   // Await completion of batches
   await Promise.all(batches);
 
-  console.log(`Processed ${batches.length} batches for ${puts.length} items`);
-  return puts.length;
+  console.log(`Processed ${batches.length} batches for ${count} items from a page of ${page.length}`);
+  return count;
 }
 
 /**
@@ -298,7 +309,6 @@ export async function migrate(update: Function, sourceTable: string, destination
   : Promise<number> {
   const params: ScanInput = {
     TableName: sourceTable,
-    ConsistentRead: true,
   };
 
   let count = 0;
