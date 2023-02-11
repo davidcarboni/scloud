@@ -69,7 +69,7 @@ export function webApp(
   const domainName = domain || `${zone.zoneName}`;
 
   // Web app handler - default values can be overridden using lambdaProps
-  const lambda = zipFunctionTypescript(construct, name, environment, { memorySize: 4096, timeout: Duration.seconds(10), ...lambdaProps });
+  const lambda = zipFunctionTypescript(construct, name, environment, { memorySize: 3008, timeout: Duration.seconds(10), ...lambdaProps });
 
   // const headerFilter = edgeFunction(construct, 'headerFilter');
 
