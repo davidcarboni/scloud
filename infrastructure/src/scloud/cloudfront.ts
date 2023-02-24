@@ -157,6 +157,112 @@ export function webApp(
 }
 
 /**
+ * An API gateway behind a Cloudfront distribution.
+ * By default a single Lambda is generated that responds to the / route.
+ * Alternatively you can pass a mapping of routes to functions
+ * (or map to undedfined and functions will be generated for you)
+ * @param construct CDK consrtruct
+ * @param name Name for this set of resources
+ * @param zone
+ * @param environment
+ * @param domain
+ * @param memory
+ * @param routes
+ * @returns
+ */
+export function webAppRoutes(
+  construct: Construct,
+  name: string,
+  zone: route53.IHostedZone,
+  environment?: { [key: string]: string; },
+  domain?: string,
+  wwwRedirect: boolean = true,
+  memory: number = 3008, // Previous Lambda memoty limit still seems to be applied, possibly on first CDK deployment
+  routes: {[path:string]:Function|undefined} = { '/': undefined },
+): { lambdas: {[path:string]:Function}, bucket: Bucket, distribution: Distribution; } {
+  const domainName = domain || `${zone.zoneName}`;
+
+  // We consider the objects in the static bucket ot be expendable because
+  // they're static content we generate (rather than user data).
+  const bucket = new Bucket(construct, `${name}RequestBin`, {
+    removalPolicy: RemovalPolicy.DESTROY,
+    autoDeleteObjects: true,
+    publicReadAccess: true,
+  });
+  new CfnOutput(construct, `${name}Bucket`, { value: bucket.bucketName });
+
+  // Cloudfromt distribution - handle static requests
+  // TODO add a secret so only Cludfront can access APIg
+  const distribution = new Distribution(construct, `${name}Distribution`, {
+    domainNames: [domainName],
+    comment: domainName,
+    defaultBehavior: {
+      // Request bin: default is to deflect all requests that aren't known to the API - mostly scripts probing for Wordpress installations
+      origin: new S3Origin(bucket),
+      allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS, // Minimal methods - do we need Options?
+      viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+      cachePolicy: CachePolicy.CACHING_OPTIMIZED,
+    },
+    certificate: new DnsValidatedCertificate(construct, `${name}Certificate`, {
+      domainName,
+      hostedZone: zone,
+      region: 'us-east-1',
+    }),
+  });
+  new route53.ARecord(construct, `${name}ARecord`, {
+    recordName: domainName,
+    target: route53.RecordTarget.fromAlias(new CloudFrontTarget(distribution)),
+    zone,
+  });
+
+  // Handle API paths
+  const apiOptions = {
+    allowedMethods: AllowedMethods.ALLOW_ALL,
+    viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+    compress: true,
+    cachePolicy: CachePolicy.CACHING_DISABLED,
+    // https://stackoverflow.com/questions/71367982/cloudfront-gives-403-when-origin-request-policy-include-all-headers-querystri
+    // OriginRequestHeaderBehavior.all() gives an error so just cookie, user-agent, referer
+    originRequestPolicy: new OriginRequestPolicy(construct, `${name}OriginRequestPolicy`, {
+      headerBehavior: OriginRequestHeaderBehavior.allowList('user-agent', 'User-Agent', 'Referer', 'referer'),
+      cookieBehavior: OriginRequestCookieBehavior.all(),
+      queryStringBehavior: OriginRequestQueryStringBehavior.all(),
+    }),
+  };
+  const lambdas :{[path:string]:Function} = {};
+  Object.keys(routes).forEach((path) => {
+    // Use the provided function, or generate a default one:
+    const lambda = routes[path] || zipFunctionTypescript(construct, name, environment, { memorySize: memory });
+    distribution.addBehavior(
+      path,
+      new RestApiOrigin(new LambdaRestApi(construct, `${name}${path}`, {
+        handler: lambda,
+        proxy: true,
+        description: `${name}-${path}`,
+      })),
+      apiOptions,
+    );
+    lambdas[path] = lambda;
+  });
+
+  // Redirect www -> zone root
+  if (wwwRedirect) {
+    new route53patterns.HttpsRedirect(construct, `${name}WwwRedirect`, {
+      recordNames: [`www.${domainName}`],
+      targetDomain: domainName,
+      zone,
+      certificate: new DnsValidatedCertificate(construct, `${name}CertificateWww`, {
+        domainName: `www.${domainName}`,
+        hostedZone: zone,
+        region: 'us-east-1',
+      }),
+    });
+  }
+
+  return { lambdas, bucket, distribution };
+}
+
+/**
  * A Cloudfront distribution backed by an s3 bucket.
  * NB us-east-1 is required for Cloudfront certificates:
  * https://docs.aws.amazon.com/cdk/api/v1/docs/aws-cloudfront-readme.html

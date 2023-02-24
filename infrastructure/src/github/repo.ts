@@ -98,6 +98,28 @@ export async function setSecret(
   throw new Error(`Error setting secret value: ${secretName}: status code ${response.status}`);
 }
 
+export async function setVariable(
+  name: string,
+  value: string,
+  owner: string,
+  repo: string,
+): Promise<string> {
+  if (!value) throw new Error(`No value for secret ${name}`);
+  const response = await octokit.rest.actions.createRepoVariable({
+    owner,
+    repo,
+    name,
+    value,
+  });
+
+  if (response.status === 201 || response.status === 204) {
+    return name;
+  }
+  // Looks like that didn't work.
+  console.log(response);
+  throw new Error(`Error setting secret value: ${name}: status code ${response.status}`);
+}
+
 export async function deleteSecret(
   secretName: string,
   owner: string,
