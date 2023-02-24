@@ -54,7 +54,7 @@ export function queueLambdaContainer(
   environment?: { [key: string]: string; },
   ecr?: Repository,
   lambdaProps?: Partial<DockerImageFunctionProps>,
-): { repository: Repository, queue: Queue, lambda: Function, policy: ManagedPolicy; } {
+): { repository: Repository, queue: Queue, lambda: Function; } {
   // Message timeout
   // This needs to match netween the queue and the lambda:
   const timeout: Duration = lambdaProps?.timeout || Duration.seconds(60);
@@ -70,22 +70,21 @@ export function queueLambdaContainer(
   const { repository, lambda } = containerFunction(construct, initialPass, name, environment, { ...lambdaProps, timeout }, 'latest', ecr);
   lambda.addEventSource(new SqsEventSource(queue, { reportBatchItemFailures: true }));
 
-  // Policy enabling message sending to the queue
-  const policy = new ManagedPolicy(construct, `${name}SenderPolicy`, {
-    // managedPolicyName: `${name}-sender`,
-    statements: [
-      new PolicyStatement({
-        effect: Effect.ALLOW,
-        resources: [queue.queueArn],
-        actions: [
-          'sqs:SendMessage',
-        ],
-      }),
-    ],
-  });
-  // new CfnOutput(construct, `${name}SenderPolicyArn`, { value: queue.queueUrl });
+  // // Policy enabling message sending to the queue
+  // const policy = new ManagedPolicy(construct, `${name}SenderPolicy`, {
+  //   // managedPolicyName: `${name}-sender`,
+  //   statements: [
+  //     new PolicyStatement({
+  //       effect: Effect.ALLOW,
+  //       resources: [queue.queueArn],
+  //       actions: [
+  //         'sqs:SendMessage',
+  //       ],
+  //     }),
+  //   ],
+  // });
 
   return {
-    repository, queue, lambda, policy,
+    repository, queue, lambda,
   };
 }
