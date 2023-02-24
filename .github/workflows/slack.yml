@@ -26,7 +26,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       component: slack
-      # ecrRepoName: ${{ secrets.ECR_SLACK }}
       lambdaName: ${{ secrets.LAMBDA_SLACK }}
 
     steps:
