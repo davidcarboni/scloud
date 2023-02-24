@@ -10,13 +10,13 @@ const skipList = [
 
 // Any secrets to be added from environment variables passed to this script:
 const shellEnvSecrets: string[] = [
-  'ACTIVECAMPAIGN_URL',
-  'ACTIVECAMPAIGN_KEY',
 ];
 
 // Values from /secrets/github.sh
 const owner = process.env.OWNER || process.env.USERNAME || '';
 const repo = process.env.REPO || '';
+if (!owner) throw new Error('No repo owner: please set an environment variable for either USERNAME or OWNER');
+if (!repo) throw new Error('No repo: please set an environment variable for REPO');
 
 let repoSecrets: string[];
 

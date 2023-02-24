@@ -1,4 +1,4 @@
-import * as sodium from 'libsodium-wrappers';
+import sodium from 'libsodium-wrappers';
 
 /**
  * Based on: https://docs.github.com/en/rest/actions/secrets?apiVersion=2022-11-28#create-or-update-a-repository-secret
