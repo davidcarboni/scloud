@@ -175,10 +175,10 @@ export function webAppRoutes(
   name: string,
   zone: route53.IHostedZone,
   environment?: { [key: string]: string; },
-  domain?: string,
+  routes: {[path:string]:Function|undefined} = { '/': undefined },
+  domain: string|undefined = undefined,
   wwwRedirect: boolean = true,
   memory: number = 3008, // Previous Lambda memoty limit still seems to be applied, possibly on first CDK deployment
-  routes: {[path:string]:Function|undefined} = { '/': undefined },
 ): { lambdas: {[path:string]:Function}, bucket: Bucket, distribution: Distribution; } {
   const domainName = domain || `${zone.zoneName}`;
 

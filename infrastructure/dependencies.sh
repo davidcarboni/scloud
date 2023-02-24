@@ -9,6 +9,7 @@ npm i --save-dev \
   @typescript-eslint/parser \
   @types/libsodium-wrappers \
   @types/lodash \
+  @types/source-map-support \
   eslint \
   eslint-config-airbnb-base  \
   eslint-plugin-import \
