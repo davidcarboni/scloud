@@ -174,22 +174,20 @@ export function webAppRoutes(
   construct: Construct,
   name: string,
   zone: route53.IHostedZone,
-  environment?: { [key: string]: string; },
   routes: {[path:string]:Function|undefined} = { '/': undefined },
   domain: string|undefined = undefined,
   wwwRedirect: boolean = true,
-  memory: number = 3008, // Previous Lambda memoty limit still seems to be applied, possibly on first CDK deployment
 ): { lambdas: {[path:string]:Function}, bucket: Bucket, distribution: Distribution; } {
   const domainName = domain || `${zone.zoneName}`;
 
   // We consider the objects in the static bucket ot be expendable because
   // they're static content we generate (rather than user data).
-  const bucket = new Bucket(construct, `${name}RequestBin`, {
+  const bucket = new Bucket(construct, `${name}StaticBucket`, {
     removalPolicy: RemovalPolicy.DESTROY,
     autoDeleteObjects: true,
     publicReadAccess: true,
   });
-  new CfnOutput(construct, `${name}Bucket`, { value: bucket.bucketName });
+  output(construct, 'StaticBucket', name, bucket.bucketName);
 
   // Cloudfromt distribution - handle static requests
   // TODO add a secret so only Cludfront can access APIg
@@ -232,7 +230,7 @@ export function webAppRoutes(
   const lambdas :{[path:string]:Function} = {};
   Object.keys(routes).forEach((path) => {
     // Use the provided function, or generate a default one:
-    const lambda = routes[path] || zipFunctionTypescript(construct, name, environment, { memorySize: memory });
+    const lambda = routes[path] || zipFunctionTypescript(construct, name, {}, { memorySize: 3008 });
     distribution.addBehavior(
       path,
       new RestApiOrigin(new LambdaRestApi(construct, `${name}${path}`, {
