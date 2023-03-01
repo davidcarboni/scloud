@@ -87,4 +87,4 @@ jobs:
         SLACK_COLOR: ${{ job.status }}
         SLACK_ICON_EMOJI: ":github_octocat:"
         SLACK_FOOTER: Github Actions
-        SLACK_CHANNEL: general
+        SLACK_CHANNEL: build
