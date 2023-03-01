@@ -13,12 +13,6 @@ on:
     # A weekly build to pick up any security updates
     # A weekday at mid-day - when someone is likely to be working
     - cron: "0 12 * * 3"
-  workflow_dispatch:
-    inputs:
-      update_component:
-        description: 'Whether the workflow should attempt to update the lambda function'
-        required: true
-        default: 'yes'
 
 jobs:
   deploy:

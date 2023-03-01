@@ -9,7 +9,6 @@ on:
     # or when this workflow file is changed
     - 'static/**'
     - '.github/workflows/static.yml'
-  workflow_dispatch:
 
 jobs:
   static_content:
