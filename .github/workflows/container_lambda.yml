@@ -23,7 +23,7 @@ jobs:
     env:
       component: container_lambda
       ecrRepoName: ${{ secrets.ECR_CONTAINER_LAMBDA }}
-      lambdaName: ${{ secrets.LAMBDA_CONTAINER_LAMBDA }}
+      lambdaName: ${{ secrets.CONTAINER_LAMBDA }}
 
     steps:
 

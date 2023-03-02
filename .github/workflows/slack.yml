@@ -13,6 +13,12 @@ on:
     # A weekly build to pick up updates to the base container image
     # A weekday at mid-day - when someone is likely to be working (avoid bank holidays)
     - cron: "0 12 * * 2"
+  workflow_dispatch:
+    inputs:
+      update_component:
+        description: 'Whether the workflow should attempt to update the lambda function'
+        required: true
+        default: 'yes'
 
 jobs:
   deploy:
@@ -20,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       component: slack
-      lambdaName: ${{ secrets.LAMBDA_SLACK }}
+      lambdaName: ${{ secrets.SLACK_LAMBDA }}
 
     steps:
 
@@ -49,18 +55,9 @@ jobs:
         zip -r function.zip .
 
     - name: Update Lambda
-      if: ${{ github.event.inputs.update_component != 'no' }}
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        # ECR_REPOSITORY: ${{ env.ecrRepoName }}
-        TAG: latest
       working-directory: ./${{ env.component }}
       run: |
-        # NB Lambdas that run from containers resolve to an image hash, rather than "name:tag",
-        # Pushing to the same tag doesn't automatically update the image.
-        # Therefore we need to explicitly update the lambda code so it will point to the new hash referenced by "nome:tag":
         aws lambda update-function-code --function-name=${{ env.lambdaName }} --zip-file fileb://dist/function.zip
-        # aws lambda update-function-code --function-name=${{ env.lambdaName }} --image-uri=$ECR_REGISTRY/$ECR_REPOSITORY:$TAG
 
     - name: Notify Slack
       if: failure()

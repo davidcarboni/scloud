@@ -14,7 +14,7 @@ function output(
   name: string,
   lambda: IFunction,
 ) {
-  const lambdaOutputName = `lambda${name[0].toUpperCase()}${name.toLowerCase().slice(1)}`;
+  const lambdaOutputName = `${name}Lambda`;
   new CfnOutput(construct, lambdaOutputName, { value: lambda.functionName });
 }
 

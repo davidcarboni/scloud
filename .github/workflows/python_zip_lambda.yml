@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       component: python_zip_lambda
-      lambdaName: ${{ secrets.LAMBDA_NAME }}
+      lambdaName: ${{ secrets.NAME_LAMBDA }}
 
     steps:
 
@@ -44,10 +44,6 @@ jobs:
         zip -r function.zip .
 
     - name: Update Lambda
-      if: ${{ github.event.inputs.update_component != 'no' }}
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        TAG: latest
       working-directory: ./${{ env.component }}
       run: |
         aws lambda update-function-code --function-name=${{ env.lambdaName }} --zip-file fileb://dist/function.zip
