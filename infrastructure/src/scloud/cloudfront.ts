@@ -215,7 +215,7 @@ export function webAppRoutes(
   });
 
   // Handle API paths
-  const apiOptions = {
+  const routeOptions = {
     allowedMethods: AllowedMethods.ALLOW_ALL,
     viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
     compress: true,
@@ -239,7 +239,7 @@ export function webAppRoutes(
         proxy: true,
         description: `${name}-${path}`,
       })),
-      apiOptions,
+      routeOptions,
     );
     lambdas[path] = lambda;
   });
