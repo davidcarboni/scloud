@@ -12,7 +12,7 @@ export default function logGroup(
   stack: Stack,
   category: string,
   name: string,
-  retention: RetentionDays = RetentionDays.THREE_MONTHS,
+  retention: RetentionDays = RetentionDays.EIGHTEEN_MONTHS,
 ) : LogGroup {
   return new LogGroup(stack, `${name}LogGroup`, {
   // Ensure the log group is deleted when the stack is deleted
