@@ -84,6 +84,7 @@ export function webApp(
   const api = new LambdaRestApi(construct, `${name}ApiGateway`, {
     handler: lambda,
     proxy: true,
+    description: name,
     binaryMediaTypes: ['multipart/form-data'],
   });
 
