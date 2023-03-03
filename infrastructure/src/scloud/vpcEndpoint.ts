@@ -1,12 +1,12 @@
 import {
-  InterfaceVpcEndpoint, InterfaceVpcEndpointAwsService, InterfaceVpcEndpointOptions, Vpc,
+  InterfaceVpcEndpoint, InterfaceVpcEndpointAwsService, InterfaceVpcEndpointOptions, IVpc,
 } from 'aws-cdk-lib/aws-ec2';
 import { Construct } from 'constructs';
 
 export default function privateEndpoint(
   construct: Construct,
   name: string,
-  vpc: Vpc,
+  vpc: IVpc,
   service: InterfaceVpcEndpointAwsService,
   options: Partial<InterfaceVpcEndpointOptions> = {},
 ): string[] {
