@@ -23,7 +23,7 @@ npm run lint
 # Show differences
 cdk diff
 
-read -p "Do you want to proceed? (y/n) " yn
+read -p "Do you want to proceed? (y/N) " yn
 case $yn in
 	y ) echo Deploying...;;
 	* ) echo Exit;
