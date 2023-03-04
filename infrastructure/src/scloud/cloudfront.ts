@@ -168,14 +168,14 @@ export function webApp(
  * @param environment
  * @param domain
  * @param memory
- * @param routes
+ * @param routes The aset of routes and corresponding Lambda to handle them. You can optionally request specific headers (deafult: User-Agent and Referer)
  * @returns
  */
 export function webAppRoutes(
   construct: Construct,
   name: string,
   zone: route53.IHostedZone,
-  routes: {[path:string]:Function|undefined} = { '/': undefined },
+  routes: {[pathPattern:string]:{lambda?:Function, headers?: string[]}|undefined} = { '/': undefined },
   domain: string|undefined = undefined,
   wwwRedirect: boolean = true,
 ): { lambdas: {[path:string]:Function}, bucket: Bucket, distribution: Distribution; } {
@@ -215,33 +215,36 @@ export function webAppRoutes(
   });
 
   // Handle API paths
-  const routeOptions = {
-    allowedMethods: AllowedMethods.ALLOW_ALL,
-    viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-    compress: true,
-    cachePolicy: CachePolicy.CACHING_DISABLED,
+  const lambdas :{[path:string]:Function} = {};
+  Object.keys(routes).forEach((pathPattern) => {
+    // Use the provided function, or generate a default one:
+    const lambda = routes[pathPattern]?.lambda || zipFunctionTypescript(construct, name, {}, { memorySize: 3008 });
+    // Allowed headers:
     // https://stackoverflow.com/questions/71367982/cloudfront-gives-403-when-origin-request-policy-include-all-headers-querystri
     // OriginRequestHeaderBehavior.all() gives an error so just cookie, user-agent, referer
-    originRequestPolicy: new OriginRequestPolicy(construct, `${name}OriginRequestPolicy`, {
-      headerBehavior: OriginRequestHeaderBehavior.allowList('user-agent', 'User-Agent', 'Referer', 'referer'),
-      cookieBehavior: OriginRequestCookieBehavior.all(),
-      queryStringBehavior: OriginRequestQueryStringBehavior.all(),
-    }),
-  };
-  const lambdas :{[path:string]:Function} = {};
-  Object.keys(routes).forEach((path) => {
-    // Use the provided function, or generate a default one:
-    const lambda = routes[path] || zipFunctionTypescript(construct, name, {}, { memorySize: 3008 });
+    const allowHeaders = ['user-agent', 'User-Agent', 'Referer', 'referer'].concat(routes[pathPattern]?.headers || []);
     distribution.addBehavior(
-      path,
-      new RestApiOrigin(new LambdaRestApi(construct, `${name}${path}`, {
+      pathPattern,
+      new RestApiOrigin(new LambdaRestApi(construct, `${name}${pathPattern}`, {
         handler: lambda,
         proxy: true,
-        description: `${name}-${path}`,
+        description: `${name}-${pathPattern}`,
       })),
-      routeOptions,
+      {
+        allowedMethods: AllowedMethods.ALLOW_ALL,
+        viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        compress: true,
+        cachePolicy: CachePolicy.CACHING_DISABLED,
+        // https://stackoverflow.com/questions/71367982/cloudfront-gives-403-when-origin-request-policy-include-all-headers-querystri
+        // OriginRequestHeaderBehavior.all() gives an error so just cookie, user-agent, referer
+        originRequestPolicy: new OriginRequestPolicy(construct, `${name}${pathPattern}OriginRequestPolicy`, {
+          headerBehavior: OriginRequestHeaderBehavior.allowList(...allowHeaders),
+          cookieBehavior: OriginRequestCookieBehavior.all(),
+          queryStringBehavior: OriginRequestQueryStringBehavior.all(),
+        }),
+      },
     );
-    lambdas[path] = lambda;
+    lambdas[pathPattern] = lambda;
   });
 
   // Redirect www -> zone root
