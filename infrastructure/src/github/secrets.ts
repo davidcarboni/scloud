@@ -10,6 +10,7 @@ const skipList = [
 
 // Any secrets to be added from environment variables passed to this script:
 const shellEnvSecrets: string[] = [
+  // 'SLACK_WEBHOOK',
 ];
 
 // Values from /secrets/github.sh
