@@ -23,7 +23,7 @@
     "typeRoots": [
       "./node_modules/@types"
     ],
-    "outDir": "dist/src",
+    "outDir": "dist",
   },
   "include": [
     "src/**/*.ts"
