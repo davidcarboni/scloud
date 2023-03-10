@@ -1,0 +1,42 @@
+{
+  "name": "slack-messenger",
+  "version": "1.0.0",
+  "description": "Sends queued messages to Slack.",
+  "main": "src/lambda.ts",
+  "scripts": {
+    "build": "rimraf ./dist/ && esbuild lambda.ts --bundle --sourcemap --platform=node --target=es2020 --outfile=dist/src/lambda.js",
+    "run": "node ./dist/src/lambda.js",
+    "lint": "eslint --fix --ext ts src",
+    "test": "NODE_PATH=./src mocha -r ts-node/register test/unit/**/*.spec.ts",
+    "test:integration": "NODE_PATH=./src mocha -r ts-node/register test/integration/**/*.spec.ts "
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/davidcarboni/scloud"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/aws-lambda": "*",
+    "aws-lambda": "*",
+    "aws-sdk": "*",
+    "typescript": "*"
+  },
+  "devDependencies": {
+    "@types/chai": "*",
+    "@types/mocha": "*",
+    "@types/node": "*",
+    "@typescript-eslint/eslint-plugin": "*",
+    "@typescript-eslint/parser": "*",
+    "chai": "*",
+    "esbuild": "*",
+    "eslint": "*",
+    "eslint-config-airbnb-base": "*",
+    "eslint-import-resolver-typescript": "*",
+    "eslint-plugin-import": "*",
+    "mocha": "*",
+    "rimraf": "*",
+    "source-map-support": "*",
+    "ts-node": "*"
+  }
+}

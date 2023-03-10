@@ -1,0 +1,75 @@
+name: yarn
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+    # Build when there are changes in the directory that holds the component,
+    # or when this workflow file is changed
+    - 'yarn/**'
+    - '.github/workflows/yarn.yml'
+  schedule:
+    # A weekly build to pick up updates to the base container image
+    # A weekday at mid-day - when someone is likely to be working (avoid bank holidays)
+    - cron: "0 12 * * 2"
+
+jobs:
+  lambda:
+    environment: staging
+    runs-on: ubuntu-latest
+    env:
+      component: yarn
+      lambdaName: ${{ secrets.YARN_LAMBDA }}
+
+    steps:
+
+    - uses: actions/checkout@v3
+
+    - uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: eu-west-2
+
+    - name: Build
+      working-directory: ./${{ env.component }}
+      run: |
+        yarn
+        yarn lint
+        yarn test
+        yarn build
+
+    - name: Package
+      working-directory: ./${{ env.component }}
+      run: |
+        cd dist
+        cp ../package.json .
+        cp ../yarn.lock .
+        echo $(git rev-parse --short HEAD) > COMMIT_HASH
+        zip -r function.zip .
+
+    - name: Update Lambda
+      working-directory: ./${{ env.component }}
+      run: |
+        aws lambda update-function-code --function-name=${{ env.lambdaName }} --zip-file fileb://dist/function.zip
+
+    - name: Notify Slack
+      if: failure()
+      uses: rtCamp/action-slack-notify@v2
+      env:
+        SLACK_COLOR: ${{ job.status }}
+        SLACK_ICON_EMOJI: ":hot_pepper:"
+        SLACK_USERNAME: Bernie
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+
+    - name: Dispatch integration tests
+      if: success()
+      env:
+         token: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        curl -v \
+          -X POST \
+          -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          https://api.github.com/repos/organization/repository/actions/workflows/integration-test.yml/dispatches \
+          -d '{"ref":"main","inputs":{"component_name":"${{ env.component }}"}}'
