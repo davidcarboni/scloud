@@ -22,7 +22,6 @@ export function queueLambda(
     encryption: QueueEncryption.KMS_MANAGED,
     removalPolicy: RemovalPolicy.DESTROY,
   });
-  // new CfnOutput(construct, `${name}QueueUrl`, { value: queue.queueUrl });
 
   const lambda = zipFunctionTypescript(construct, name, environment, { ...lambdaProps, timeout });
   lambda.addEventSource(new SqsEventSource(queue, { reportBatchItemFailures: true }));
@@ -40,7 +39,6 @@ export function queueLambda(
       }),
     ],
   });
-  // new CfnOutput(construct, `${name}SenderPolicyArn`, { value: queue.queueUrl });
 
   return {
     queue, lambda, policy,
@@ -65,24 +63,9 @@ export function queueLambdaContainer(
     encryption: QueueEncryption.KMS_MANAGED,
     removalPolicy: RemovalPolicy.DESTROY,
   });
-  // new CfnOutput(construct, `${name}QueueUrl`, { value: queue.queueUrl });
 
   const { repository, lambda } = containerFunction(construct, initialPass, name, environment, { ...lambdaProps, timeout }, 'latest', ecr);
   lambda.addEventSource(new SqsEventSource(queue, { reportBatchItemFailures: true }));
-
-  // // Policy enabling message sending to the queue
-  // const policy = new ManagedPolicy(construct, `${name}SenderPolicy`, {
-  //   // managedPolicyName: `${name}-sender`,
-  //   statements: [
-  //     new PolicyStatement({
-  //       effect: Effect.ALLOW,
-  //       resources: [queue.queueArn],
-  //       actions: [
-  //         'sqs:SendMessage',
-  //       ],
-  //     }),
-  //   ],
-  // });
 
   return {
     repository, queue, lambda,
