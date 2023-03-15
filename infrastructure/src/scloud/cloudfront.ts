@@ -1,4 +1,3 @@
-import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as route53 from 'aws-cdk-lib/aws-route53';
 import { Construct } from 'constructs';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
@@ -21,18 +20,19 @@ import { LambdaRestApi } from 'aws-cdk-lib/aws-apigateway';
 import { Function, FunctionProps } from 'aws-cdk-lib/aws-lambda';
 import _ from 'lodash';
 import { zipFunctionTypescript } from './lambdaFunction';
-import { ghaValues } from './ghaUser';
+import { addGhaVariable, GhaInfo } from './ghaUser';
 
 export const junkPaths: string[] = ['/wp-includes/*', '/wp-admin*', '*.xml', '*.php', '*.aspx', '*.env', '/.git*', '/.remote*', '/.production*', '/.local*'];
 
-function output(
+function outputVariable(
   construct: Construct,
   type: string,
   name: string,
   value: string,
+  ghaInfo: GhaInfo,
 ) {
   const outputName = `${_.lowerFirst(name)}${_.capitalize(type)}`;
-  ghaValues.variables.push(new CfnOutput(construct, outputName, { value }));
+  addGhaVariable(new CfnOutput(construct, outputName, { value }), ghaInfo);
 }
 
 export function redirectWww(
@@ -61,6 +61,7 @@ export function redirectWww(
 export function webApp(
   construct: Construct,
   name: string,
+  ghaInfo: GhaInfo,
   zone: route53.IHostedZone,
   environment?: { [key: string]: string; },
   domain?: string,
@@ -70,7 +71,7 @@ export function webApp(
   const domainName = domain || `${zone.zoneName}`;
 
   // Web app handler - default values can be overridden using lambdaProps
-  const lambda = zipFunctionTypescript(construct, name, environment, { memorySize: 3008, timeout: Duration.seconds(10), ...lambdaProps });
+  const lambda = zipFunctionTypescript(construct, name, ghaInfo, environment, { memorySize: 3008, timeout: Duration.seconds(10), ...lambdaProps });
 
   // const headerFilter = edgeFunction(construct, 'headerFilter');
 
@@ -80,7 +81,7 @@ export function webApp(
     autoDeleteObjects: true,
     publicReadAccess: true,
   });
-  output(construct, 'StaticBucket', name, bucket.bucketName);
+  outputVariable(construct, 'StaticBucket', name, bucket.bucketName, ghaInfo);
 
   const api = new LambdaRestApi(construct, `${name}ApiGateway`, {
     handler: lambda,
@@ -135,7 +136,7 @@ export function webApp(
     },
     certificate,
   });
-  output(construct, 'DistributionId', name, distribution.distributionId);
+  outputVariable(construct, 'DistributionId', name, distribution.distributionId, ghaInfo);
 
   // Handle junk requests by routing to the static bucket
   // so they don't invoke Lambda
@@ -175,6 +176,7 @@ export function webApp(
 export function webAppRoutes(
   construct: Construct,
   name: string,
+  ghaInfo: GhaInfo,
   zone: route53.IHostedZone,
   routes: {[pathPattern:string]:{lambda?:Function, headers?: string[]}|undefined} = { '/': undefined },
   domain: string|undefined = undefined,
@@ -184,12 +186,12 @@ export function webAppRoutes(
 
   // We consider the objects in the static bucket ot be expendable because
   // they're static content we generate (rather than user data).
-  const bucket = new Bucket(construct, `${name}StaticBucket`, {
+  const bucket = new Bucket(construct, `${name}Static`, {
     removalPolicy: RemovalPolicy.DESTROY,
     autoDeleteObjects: true,
     publicReadAccess: true,
   });
-  output(construct, 'StaticBucket', name, bucket.bucketName);
+  outputVariable(construct, 'StaticBucket', name, bucket.bucketName, ghaInfo);
 
   // Cloudfromt distribution - handle static requests
   // TODO add a secret so only Cludfront can access APIg
@@ -219,7 +221,7 @@ export function webAppRoutes(
   const lambdas :{[path:string]:Function} = {};
   Object.keys(routes).forEach((pathPattern) => {
     // Use the provided function, or generate a default one:
-    const lambda = routes[pathPattern]?.lambda || zipFunctionTypescript(construct, name, {}, { memorySize: 3008 });
+    const lambda = routes[pathPattern]?.lambda || zipFunctionTypescript(construct, name, ghaInfo, {}, { memorySize: 3008 });
     // Allowed headers:
     // https://stackoverflow.com/questions/71367982/cloudfront-gives-403-when-origin-request-policy-include-all-headers-querystri
     // OriginRequestHeaderBehavior.all() gives an error so just cookie, user-agent, referer
@@ -278,9 +280,11 @@ export function webAppRoutes(
  */
 export function cloudFront(
   construct: Construct,
+  name: string,
+  ghaInfo: GhaInfo,
   zone: route53.IHostedZone,
-  name?: string,
   defaultBehavior?: BehaviorOptions,
+  domain: string | undefined = undefined,
   wwwRedirect: boolean = true,
   // initialPass: boolean,
   // environment?: { [key: string]: string; },
@@ -289,18 +293,22 @@ export function cloudFront(
   bucket?: Bucket,
   distribution: Distribution,
 } {
+  const domainName = domain || zone.zoneName;
+
   let behavior;
   let bucket;
   if (defaultBehavior) {
     behavior = defaultBehavior;
   } else {
-  // Default: Cloudfont -> bucket on domain name
-    bucket = new s3.Bucket(construct, `${name}`, {
+    // Default: Cloudfont -> bucket on domain name
+    // We consider the objects in the static bucket ot be expendable because
+    // they're static content we generate (rather than user data).
+    bucket = new Bucket(construct, `${name}Static`, {
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
       publicReadAccess: true,
     });
-    ghaValues.variables.push(new CfnOutput(construct, `${name}Bucket`, { value: bucket.bucketName }));
+    outputVariable(construct, 'StaticBucket', name, bucket.bucketName, ghaInfo);
     behavior = {
       origin: new origins.S3Origin(bucket),
       allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
@@ -309,7 +317,6 @@ export function cloudFront(
     };
   }
 
-  const domainName = name ? `${name}.${zone.zoneName}` : zone.zoneName;
   const distribution = new cloudfront.Distribution(construct, `${name}Distribution`, {
     domainNames: [domainName],
     comment: name,
@@ -320,7 +327,7 @@ export function cloudFront(
       region: 'us-east-1',
     }),
   });
-  ghaValues.variables.push(new CfnOutput(construct, `${name}DistributionId`, { value: distribution.distributionId }));
+  outputVariable(construct, 'DistributionId', name, distribution.distributionId, ghaInfo);
 
   new route53.ARecord(construct, `${name}ARecord`, {
     zone,

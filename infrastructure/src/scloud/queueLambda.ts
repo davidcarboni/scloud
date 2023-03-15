@@ -6,10 +6,12 @@ import { Construct } from 'constructs';
 import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
 import { Effect, ManagedPolicy, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { containerFunction, zipFunctionTypescript } from './lambdaFunction';
+import { GhaInfo } from './ghaUser';
 
 export function queueLambda(
   construct: Construct,
   name: string,
+  ghaInfo: GhaInfo,
   environment?: { [key: string]: string; },
   lambdaProps?: Partial<FunctionProps>,
 ): { queue: Queue, lambda: Function, policy: ManagedPolicy; } {
@@ -23,7 +25,7 @@ export function queueLambda(
     removalPolicy: RemovalPolicy.DESTROY,
   });
 
-  const lambda = zipFunctionTypescript(construct, name, environment, { ...lambdaProps, timeout });
+  const lambda = zipFunctionTypescript(construct, name, ghaInfo, environment, { ...lambdaProps, timeout });
   lambda.addEventSource(new SqsEventSource(queue, { reportBatchItemFailures: true }));
 
   // Policy enabling message sending to the queue
@@ -48,6 +50,7 @@ export function queueLambda(
 export function queueLambdaContainer(
   construct: Construct,
   name: string,
+  ghaInfo: GhaInfo,
   initialPass: boolean,
   environment?: { [key: string]: string; },
   ecr?: Repository,
@@ -64,7 +67,7 @@ export function queueLambdaContainer(
     removalPolicy: RemovalPolicy.DESTROY,
   });
 
-  const { repository, lambda } = containerFunction(construct, initialPass, name, environment, { ...lambdaProps, timeout }, 'latest', ecr);
+  const { repository, lambda } = containerFunction(construct, initialPass, name, ghaInfo, environment, { ...lambdaProps, timeout }, 'latest', ecr);
   lambda.addEventSource(new SqsEventSource(queue, { reportBatchItemFailures: true }));
 
   return {

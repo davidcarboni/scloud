@@ -10,6 +10,7 @@ const octokit = new Octokit({
 });
 
 let repoPublicKey: any;
+const environmentPublicKeys: Record<string, any> = {};
 
 export async function getRepo(owner: string, repo: string): Promise<any> {
   const info = <RestEndpointMethodTypes['repos']['get']['parameters']>{
@@ -46,6 +47,25 @@ export async function getRepoPublicKey(owner: string, repo: string) {
   // Cache and return the result
   repoPublicKey = response.data;
   return repoPublicKey;
+}
+
+export async function getEnvironmentPublicKey(owner: string, repo: string, environment: string) {
+  if (environmentPublicKeys[environment]) return environmentPublicKeys[environment];
+
+  const repoId = await getRepoId(owner, repo);
+  const response = await octokit.actions.getEnvironmentPublicKey({
+    repository_id: repoId,
+    environment_name: environment,
+  });
+
+  if (response.status !== 200) {
+    console.log(response);
+    throw new Error('Error getting environment public key');
+  }
+
+  // Cache and return the result
+  environmentPublicKeys[environment] = response.data;
+  return environmentPublicKeys[environment];
 }
 
 export async function listRepoSecrets(owner: string, repo: string): Promise<string[]> {
@@ -106,6 +126,64 @@ export async function listEnvironmentSecrets(owner: string, repo: string, enviro
   return names;
 }
 
+export async function listRepoVariables(owner: string, repo: string): Promise<string[]> {
+  const response = await octokit.actions.listRepoVariables({
+    owner,
+    repo,
+    per_page: 100,
+  });
+
+  if (response.status !== 200) {
+    console.log(response);
+    throw new Error('Error listing repo variables');
+  }
+
+  const { variables } = response.data;
+  const totalCount = response.data.total_count;
+
+  // Check we've got all the secrets
+  if (totalCount > 100) {
+    throw new Error('Too many variables, need to paginate.');
+  }
+
+  // Collate variable names
+  const names: string[] = [];
+  variables.forEach((variable) => {
+    names.push(variable.name);
+  });
+
+  return names;
+}
+
+export async function listEnvironmentVariables(owner: string, repo: string, environment: string): Promise<string[]> {
+  const response = await octokit.actions.listEnvironmentVariables({
+    environment_name: environment,
+    repository_id: await getRepoId(owner, repo),
+    per_page: 100,
+  });
+
+  if (response.status !== 200) {
+    console.log(response);
+    throw new Error(`Error listing environment ${environment} variables`);
+  }
+
+  const { variables } = response.data;
+  const totalCount = response.data.total_count;
+
+  // Check we've got all the secrets
+  if (totalCount > 100) {
+    throw new Error('Too many variables, need to paginate.');
+  }
+
+  // Collate variable names
+  const names: string[] = [];
+  variables.forEach((variable) => {
+    names.push(variable.name);
+  });
+
+  return names;
+}
+
 export async function setRepoSecret(
   secretName: string,
   secretValue: string,
@@ -139,15 +217,15 @@ export async function setEnvironmentSecret(
   environment: string,
 ): Promise<string> {
   if (!secretValue) throw new Error(`No value for secret ${secretName}`);
-  const publicKey = await getRepoPublicKey(owner, repo);
-  const encryptedValue = await encrypt(secretValue, publicKey.key);
+  const environmentPublicKey = await getEnvironmentPublicKey(owner, repo, environment);
+  const encryptedValue = await encrypt(secretValue, environmentPublicKey.key);
   const repoId = await getRepoId(owner, repo);
   const response = await octokit.actions.createOrUpdateEnvironmentSecret({
     environment_name: environment,
     repository_id: repoId,
     secret_name: secretName,
     encrypted_value: encryptedValue,
-    key_id: publicKey.key_id,
+    key_id: environmentPublicKey.key_id,
   });
 
   if (response.status === 201 || response.status === 204) {
@@ -188,19 +266,33 @@ export async function setEnvironmentVariable(
   environment: string,
 ): Promise<string> {
   if (!value) throw new Error(`No value for secret ${name}`);
-  const response = await octokit.rest.actions.createEnvironmentVariable({
-    environment_name: environment,
-    repository_id: await getRepoId(owner, repo),
-    name,
-    value,
-  });
+  try {
+    const response = await octokit.rest.actions.updateEnvironmentVariable({
+      environment_name: environment,
+      repository_id: await getRepoId(owner, repo),
+      name,
+      value,
+    });
 
-  if (response.status === 201 || response.status === 204) {
-    return name;
+    if (response.status === 204) {
+      return name;
+    }
+
+    throw new Error(`Error setting environment ${environment} variable value: ${name}: status code ${response.status}`);
+  } catch (e) {
+    const response = await octokit.rest.actions.createEnvironmentVariable({
+      environment_name: environment,
+      repository_id: await getRepoId(owner, repo),
+      name,
+      value,
+    });
+
+    if (response.status === 201 || response.status === 204) {
+      return name;
+    }
+
+    throw new Error(`Error setting environment ${environment} variable value: ${name}: status code ${response.status}`);
   }
-  // Looks like that didn't work.
-  console.log(response);
-  throw new Error(`Error setting environment ${environment} variable value: ${name}: status code ${response.status}`);
 }
 
 export async function deleteRepoSecret(
@@ -240,4 +332,43 @@ export async function deleteEnvironmentSecret(
   // Looks like that didn't work.
   console.log(response);
   throw new Error(`Error deleting environment ${environment} secret value: ${secretName}: status code ${response.status}`);
+}
+
+export async function deleteRepoVariable(
+  variableName: string,
+  owner: string,
+  repo: string,
+): Promise<string> {
+  const response = await octokit.rest.actions.deleteRepoVariable({
+    owner,
+    repo,
+    name: variableName,
+  });
+
+  if (response.status === 204) {
+    return variableName;
+  }
+  // Looks like that didn't work.
+  console.log(response);
+  throw new Error(`Error deleting variable value: ${variableName}: status code ${response.status}`);
+}
+
+export async function deleteEnvironmentVariable(
+  variableName: string,
+  owner: string,
+  repo: string,
+  environment: string,
+): Promise<string> {
+  const response = await octokit.rest.actions.deleteEnvironmentVariable({
+    environment_name: environment,
+    repository_id: await getRepoId(owner, repo),
+    name: variableName,
+  });
+
+  if (response.status === 204) {
+    return variableName;
+  }
+  // Looks like that didn't work.
+  console.log(response);
+  throw new Error(`Error deleting environment ${environment} variable value: ${variableName}: status code ${response.status}`);
 }
