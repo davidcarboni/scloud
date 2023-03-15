@@ -141,7 +141,13 @@ async function readSecrets(): Promise<{repoSecrets:KeyValues, environmentSecrets
 
     // Confirm the list of variables to be set
     console.log(`Variables to be set: ${JSON.stringify(newVariables, null, 2)}`);
-    console.log('Not displaying secrets to be set because they are secret');
+    const newSecretNames: Record<string, any> = {};
+    newSecretNames.repoSecrets = Object.keys(newSecrets.repoSecrets);
+    newSecretNames.environmentSecrets = {};
+    Object.keys(newSecrets.environmentSecrets).forEach((environment) => {
+      newSecretNames.environmentSecrets[environment] = Object.keys(newSecrets.environmentSecrets[environment]);
+    });
+    console.log(`Secrets (names) to be set: ${JSON.stringify(newSecretNames, null, 2)}`);
 
     // Calculate any leftover secrets or variables (existing in GHA but not in our infrastructure code)
     const leftoverSecretNames = {
