@@ -21,6 +21,7 @@ import { LambdaRestApi } from 'aws-cdk-lib/aws-apigateway';
 import { Function, FunctionProps } from 'aws-cdk-lib/aws-lambda';
 import _ from 'lodash';
 import { zipFunctionTypescript } from './lambdaFunction';
+import { ghaValues } from './ghaUser';
 
 export const junkPaths: string[] = ['/wp-includes/*', '/wp-admin*', '*.xml', '*.php', '*.aspx', '*.env', '/.git*', '/.remote*', '/.production*', '/.local*'];
 
@@ -31,7 +32,7 @@ function output(
   value: string,
 ) {
   const outputName = `${_.lowerFirst(name)}${_.capitalize(type)}`;
-  new CfnOutput(construct, outputName, { value });
+  ghaValues.variables.push(new CfnOutput(construct, outputName, { value }));
 }
 
 export function redirectWww(
@@ -299,7 +300,7 @@ export function cloudFront(
       autoDeleteObjects: true,
       publicReadAccess: true,
     });
-    new CfnOutput(construct, `${name}Bucket`, { value: bucket.bucketName });
+    ghaValues.variables.push(new CfnOutput(construct, `${name}Bucket`, { value: bucket.bucketName }));
     behavior = {
       origin: new origins.S3Origin(bucket),
       allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
@@ -319,7 +320,7 @@ export function cloudFront(
       region: 'us-east-1',
     }),
   });
-  new CfnOutput(construct, `${name}DistributionId`, { value: distribution.distributionId });
+  ghaValues.variables.push(new CfnOutput(construct, `${name}DistributionId`, { value: distribution.distributionId }));
 
   new route53.ARecord(construct, `${name}ARecord`, {
     zone,

@@ -3,6 +3,7 @@ import * as ecr from 'aws-cdk-lib/aws-ecr';
 import { Construct } from 'constructs';
 import { Repository } from 'aws-cdk-lib/aws-ecr';
 import { CfnOutput } from 'aws-cdk-lib';
+import { ghaValues } from './ghaUser';
 
 /**
  * An API gateway backed by a Lambda function.
@@ -21,7 +22,7 @@ export default function ecrRepository(
 
   // CfnOutput in the format: ecrName
   const repoOutputName = `ecr${name[0].toUpperCase()}${name.toLowerCase().slice(1)}`;
-  new CfnOutput(construct, repoOutputName, { value: repository.repositoryName });
+  ghaValues.variables.push(new CfnOutput(construct, repoOutputName, { value: repository.repositoryName }));
 
   return repository;
 }

@@ -16,6 +16,11 @@ export const ghaResources = {
   distributions: <IDistribution[]>[],
 };
 
+export const ghaValues = {
+  secrets: <CfnOutput[]>[],
+  variables: <CfnOutput[]>[],
+};
+
 let user: User;
 let policy: ManagedPolicy;
 
@@ -47,8 +52,8 @@ export function ghaUser(stack: Stack): {user: User, accessKey: CfnAccessKey | un
     });
 
     // Access key details for GHA secrets
-    new CfnOutput(stack, 'awsAccessKeyId', { value: accessKey.ref });
-    new CfnOutput(stack, 'awsSecretAccessKey', { value: accessKey.attrSecretAccessKey });
+    ghaValues.secrets.push(new CfnOutput(stack, 'awsAccessKeyId', { value: accessKey.ref }));
+    ghaValues.secrets.push(new CfnOutput(stack, 'awsSecretAccessKey', { value: accessKey.attrSecretAccessKey }));
   }
 
   // ECR repositories - push/pull images

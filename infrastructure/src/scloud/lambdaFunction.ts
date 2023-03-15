@@ -8,6 +8,7 @@ import { Repository } from 'aws-cdk-lib/aws-ecr';
 import { CfnOutput } from 'aws-cdk-lib';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import ecrRepository from './ecrRepository';
+import { ghaValues } from './ghaUser';
 
 function output(
   construct: Construct,
@@ -15,7 +16,7 @@ function output(
   lambda: IFunction,
 ) {
   const lambdaOutputName = `${name}Lambda`;
-  new CfnOutput(construct, lambdaOutputName, { value: lambda.functionName });
+  ghaValues.variables.push(new CfnOutput(construct, lambdaOutputName, { value: lambda.functionName }));
 }
 
 /**
@@ -25,10 +26,7 @@ function output(
  * for incremental deployments: false.
  * @param name The name for this function
  * @param environment Environment variables for the Lambda function
- * @param lambdaProps Additional configuration properties for the Lambda function
- * @param tagOrDigest Optional container image tag (or digest) - defaulted to 'latest'
- * @param ecr If you already have an ECR repository created, you can pass it in. If not, one will be created for you.
- * @returns The lambda and associated ECR repository
+ * @returns The lambda, if created, and associated ECR repository
  */
 export function containerFunction(
   construct: Construct,
@@ -63,8 +61,7 @@ export function containerFunction(
  * @param construct Parent CDK construct (typically 'this')
  * @param name The name for this function
  * @param environment Environment variables for the Lambda function
- * @param lambdaProps Additional configuration properties for the Lambda function
- * @returns The lambda function
+ * @returns The lambda, if created, and associated ECR repository
  */
 export function zipFunctionTypescript(
   construct: Construct,
@@ -90,8 +87,7 @@ export function zipFunctionTypescript(
  * @param construct Parent CDK construct (typically 'this')
  * @param name The name for this function
  * @param environment Environment variables for the Lambda function
- * @param lambdaProps Additional configuration properties for the Lambda function
- * @returns The lambda function
+ * @returns The lambda, if created, and associated ECR repository
  */
 export function zipFunctionPython(
   construct: Construct,
@@ -117,14 +113,12 @@ export function zipFunctionPython(
  * @param construct Parent CDK construct (typically 'this')
  * @param name The name for this function
  * @param environment Environment variables for the Lambda function
- * @param lambdaProps Additional configuration properties for the Lambda function
- * @returns The lambda function
+ * @returns The lambda, if created, and associated ECR repository
  */
 export function edgeFunction(
   construct: Construct,
   name: string,
   environment?: { [key: string]: string; },
-  lambdaProps?: Partial<FunctionProps>,
 ): cloudfront.experimental.EdgeFunction {
   const edge = new cloudfront.experimental.EdgeFunction(
     construct,
@@ -137,8 +131,6 @@ export function edgeFunction(
       memorySize: 256,
       logRetention: logs.RetentionDays.THREE_MONTHS,
       environment,
-      description: name,
-      ...lambdaProps,
     },
   );
   output(construct, name, edge.lambda);
