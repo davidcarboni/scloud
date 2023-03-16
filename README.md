@@ -12,7 +12,7 @@ The folder you're likely looking for is: https://github.com/davidcarboni/scloud/
 
 This repo contains a set of AWS CDK patterns packaged as functions so you can put serverless architectures together with a few function calls. The aim is to make it easy to put together typical infrastructure building blocks that can be reused (and/or tweaked) across projects.
 
-The name 'scloud' means 'simple cloud', but could equally mean other things. These patterns are designed to be basic and not finely configurable, on the basis that keeping things standad, simple, even a bit stupid (you can decide fo yourself what the S in Scloud stands for) is a good way to get things done and get on with life.
+The name 'scloud' means 'simple cloud', but could equally mean other things. These patterns are designed to be basic and not finely configurable, on the basis that keeping things standad, simple, even a bit stupid (you can decide for yourself what the S in Scloud stands for) is a good way to get things done and get on with life.
 
 ## Github secrets and variables
 
