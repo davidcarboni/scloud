@@ -10,8 +10,6 @@ I use it to store chunks of reference code I use again and again, each time I bu
 
 The folder you're likely looking for is: https://github.com/davidcarboni/scloud/tree/main/infrastructure/src/scloud
 
-The other folder you'll want to look for is: https://github.com/davidcarboni/scloud/tree/main/infrastructure/src/github
-
 This repo contains a set of AWS CDK patterns packaged as functions so you can put serverless architectures together with a few function calls.
 
 The aim is to make it easy to put together typical infrastructure building blocks that can be reused (and/or tweaked) across projects.
