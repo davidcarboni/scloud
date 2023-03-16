@@ -1,11 +1,6 @@
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import * as gh from './repo';
 
-const stacks : Record<string, string> = {
-  CalculatorProduction: 'production',
-  CalculatorStaging: 'staging',
-};
-
 // Values from /secrets/github.sh
 const owner = process.env.OWNER || process.env.USERNAME || '';
 const repo = process.env.REPO || '';
@@ -28,6 +23,17 @@ function envVarCase(camelCaseName: string): string {
   return snakeCase.toUpperCase();
 }
 
+// Optional: map stack name(s) to Github environment name(s)
+// If this isn't set, stack variables/secrets will be set at the repo level.
+let environmentMappings: Record<string, string> = {
+  StackName: 'ghEnvironmentName',
+};
+const environmentMappingsFile = 'secrets/environmentMappings.json';
+if (existsSync(environmentMappingsFile)) {
+  const json = readFileSync(environmentMappingsFile, 'utf-8');
+  environmentMappings = JSON.parse(json);
+}
+
 async function readVariables(): Promise<KeyValuesCollection> {
   const variables: KeyValuesCollection = { repo: {}, environment: {} };
 
@@ -42,7 +48,7 @@ async function readVariables(): Promise<KeyValuesCollection> {
         if (existsSync(`secrets/${stackName}.ghaVariables.json`)) {
           const variableNames = JSON.parse(readFileSync(`secrets/${stackName}.ghaVariables.json`, 'utf-8')) as string[];
 
-          const environment = stacks[stackName];
+          const environment = environmentMappings[stackName];
           if (environment) { variables.environment[environment] = {}; }
           variableNames.forEach((variableName) => {
             if (environment) {
@@ -77,7 +83,7 @@ async function readSecrets(): Promise<KeyValuesCollection> {
         if (existsSync(`secrets/${stackName}.ghaSecrets.json`)) {
           const secretNames = JSON.parse(readFileSync(`secrets/${stackName}.ghaSecrets.json`, 'utf-8')) as string[];
 
-          const environment = stacks[stackName];
+          const environment = environmentMappings[stackName];
           if (environment) { secrets.environment[environment] = {}; }
           secretNames.forEach((secretName) => {
             if (environment) {
@@ -111,8 +117,8 @@ async function processVariables(): Promise<KeyValuesCollection> {
   currentVariableNames.repo = await gh.listRepoVariables(owner, repo);
   console.log(`${owner}/${repo} has ${currentVariableNames.repo.length} variables: ${currentVariableNames.repo}`);
 
-  await Promise.all(Object.keys(stacks).map(async (stackName) => {
-    const environment = stacks[stackName];
+  await Promise.all(Object.keys(environmentMappings).map(async (stackName) => {
+    const environment = environmentMappings[stackName];
     const envVars = await gh.listEnvironmentVariables(owner, repo, environment);
     currentVariableNames.environment[environment] = envVars;
     console.log(`${owner}/${repo}/${environment} has ${envVars.length} variables: ${envVars}`);
@@ -179,8 +185,8 @@ async function processSecrets(): Promise<KeyValuesCollection> {
   currentSecretNames.repo = await gh.listRepoSecrets(owner, repo);
   console.log(`${owner}/${repo} has ${currentSecretNames.repo.length} secrets: ${currentSecretNames.repo}`);
 
-  await Promise.all(Object.keys(stacks).map(async (stackName) => {
-    const environment = stacks[stackName];
+  await Promise.all(Object.keys(environmentMappings).map(async (stackName) => {
+    const environment = environmentMappings[stackName];
     const envSecrets = await gh.listEnvironmentSecrets(owner, repo, environment);
     currentSecretNames.environment[environment] = envSecrets;
     console.log(`${owner}/${repo}/${environment} has ${envSecrets.length} secrets: ${envSecrets}`);
