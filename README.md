@@ -19,3 +19,9 @@ The name 'scloud' means 'simple cloud', but could equally mean other things. The
 The other folder you'll want to look in is: https://github.com/davidcarboni/scloud/tree/main/infrastructure/src/github
 
 If you use Github Actions, chances are you'll want to pass variables and secrets from your infrasturcture build to your Github Actions workflows, for example generated bucket and Lambda names. Once you're set up, you can use `npm run secrets` to read in values output by CDK deploy and use them to set up secrets and variables on Github automatically.
+
+## Infrastructure setup and utilities
+
+There are a bunch of example scripts and setup under https://tickets.devoxx.co.uk/event/devoxx-uk-2023
+
+A couple of ky files are `dependencies.sh` (changes you may want to make to package.json) and `update.sh` (a usedul CDK deployment script). You'll also want to look at the `/secrets` directory - this is where you'll want to create `*.sh` files that can be sourced by `update.sh` to supply values to your infrastructure build.
