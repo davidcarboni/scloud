@@ -2,7 +2,7 @@
 
 _AWS CDK patterns for assembling serverless infrastructures_
 
-If you're not intimately interested in infrastructure, want to do it well, but don't really want to make it your passion in life then scloud might be what you need.
+If you're not intimately interested in infrastructure, want to do it well, but don't want to make it your passion in life then scloud could be what you need.
 
 I use it to store chunks of reference code I use again and again, each time I build a new service.
 
