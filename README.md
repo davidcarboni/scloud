@@ -1,6 +1,6 @@
 # scloud
 
-_AWS CDK patterns_
+_AWS CDK patterns for assembling serverless infrastructures_
 
 The folder you're likely looking for is: https://github.com/davidcarboni/scloud/tree/main/infrastructure/src/scloud
 
