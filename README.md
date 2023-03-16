@@ -16,6 +16,6 @@ The name 'scloud' means 'simple cloud', but could equally mean other things. The
 
 ## Github secrets and variables
 
-The other folder you'll want to look for is: https://github.com/davidcarboni/scloud/tree/main/infrastructure/src/github
+The other folder you'll want to look in is: https://github.com/davidcarboni/scloud/tree/main/infrastructure/src/github
 
 If you use Github Actions, chances are you'll want to pass variables and secrets from your infrasturcture build to your Github Actions workflows, for example generated bucket and Lambda names. Once you're set up, you can use `npm run secrets` to read in values output by CDK deploy and use them to set up secrets and variables on Github automatically.
