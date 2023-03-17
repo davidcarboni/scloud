@@ -1,11 +1,47 @@
 import { existsSync, readFileSync, writeFileSync } from 'fs';
-import * as gh from './repo';
+import {
+  deleteEnvironmentSecret, deleteEnvironmentVariable, listEnvironmentSecrets, listEnvironmentVariables, setEnvironmentSecret, setEnvironmentVariable,
+} from './environment';
+import {
+  deleteRepoSecret, deleteRepoVariable, listRepoSecrets, listRepoVariables, setRepoSecret, setRepoVariable,
+} from './repo';
 
-// Values from /secrets/github.sh
+//
+// Delete "leftover" secrets and variables?
+//
+// Pass --delete on the command line. Keeps things tidy, but will also delete any secrets or variables you've set manually
+//
+const deleteLeftoverValues = process.argv.includes('--delete');
+
+//
+// Values from /secrets/github.sh:
+//
+// export USERNAME=octocat
+// export PERSONAL_ACCESS_TOKEN=xxxxxxxxxxx
+// export OWNER=organization
+// export REPO=repository
 const owner = process.env.OWNER || process.env.USERNAME || '';
 const repo = process.env.REPO || '';
 if (!owner) throw new Error('No repo owner: please set an environment variable for either USERNAME or OWNER');
 if (!repo) throw new Error('No repo: please set an environment variable for REPO');
+
+//
+// Optional: map stack name(s) to Github environment name(s)
+//
+// secrets/environmentMappings.json:
+// {
+//    "StackName": "ghithubEnvironmentName"
+// }
+//
+// If this isn't set, stack variables/secrets will be set at the repo level.
+let environmentMappings: Record<string, string> = {
+  StackName: 'ghEnvironmentName',
+};
+const environmentMappingsFile = 'secrets/environmentMappings.json';
+if (existsSync(environmentMappingsFile)) {
+  const json = readFileSync(environmentMappingsFile, 'utf-8');
+  environmentMappings = JSON.parse(json);
+}
 
 // Type-checking interfaces that represent collections of variable/secret key-value pairs
 interface KeyValues {
@@ -21,17 +57,6 @@ interface KeysCollection {
 function envVarCase(camelCaseName: string): string {
   const snakeCase: string = camelCaseName.replace(/[A-Z]/g, (letter: string) => `_${letter.toLowerCase()}`);
   return snakeCase.toUpperCase();
-}
-
-// Optional: map stack name(s) to Github environment name(s)
-// If this isn't set, stack variables/secrets will be set at the repo level.
-let environmentMappings: Record<string, string> = {
-  StackName: 'ghEnvironmentName',
-};
-const environmentMappingsFile = 'secrets/environmentMappings.json';
-if (existsSync(environmentMappingsFile)) {
-  const json = readFileSync(environmentMappingsFile, 'utf-8');
-  environmentMappings = JSON.parse(json);
 }
 
 async function readVariables(): Promise<KeyValuesCollection> {
@@ -114,12 +139,12 @@ async function processVariables(): Promise<KeyValuesCollection> {
   };
 
   // List the current variables
-  currentVariableNames.repo = await gh.listRepoVariables(owner, repo);
+  currentVariableNames.repo = await listRepoVariables(owner, repo);
   console.log(`${owner}/${repo} has ${currentVariableNames.repo.length} variables: ${currentVariableNames.repo}`);
 
   await Promise.all(Object.keys(environmentMappings).map(async (stackName) => {
     const environment = environmentMappings[stackName];
-    const envVars = await gh.listEnvironmentVariables(owner, repo, environment);
+    const envVars = await listEnvironmentVariables(owner, repo, environment);
     currentVariableNames.environment[environment] = envVars;
     console.log(`${owner}/${repo}/${environment} has ${envVars.length} variables: ${envVars}`);
   }));
@@ -156,17 +181,17 @@ async function processVariables(): Promise<KeyValuesCollection> {
   });
 
   // Delete any leftover variables
-  await Promise.all(leftoverVariableNames.repo.map(async (variableName) => gh.deleteRepoVariable(variableName, owner, repo)));
+  await Promise.all(leftoverVariableNames.repo.map(async (variableName) => deleteRepoVariable(variableName, owner, repo)));
   await Promise.all(Object.keys(leftoverVariableNames.environment).map(async (environment) => {
     const environmentVariables = leftoverVariableNames.environment[environment];
-    await Promise.all(environmentVariables.map(async (secretName) => gh.deleteEnvironmentVariable(secretName, owner, repo, environment)));
+    await Promise.all(environmentVariables.map(async (secretName) => deleteEnvironmentVariable(secretName, owner, repo, environment)));
   }));
 
   // Set variables
-  await Promise.all(Object.keys(newVariables.repo).map(async (variableName) => gh.setRepoVariable(variableName, newVariables.repo[variableName], owner, repo)));
+  await Promise.all(Object.keys(newVariables.repo).map(async (variableName) => setRepoVariable(variableName, newVariables.repo[variableName], owner, repo)));
   await Promise.all(Object.keys(newVariables.environment).map(async (environment) => {
     const environmentVariables = newVariables.environment[environment];
-    Object.keys(environmentVariables).map(async (variableName) => gh.setEnvironmentVariable(variableName, environmentVariables[variableName], owner, repo, environment));
+    Object.keys(environmentVariables).map(async (variableName) => setEnvironmentVariable(variableName, environmentVariables[variableName], owner, repo, environment));
   }));
 
   return newVariables;
@@ -182,12 +207,12 @@ async function processSecrets(): Promise<KeyValuesCollection> {
   };
 
   // List the current secrets
-  currentSecretNames.repo = await gh.listRepoSecrets(owner, repo);
+  currentSecretNames.repo = await listRepoSecrets(owner, repo);
   console.log(`${owner}/${repo} has ${currentSecretNames.repo.length} secrets: ${currentSecretNames.repo}`);
 
   await Promise.all(Object.keys(environmentMappings).map(async (stackName) => {
     const environment = environmentMappings[stackName];
-    const envSecrets = await gh.listEnvironmentSecrets(owner, repo, environment);
+    const envSecrets = await listEnvironmentSecrets(owner, repo, environment);
     currentSecretNames.environment[environment] = envSecrets;
     console.log(`${owner}/${repo}/${environment} has ${envSecrets.length} secrets: ${envSecrets}`);
   }));
@@ -228,18 +253,20 @@ async function processSecrets(): Promise<KeyValuesCollection> {
     }
   });
 
-  // Delete any leftover secrets
-  await Promise.all(leftoverSecretNames.repo.map(async (secretName) => gh.deleteRepoSecret(secretName, owner, repo)));
-  await Promise.all(Object.keys(leftoverSecretNames.environment).map(async (environment) => {
-    const environmentSecrets = leftoverSecretNames.environment[environment];
-    await Promise.all(environmentSecrets.map(async (secretName) => gh.deleteEnvironmentSecret(secretName, owner, repo, environment)));
-  }));
+  // Delete leftover secrets - keeps things clean and tidy
+  if (deleteLeftoverValues) {
+    await Promise.all(leftoverSecretNames.repo.map(async (secretName) => deleteRepoSecret(secretName, owner, repo)));
+    await Promise.all(Object.keys(leftoverSecretNames.environment).map(async (environment) => {
+      const environmentSecrets = leftoverSecretNames.environment[environment];
+      await Promise.all(environmentSecrets.map(async (secretName) => deleteEnvironmentSecret(secretName, owner, repo, environment)));
+    }));
+  }
 
   // Set secrets
-  await Promise.all(Object.keys(newSecrets.repo).map(async (secretName) => gh.setRepoSecret(secretName, newSecrets.repo[secretName], owner, repo)));
+  await Promise.all(Object.keys(newSecrets.repo).map(async (secretName) => setRepoSecret(secretName, newSecrets.repo[secretName], owner, repo)));
   await Promise.all(Object.keys(newSecrets.environment).map(async (environment) => {
     const environmentSecrets = newSecrets.environment[environment];
-    Object.keys(environmentSecrets).map(async (secretName) => gh.setEnvironmentSecret(secretName, environmentSecrets[secretName], owner, repo, environment));
+    Object.keys(environmentSecrets).map(async (secretName) => setEnvironmentSecret(secretName, environmentSecrets[secretName], owner, repo, environment));
   }));
 
   return newSecrets;
@@ -248,9 +275,6 @@ async function processSecrets(): Promise<KeyValuesCollection> {
 (async () => {
   console.log(`Updating variables and secrets on ${owner}/${repo}`);
   try {
-    // Cache the repo public key
-    await gh.getRepoPublicKey(owner, repo);
-
     const newVariables = await processVariables();
     const newSecrets = await processSecrets();
 
