@@ -26,7 +26,7 @@ export async function getOrgPublicKey(octokit: Octokit, org: string): Promise<an
  * @param org The organisation to set the secret on
  * @param secretName The secret name
  * @param secretValue The value to set
- * @param repoIDs The IDs of the repositoried to give access to the secret
+ * @param repoIDs (potional) The IDs of the repositoried to give access to the secret
  * @returns An empty string if succedssful, otherwise the name of the failed secret
  */
 export async function setOrgSecret(
@@ -34,7 +34,7 @@ export async function setOrgSecret(
   org: string,
   secretName: string,
   secretValue: string,
-  repoIDs: string[],
+  repoIDs?: number[],
 ): Promise<string> {
   const orgPublicKey = await getOrgPublicKey(octokit, org);
   const encryptedValue = encrypt(secretValue, orgPublicKey.key);
@@ -45,8 +45,14 @@ export async function setOrgSecret(
       encryptedValue,
       key_id: orgPublicKey.key_id,
       visibility: 'selected',
-      selected_repository_ids: repoIDs,
     });
+    if (repoIDs) {
+      octokit.rest.actions.setSelectedReposForOrgSecret({
+        org,
+        secret_name: secretName,
+        selected_repository_ids: repoIDs,
+      });
+    }
 
     if (response.status === 201 || response.status === 204) {
       console.log(`${secretName} * org`);
