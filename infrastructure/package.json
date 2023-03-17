@@ -10,7 +10,7 @@
     "test": "jest",
     "cdk": "cdk",
     "lint": "eslint --fix --ext ts bin lib",
-    "secrets": "ts-node src/github/secrets.ts"
+    "secrets": "ts-node src/github/github.ts"
   },
   "devDependencies": {
     "@types/aws-lambda": "*",
