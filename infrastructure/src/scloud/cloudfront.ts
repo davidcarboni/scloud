@@ -3,7 +3,9 @@ import { Construct } from 'constructs';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
 import * as route53patterns from 'aws-cdk-lib/aws-route53-patterns';
-import { CfnOutput, Duration, RemovalPolicy } from 'aws-cdk-lib';
+import {
+  CfnOutput, Duration, RemovalPolicy, Stack,
+} from 'aws-cdk-lib';
 import { DnsValidatedCertificate, ICertificate } from 'aws-cdk-lib/aws-certificatemanager';
 import { CloudFrontTarget } from 'aws-cdk-lib/aws-route53-targets';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
@@ -59,7 +61,7 @@ export function redirectWww(
 }
 
 export function webApp(
-  construct: Construct,
+  stack: Stack,
   name: string,
   ghaInfo: GhaInfo,
   zone: route53.IHostedZone,
@@ -71,22 +73,22 @@ export function webApp(
   const domainName = domain || `${zone.zoneName}`;
 
   // Web app handler - default values can be overridden using lambdaProps
-  const lambda = zipFunctionTypescript(construct, name, ghaInfo, environment, { memorySize: 3008, timeout: Duration.seconds(10), ...lambdaProps });
+  const lambda = zipFunctionTypescript(stack, name, ghaInfo, environment, { memorySize: 3008, timeout: Duration.seconds(10), ...lambdaProps });
 
   // const headerFilter = edgeFunction(construct, 'headerFilter');
 
   // Static content
-  const bucket = new Bucket(construct, `${name}Static`, {
+  const bucket = new Bucket(stack, `${name}Static`, {
     removalPolicy: RemovalPolicy.DESTROY,
     autoDeleteObjects: true,
     publicReadAccess: true,
   });
-  outputVariable(construct, 'StaticBucket', name, bucket.bucketName, ghaInfo);
+  outputVariable(stack, 'StaticBucket', name, bucket.bucketName, ghaInfo);
 
-  const api = new LambdaRestApi(construct, `${name}ApiGateway`, {
+  const api = new LambdaRestApi(stack, `${name}ApiGateway`, {
     handler: lambda,
     proxy: true,
-    description: name,
+    description: `${stack.stackName} ${name}`,
     binaryMediaTypes: ['multipart/form-data'],
   });
 
@@ -97,14 +99,14 @@ export function webApp(
     compress: true,
   };
 
-  const certificate = new DnsValidatedCertificate(construct, `${name}Certificate`, {
+  const certificate = new DnsValidatedCertificate(stack, `${name}Certificate`, {
     domainName,
     subjectAlternativeNames: [`www.${domainName}`],
     hostedZone: zone,
     region: 'us-east-1',
   });
 
-  const distribution = new Distribution(construct, `${name}Distribution`, {
+  const distribution = new Distribution(stack, `${name}Distribution`, {
     domainNames: [domainName],
     comment: domainName,
     defaultBehavior: {
@@ -118,7 +120,7 @@ export function webApp(
       cachePolicy: CachePolicy.CACHING_DISABLED,
       // https://stackoverflow.com/questions/71367982/cloudfront-gives-403-when-origin-request-policy-include-all-headers-querystri
       // OriginRequestHeaderBehavior.all() gives an error so just cookie, user-agent, referer
-      originRequestPolicy: new OriginRequestPolicy(construct, `${name}OriginRequestPolicy`, {
+      originRequestPolicy: new OriginRequestPolicy(stack, `${name}OriginRequestPolicy`, {
         headerBehavior: OriginRequestHeaderBehavior.allowList('user-agent', 'User-Agent', 'Referer', 'referer'),
         cookieBehavior: OriginRequestCookieBehavior.all(),
         queryStringBehavior: OriginRequestQueryStringBehavior.all(),
@@ -136,7 +138,7 @@ export function webApp(
     },
     certificate,
   });
-  outputVariable(construct, 'DistributionId', name, distribution.distributionId, ghaInfo);
+  outputVariable(stack, 'DistributionId', name, distribution.distributionId, ghaInfo);
 
   // Handle junk requests by routing to the static bucket
   // so they don't invoke Lambda
@@ -146,13 +148,13 @@ export function webApp(
   };
   junkPaths.forEach((path) => distribution.addBehavior(path, new S3Origin(bucket), junkOptions));
 
-  new route53.ARecord(construct, `${name}ARecord`, {
+  new route53.ARecord(stack, `${name}ARecord`, {
     recordName: domainName,
     target: route53.RecordTarget.fromAlias(new CloudFrontTarget(distribution)),
     zone,
   });
 
-  if (www) redirectWww(construct, name, zone, certificate);
+  if (www) redirectWww(stack, name, zone, certificate);
 
   return {
     lambda, api, bucket, distribution,
@@ -174,7 +176,7 @@ export function webApp(
  * @returns
  */
 export function webAppRoutes(
-  construct: Construct,
+  stack: Stack,
   name: string,
   ghaInfo: GhaInfo,
   zone: route53.IHostedZone,
@@ -186,16 +188,16 @@ export function webAppRoutes(
 
   // We consider the objects in the static bucket ot be expendable because
   // they're static content we generate (rather than user data).
-  const bucket = new Bucket(construct, `${name}Static`, {
+  const bucket = new Bucket(stack, `${name}Static`, {
     removalPolicy: RemovalPolicy.DESTROY,
     autoDeleteObjects: true,
     publicReadAccess: true,
   });
-  outputVariable(construct, 'StaticBucket', name, bucket.bucketName, ghaInfo);
+  outputVariable(stack, 'StaticBucket', name, bucket.bucketName, ghaInfo);
 
   // Cloudfromt distribution - handle static requests
   // TODO add a secret so only Cludfront can access APIg
-  const distribution = new Distribution(construct, `${name}Distribution`, {
+  const distribution = new Distribution(stack, `${name}Distribution`, {
     domainNames: [domainName],
     comment: domainName,
     defaultBehavior: {
@@ -205,13 +207,13 @@ export function webAppRoutes(
       viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
       cachePolicy: CachePolicy.CACHING_OPTIMIZED,
     },
-    certificate: new DnsValidatedCertificate(construct, `${name}Certificate`, {
+    certificate: new DnsValidatedCertificate(stack, `${name}Certificate`, {
       domainName,
       hostedZone: zone,
       region: 'us-east-1',
     }),
   });
-  new route53.ARecord(construct, `${name}ARecord`, {
+  new route53.ARecord(stack, `${name}ARecord`, {
     recordName: domainName,
     target: route53.RecordTarget.fromAlias(new CloudFrontTarget(distribution)),
     zone,
@@ -221,17 +223,17 @@ export function webAppRoutes(
   const lambdas :{[path:string]:Function} = {};
   Object.keys(routes).forEach((pathPattern) => {
     // Use the provided function, or generate a default one:
-    const lambda = routes[pathPattern]?.lambda || zipFunctionTypescript(construct, name, ghaInfo, {}, { memorySize: 3008 });
+    const lambda = routes[pathPattern]?.lambda || zipFunctionTypescript(stack, name, ghaInfo, {}, { memorySize: 3008 });
     // Allowed headers:
     // https://stackoverflow.com/questions/71367982/cloudfront-gives-403-when-origin-request-policy-include-all-headers-querystri
     // OriginRequestHeaderBehavior.all() gives an error so just cookie, user-agent, referer
     const allowHeaders = ['user-agent', 'User-Agent', 'Referer', 'referer'].concat(routes[pathPattern]?.headers || []);
     distribution.addBehavior(
       pathPattern,
-      new RestApiOrigin(new LambdaRestApi(construct, `${name}${pathPattern}`, {
+      new RestApiOrigin(new LambdaRestApi(stack, `${name}${pathPattern}`, {
         handler: lambda,
         proxy: true,
-        description: `${name}-${pathPattern}`,
+        description: `${stack.stackName} ${name}-${pathPattern}`,
       })),
       {
         allowedMethods: AllowedMethods.ALLOW_ALL,
@@ -240,7 +242,7 @@ export function webAppRoutes(
         cachePolicy: CachePolicy.CACHING_DISABLED,
         // https://stackoverflow.com/questions/71367982/cloudfront-gives-403-when-origin-request-policy-include-all-headers-querystri
         // OriginRequestHeaderBehavior.all() gives an error so just cookie, user-agent, referer
-        originRequestPolicy: new OriginRequestPolicy(construct, `${name}${pathPattern}OriginRequestPolicy`, {
+        originRequestPolicy: new OriginRequestPolicy(stack, `${name}${pathPattern}OriginRequestPolicy`, {
           headerBehavior: OriginRequestHeaderBehavior.allowList(...allowHeaders),
           cookieBehavior: OriginRequestCookieBehavior.all(),
           queryStringBehavior: OriginRequestQueryStringBehavior.all(),
@@ -252,11 +254,11 @@ export function webAppRoutes(
 
   // Redirect www -> zone root
   if (wwwRedirect) {
-    new route53patterns.HttpsRedirect(construct, `${name}WwwRedirect`, {
+    new route53patterns.HttpsRedirect(stack, `${name}WwwRedirect`, {
       recordNames: [`www.${domainName}`],
       targetDomain: domainName,
       zone,
-      certificate: new DnsValidatedCertificate(construct, `${name}CertificateWww`, {
+      certificate: new DnsValidatedCertificate(stack, `${name}CertificateWww`, {
         domainName: `www.${domainName}`,
         hostedZone: zone,
         region: 'us-east-1',
@@ -319,7 +321,7 @@ export function cloudFront(
 
   const distribution = new cloudfront.Distribution(construct, `${name}Distribution`, {
     domainNames: [domainName],
-    comment: name,
+    comment: domainName,
     defaultBehavior: behavior,
     certificate: new DnsValidatedCertificate(construct, `${name}Certificate`, {
       domainName,
