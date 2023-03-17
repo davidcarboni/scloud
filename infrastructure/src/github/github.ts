@@ -45,7 +45,7 @@ if (existsSync(environmentMappingsFile)) {
 
 // Type-checking interfaces that represent collections of variable/secret key-value pairs
 interface KeyValues {
-  [name: string]: string
+  [name: string]: string;
 }
 interface KeyValuesCollection {
   repo: KeyValues, environment: { [environment: string]: KeyValues; };
@@ -188,10 +188,21 @@ async function processVariables(): Promise<KeyValuesCollection> {
   }));
 
   // Set variables
-  await Promise.all(Object.keys(newVariables.repo).map(async (variableName) => setRepoVariable(variableName, newVariables.repo[variableName], owner, repo)));
+  await Promise.all(Object.keys(newVariables.repo).map(async (variableName) => setRepoVariable(
+    variableName,
+    newVariables.repo[variableName],
+    owner,
+    repo,
+  )));
   await Promise.all(Object.keys(newVariables.environment).map(async (environment) => {
     const environmentVariables = newVariables.environment[environment];
-    Object.keys(environmentVariables).map(async (variableName) => setEnvironmentVariable(variableName, environmentVariables[variableName], owner, repo, environment));
+    Object.keys(environmentVariables).map(async (variableName) => setEnvironmentVariable(
+      variableName,
+      environmentVariables[variableName],
+      owner,
+      repo,
+      environment,
+    ));
   }));
 
   return newVariables;
@@ -263,10 +274,21 @@ async function processSecrets(): Promise<KeyValuesCollection> {
   }
 
   // Set secrets
-  await Promise.all(Object.keys(newSecrets.repo).map(async (secretName) => setRepoSecret(secretName, newSecrets.repo[secretName], owner, repo)));
+  await Promise.all(Object.keys(newSecrets.repo).map(async (secretName) => setRepoSecret(
+    secretName,
+    newSecrets.repo[secretName],
+    owner,
+    repo,
+  )));
   await Promise.all(Object.keys(newSecrets.environment).map(async (environment) => {
     const environmentSecrets = newSecrets.environment[environment];
-    Object.keys(environmentSecrets).map(async (secretName) => setEnvironmentSecret(secretName, environmentSecrets[secretName], owner, repo, environment));
+    Object.keys(environmentSecrets).map(async (secretName) => setEnvironmentSecret(
+      secretName,
+      environmentSecrets[secretName],
+      owner,
+      repo,
+      environment,
+    ));
   }));
 
   return newSecrets;
