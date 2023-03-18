@@ -24,7 +24,8 @@ import _ from 'lodash';
 import { zipFunctionTypescript } from './lambdaFunction';
 import { addGhaVariable, GhaInfo } from './ghaUser';
 
-export const junkPaths: string[] = ['/wp-includes/*', '/wp-admin*', '*.xml', '*.php', '*.aspx', '*.env', '/.git*', '/.remote*', '/.production*', '/.local*'];
+// Disabled for now as routing "*.*" to s3 may handle most of what we need to junk:
+// export const junkPaths: string[] = ['/wp-includes/*', '/wp-admin*', '*.xml', '*.php', '*.aspx', '*.env', '/.git*', '/.remote*', '/.production*', '/.local*'];
 
 function outputVariable(
   construct: Construct,
@@ -154,13 +155,14 @@ export function webApp(
   });
   outputVariable(stack, 'DistributionId', name, distribution.distributionId, ghaInfo);
 
-  // Handle junk requests by routing to the static bucket
-  // so they don't invoke Lambda
-  const junkOptions = {
-    allowedMethods: AllowedMethods.ALLOW_ALL,
-    viewerProtocolPolicy: ViewerProtocolPolicy.ALLOW_ALL,
-  };
-  junkPaths.forEach((path) => distribution.addBehavior(path, new S3Origin(bucket), junkOptions));
+  // Disabled for now as routing "*.*" to s3 may handle most of what we need to junk:
+  // // Handle junk requests by routing to the static bucket
+  // // so they don't invoke Lambda
+  // const junkOptions = {
+  //   allowedMethods: AllowedMethods.ALLOW_ALL,
+  //   viewerProtocolPolicy: ViewerProtocolPolicy.ALLOW_ALL,
+  // };
+  // junkPaths.forEach((path) => distribution.addBehavior(path, new S3Origin(bucket), junkOptions));
 
   new route53.ARecord(stack, `${name}ARecord`, {
     recordName: domainName,
