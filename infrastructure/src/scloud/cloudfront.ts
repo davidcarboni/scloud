@@ -60,6 +60,19 @@ export function redirectWww(
   });
 }
 
+/**
+ * Builds a dynamic web application, backed by a Lambda function.
+ * @param stack The CDK stack. The name of the stack will be included in the API Gateway description to aid readability/identification in the AWS console.
+ * @param name The name for the web app. This will infulence naming for Cloudfront, API Gateway, Lambda and the static bucket.
+ * @param ghaInfo For providing output values to Github Actions.
+ * @param zone The DNS zone for this web app.
+ * @param environment Any environment variables your lanbda will need to handle requests.
+ * @param domain Optional: by default the zone apex will be mapped to the Cloudfront distribution (e.g. 'example.com') but yo ucan specify a subdomain here (e.g. 'subdomain.example.com').
+ * @param lambdaProps Optional: if you need to modify the properties of the Lambda function, you can use this parameter.
+ * @param defaultIndex Default: true. Maps a viewer request for '/' to a request for /index.html.
+ * @param www Default: true. Redirects www requests to the bare domain name, e.g. www.example.com->example.com, www.sub.example.com->sub.example.com.
+ * @returns
+ */
 export function webApp(
   stack: Stack,
   name: string,
@@ -68,6 +81,7 @@ export function webApp(
   environment?: { [key: string]: string; },
   domain?: string,
   lambdaProps?: Partial<FunctionProps>,
+  defaultIndex: boolean = true,
   www: boolean = true,
 ): { lambda: Function, api: LambdaRestApi, bucket: Bucket, distribution: Distribution; } {
   const domainName = domain || `${zone.zoneName}`;
@@ -109,6 +123,7 @@ export function webApp(
   const distribution = new Distribution(stack, `${name}Distribution`, {
     domainNames: [domainName],
     comment: domainName,
+    defaultRootObject: defaultIndex ? 'index.html' : undefined,
     defaultBehavior: {
       origin: new RestApiOrigin(api),
       //   , {
@@ -132,9 +147,8 @@ export function webApp(
       // }],
     },
     additionalBehaviors: {
-      '/public/*': staticBehavior,
-      '/favicon.ico': staticBehavior, // Chrome seems to request this by default
-      // inxex.html direct from s3 for latency on / route? // '/': staticBehaviour'
+      '*.*': staticBehavior, // All requests for something with a file extension (actually, any path that contains a period. The aim is to route *.css, *.js, *.jpeg, etc)
+      // index.html direct from s3 for latency on / route? // '/': staticBehaviour'
     },
     certificate,
   });
