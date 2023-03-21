@@ -34,9 +34,7 @@ if (!repo) throw new Error('No repo: please set an environment variable for REPO
 // }
 //
 // If this isn't set, stack variables/secrets will be set at the repo level.
-let environmentMappings: Record<string, string> = {
-  StackName: 'ghEnvironmentName',
-};
+let environmentMappings: Record<string, string> = {};
 const environmentMappingsFile = 'secrets/environmentMappings.json';
 if (existsSync(environmentMappingsFile)) {
   const json = readFileSync(environmentMappingsFile, 'utf-8');
