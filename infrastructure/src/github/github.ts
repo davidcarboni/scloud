@@ -250,9 +250,11 @@ async function processSecrets(): Promise<KeyValuesCollection> {
   });
 
   // List out any leftover secrets
+  let leftover = false;
   if (leftoverSecretNames.repo.length > 0) {
     console.log(` * NB: Some repo secrets were not included in the CloudFormation outputs (${leftoverSecretNames.repo.length}):`);
     leftoverSecretNames.repo.forEach((secretName) => console.log(` - ${secretName}`));
+    leftover = true;
   }
   Object.keys(leftoverSecretNames.environment).forEach((environment) => {
     if (leftoverSecretNames.environment[environment].length > 0) {
@@ -269,7 +271,7 @@ async function processSecrets(): Promise<KeyValuesCollection> {
       const environmentSecrets = leftoverSecretNames.environment[environment];
       await Promise.all(environmentSecrets.map(async (secretName) => deleteEnvironmentSecret(secretName, owner, repo, environment)));
     }));
-  }
+  } else if (leftover) console.log('(Not deleted - pass "--delete" to tidy up these values)');
 
   // Set secrets
   await Promise.all(Object.keys(newSecrets.repo).map(async (secretName) => setRepoSecret(
