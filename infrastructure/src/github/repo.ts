@@ -127,6 +127,14 @@ export async function setRepoSecret(
   throw new Error(`Error setting secret value: ${secretName}: status code ${response.status}`);
 }
 
+/**
+ * Updates (or creates) a variable at the repository level.
+ * @param name name of the variable
+ * @param value value for the variable
+ * @param owner Owner (or organisation) for the repository
+ * @param repo Repository name
+ * @returns
+ */
 export async function setRepoVariable(
   name: string,
   value: string,
@@ -134,19 +142,35 @@ export async function setRepoVariable(
   repo: string,
 ): Promise<string> {
   if (!value) throw new Error(`No value for secret ${name}`);
-  const response = await octokit.rest.actions.createRepoVariable({
-    owner,
-    repo,
-    name,
-    value,
-  });
+  try {
+    // Most likely we're updating an existing variable:
+    const response = await octokit.rest.actions.updateRepoVariable({
+      owner,
+      repo,
+      name,
+      value,
+    });
 
-  if (response.status === 201 || response.status === 204) {
-    return name;
+    if (response.status === 204) {
+      return name;
+    }
+
+    throw new Error(`Error setting repo variable value: ${name}: status code ${response.status}`);
+  } catch (e) {
+    // If not, we might be creating a new variable:
+    const response = await octokit.rest.actions.createRepoVariable({
+      owner,
+      repo,
+      name,
+      value,
+    });
+
+    if (response.status === 201 || response.status === 204) {
+      return name;
+    }
+
+    throw new Error(`Error setting repo variable value: ${name}: status code ${response.status}`);
   }
-  // Looks like that didn't work.
-  console.log(response);
-  throw new Error(`Error setting environment variable value: ${name}: status code ${response.status}`);
 }
 
 export async function deleteRepoSecret(

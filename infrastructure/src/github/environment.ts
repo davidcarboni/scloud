@@ -119,6 +119,15 @@ export async function setEnvironmentSecret(
   throw new Error(`Error setting environment ${environment} secret value: ${secretName}: status code ${response.status}`);
 }
 
+/**
+ * Updates (or creates) a variable at the environment level within a repository.
+ * @param name name of the variable
+ * @param value value for the variable
+ * @param owner Owner (or organisation) for the repository
+ * @param repo Repository name
+ * @param environment The name of the environment in this repo
+ * @returns
+ */
 export async function setEnvironmentVariable(
   name: string,
   value: string,
@@ -128,6 +137,7 @@ export async function setEnvironmentVariable(
 ): Promise<string> {
   if (!value) throw new Error(`No value for secret ${name}`);
   try {
+    // Most likely we're updating an existing variable:
     const response = await octokit.rest.actions.updateEnvironmentVariable({
       environment_name: environment,
       repository_id: await getRepoId(owner, repo),
@@ -141,6 +151,7 @@ export async function setEnvironmentVariable(
 
     throw new Error(`Error setting environment ${environment} variable value: ${name}: status code ${response.status}`);
   } catch (e) {
+    // If not, we might be creating a new variable:
     const response = await octokit.rest.actions.createEnvironmentVariable({
       environment_name: environment,
       repository_id: await getRepoId(owner, repo),
