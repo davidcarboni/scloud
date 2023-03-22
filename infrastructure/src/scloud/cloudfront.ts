@@ -70,8 +70,9 @@ export function redirectWww(
  * @param environment Any environment variables your lanbda will need to handle requests.
  * @param domain Optional: by default the zone apex will be mapped to the Cloudfront distribution (e.g. 'example.com') but yo ucan specify a subdomain here (e.g. 'subdomain.example.com').
  * @param lambdaProps Optional: if you need to modify the properties of the Lambda function, you can use this parameter.
+ * @param headers Optional: any headers you want passed through Cloudfront in addition to the defaults of User-Agent and Referer
  * @param defaultIndex Default: true. Maps a viewer request for '/' to a request for /index.html.
- * @param www Default: true. Redirects www requests to the bare domain name, e.g. www.example.com->example.com, www.sub.example.com->sub.example.com.
+ * @param wwwRedirect Default: true. Redirects www requests to the bare domain name, e.g. www.example.com->example.com, www.sub.example.com->sub.example.com.
  * @returns
  */
 export function webApp(
@@ -82,8 +83,9 @@ export function webApp(
   environment?: { [key: string]: string; },
   domain?: string,
   lambdaProps?: Partial<FunctionProps>,
+  headers?: string[],
   defaultIndex: boolean = true,
-  www: boolean = true,
+  wwwRedirect: boolean = true,
 ): { lambda: Function, api: LambdaRestApi, bucket: Bucket, distribution: Distribution; } {
   const domainName = domain || `${zone.zoneName}`;
 
@@ -137,7 +139,7 @@ export function webApp(
       // https://stackoverflow.com/questions/71367982/cloudfront-gives-403-when-origin-request-policy-include-all-headers-querystri
       // OriginRequestHeaderBehavior.all() gives an error so just cookie, user-agent, referer
       originRequestPolicy: new OriginRequestPolicy(stack, `${name}OriginRequestPolicy`, {
-        headerBehavior: OriginRequestHeaderBehavior.allowList('user-agent', 'User-Agent', 'Referer', 'referer'),
+        headerBehavior: OriginRequestHeaderBehavior.allowList(...['user-agent', 'User-Agent', 'Referer', 'referer'].concat(headers || [])),
         cookieBehavior: OriginRequestCookieBehavior.all(),
         queryStringBehavior: OriginRequestQueryStringBehavior.all(),
       }),
@@ -170,7 +172,7 @@ export function webApp(
     zone,
   });
 
-  if (www) redirectWww(stack, name, zone, certificate);
+  if (wwwRedirect) redirectWww(stack, name, zone, certificate);
 
   return {
     lambda, api, bucket, distribution,
@@ -178,17 +180,18 @@ export function webApp(
 }
 
 /**
- * An API gateway behind a Cloudfront distribution.
+ * Builds a dynamic web application, backed by Lambda functions that serve specific routes.
  * By default a single Lambda is generated that responds to the / route.
  * Alternatively you can pass a mapping of routes to functions
- * (or map to undedfined and functions will be generated for you)
- * @param construct CDK consrtruct
- * @param name Name for this set of resources
- * @param zone
- * @param environment
- * @param domain
- * @param memory
- * @param routes The aset of routes and corresponding Lambda to handle them. You can optionally request specific headers (deafult: User-Agent and Referer)
+ * (or map to undedfined, which means functions will be generated for you)
+ * @param stack The CDK stack. The name of the stack will be included in the API Gateway description to aid readability/identification in the AWS console.
+ * @param name The name for the web app. This will infulence naming for Cloudfront, API Gateway, Lambda and the static bucket.
+ * @param ghaInfo For providing output values to Github Actions.
+ * @param zone The DNS zone for this web app.
+ * @param routes The set of routes you would like to be handled by Lambda functions. Functions can be undefined (meaning theu will be generated for you). You can optionally request specific headers (deafult: User-Agent and Referer) to be passed through Cloudfront
+ * @param domain Optional: by default the zone apex will be mapped to the Cloudfront distribution (e.g. 'example.com') but yo ucan specify a subdomain here (e.g. 'subdomain.example.com').
+ * @param defaultIndex Default: true. Maps a viewer request for '/' to a request for /index.html.
+ * @param wwwRedirect Default: true. Redirects www requests to the bare domain name, e.g. www.example.com->example.com, www.sub.example.com->sub.example.com.
  * @returns
  */
 export function webAppRoutes(
@@ -198,6 +201,7 @@ export function webAppRoutes(
   zone: route53.IHostedZone,
   routes: {[pathPattern:string]:{lambda?:Function, headers?: string[]}|undefined} = { '/': undefined },
   domain: string|undefined = undefined,
+  defaultIndex: boolean = true,
   wwwRedirect: boolean = true,
 ): { lambdas: {[path:string]:Function}, bucket: Bucket, distribution: Distribution; } {
   const domainName = domain || `${zone.zoneName}`;
@@ -216,6 +220,7 @@ export function webAppRoutes(
   const distribution = new Distribution(stack, `${name}Distribution`, {
     domainNames: [domainName],
     comment: domainName,
+    defaultRootObject: defaultIndex ? 'index.html' : undefined,
     defaultBehavior: {
       // Request bin: default is to deflect all requests that aren't known to the API - mostly scripts probing for Wordpress installations
       origin: new S3Origin(bucket),
@@ -303,6 +308,7 @@ export function cloudFront(
   zone: route53.IHostedZone,
   defaultBehavior?: BehaviorOptions,
   domain: string | undefined = undefined,
+  defaultIndex: boolean = true,
   wwwRedirect: boolean = true,
   // initialPass: boolean,
   // environment?: { [key: string]: string; },
@@ -338,6 +344,7 @@ export function cloudFront(
   const distribution = new cloudfront.Distribution(construct, `${name}Distribution`, {
     domainNames: [domainName],
     comment: domainName,
+    defaultRootObject: defaultIndex ? 'index.html' : undefined,
     defaultBehavior: behavior,
     certificate: new DnsValidatedCertificate(construct, `${name}Certificate`, {
       domainName,
