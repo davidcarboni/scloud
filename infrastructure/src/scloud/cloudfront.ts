@@ -4,7 +4,7 @@ import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
 import * as route53patterns from 'aws-cdk-lib/aws-route53-patterns';
 import {
-  CfnOutput, Duration, RemovalPolicy, Stack,
+  Duration, RemovalPolicy, Stack,
 } from 'aws-cdk-lib';
 import { DnsValidatedCertificate, ICertificate } from 'aws-cdk-lib/aws-certificatemanager';
 import { CloudFrontTarget } from 'aws-cdk-lib/aws-route53-targets';
@@ -20,23 +20,11 @@ import {
 } from 'aws-cdk-lib/aws-cloudfront';
 import { LambdaRestApi } from 'aws-cdk-lib/aws-apigateway';
 import { Function, FunctionProps } from 'aws-cdk-lib/aws-lambda';
-import _ from 'lodash';
 import { zipFunctionTypescript } from './lambdaFunction';
-import { addGhaVariable, GhaInfo } from './ghaUser';
+import { addGhaBucket, addGhaDistribution } from './ghaUser';
 
 // Disabled for now as routing "*.*" to s3 may handle most of what we need to junk:
 // export const junkPaths: string[] = ['/wp-includes/*', '/wp-admin*', '*.xml', '*.php', '*.aspx', '*.env', '/.git*', '/.remote*', '/.production*', '/.local*'];
-
-function outputVariable(
-  construct: Construct,
-  type: string,
-  name: string,
-  value: string,
-  ghaInfo: GhaInfo,
-) {
-  const outputName = `${_.lowerFirst(name)}${_.capitalize(type)}`;
-  addGhaVariable(new CfnOutput(construct, outputName, { value }), ghaInfo);
-}
 
 export function redirectWww(
   construct: Construct,
@@ -65,7 +53,6 @@ export function redirectWww(
  * Builds a dynamic web application, backed by a Lambda function.
  * @param stack The CDK stack. The name of the stack will be included in the API Gateway description to aid readability/identification in the AWS console.
  * @param name The name for the web app. This will infulence naming for Cloudfront, API Gateway, Lambda and the static bucket.
- * @param ghaInfo For providing output values to Github Actions.
  * @param zone The DNS zone for this web app.
  * @param environment Any environment variables your lanbda will need to handle requests.
  * @param domain Optional: by default the zone apex will be mapped to the Cloudfront distribution (e.g. 'example.com') but yo ucan specify a subdomain here (e.g. 'subdomain.example.com').
@@ -78,7 +65,6 @@ export function redirectWww(
 export function webApp(
   stack: Stack,
   name: string,
-  ghaInfo: GhaInfo,
   zone: route53.IHostedZone,
   environment?: { [key: string]: string; },
   domain?: string,
@@ -90,7 +76,7 @@ export function webApp(
   const domainName = domain || `${zone.zoneName}`;
 
   // Web app handler - default values can be overridden using lambdaProps
-  const lambda = zipFunctionTypescript(stack, name, ghaInfo, environment, { memorySize: 3008, timeout: Duration.seconds(10), ...lambdaProps });
+  const lambda = zipFunctionTypescript(stack, name, environment, { memorySize: 3008, timeout: Duration.seconds(10), ...lambdaProps });
 
   // const headerFilter = edgeFunction(construct, 'headerFilter');
 
@@ -100,8 +86,7 @@ export function webApp(
     autoDeleteObjects: true,
     publicReadAccess: true,
   });
-  outputVariable(stack, 'StaticBucket', name, bucket.bucketName, ghaInfo);
-  ghaInfo.resources.buckets.push(bucket);
+  addGhaBucket(stack, 'StaticBucket', bucket);
 
   const api = new LambdaRestApi(stack, `${name}ApiGateway`, {
     handler: lambda,
@@ -156,8 +141,7 @@ export function webApp(
     },
     certificate,
   });
-  outputVariable(stack, 'DistributionId', name, distribution.distributionId, ghaInfo);
-  ghaInfo.resources.distributions.push(distribution);
+  addGhaDistribution(stack, 'DistributionId', distribution);
 
   // Disabled for now as routing "*.*" to s3 may handle most of what we need to junk:
   // // Handle junk requests by routing to the static bucket
@@ -188,7 +172,6 @@ export function webApp(
  * (or map to undedfined, which means functions will be generated for you)
  * @param stack The CDK stack. The name of the stack will be included in the API Gateway description to aid readability/identification in the AWS console.
  * @param name The name for the web app. This will infulence naming for Cloudfront, API Gateway, Lambda and the static bucket.
- * @param ghaInfo For providing output values to Github Actions.
  * @param zone The DNS zone for this web app.
  * @param routes The set of routes you would like to be handled by Lambda functions. Functions can be undefined (meaning theu will be generated for you). You can optionally request specific headers (deafult: User-Agent and Referer) to be passed through Cloudfront
  * @param domain Optional: by default the zone apex will be mapped to the Cloudfront distribution (e.g. 'example.com') but yo ucan specify a subdomain here (e.g. 'subdomain.example.com').
@@ -199,7 +182,6 @@ export function webApp(
 export function webAppRoutes(
   stack: Stack,
   name: string,
-  ghaInfo: GhaInfo,
   zone: route53.IHostedZone,
   routes: {[pathPattern:string]:{lambda?:Function, headers?: string[]}|undefined} = { '/': undefined },
   domain: string|undefined = undefined,
@@ -215,8 +197,7 @@ export function webAppRoutes(
     autoDeleteObjects: true,
     publicReadAccess: true,
   });
-  outputVariable(stack, 'StaticBucket', name, bucket.bucketName, ghaInfo);
-  ghaInfo.resources.buckets.push(bucket);
+  addGhaBucket(stack, 'StaticBucket', bucket);
 
   // Cloudfromt distribution - handle static requests
   // TODO add a secret so only Cludfront can access APIg
@@ -247,7 +228,7 @@ export function webAppRoutes(
   const lambdas :{[path:string]:Function} = {};
   Object.keys(routes).forEach((pathPattern) => {
     // Use the provided function, or generate a default one:
-    const lambda = routes[pathPattern]?.lambda || zipFunctionTypescript(stack, name, ghaInfo, {}, { memorySize: 3008 });
+    const lambda = routes[pathPattern]?.lambda || zipFunctionTypescript(stack, name, {}, { memorySize: 3008 });
     // Allowed headers:
     // https://stackoverflow.com/questions/71367982/cloudfront-gives-403-when-origin-request-policy-include-all-headers-querystri
     // OriginRequestHeaderBehavior.all() gives an error so just cookie, user-agent, referer
@@ -275,8 +256,7 @@ export function webAppRoutes(
     );
     lambdas[pathPattern] = lambda;
   });
-  outputVariable(stack, 'DistributionId', name, distribution.distributionId, ghaInfo);
-  ghaInfo.resources.distributions.push(distribution);
+  addGhaDistribution(stack, 'DistributionId', distribution);
 
   // Redirect www -> zone root
   if (wwwRedirect) {
@@ -309,7 +289,6 @@ export function webAppRoutes(
 export function cloudFront(
   construct: Construct,
   name: string,
-  ghaInfo: GhaInfo,
   zone: route53.IHostedZone,
   defaultBehavior?: BehaviorOptions,
   domain: string | undefined = undefined,
@@ -337,8 +316,7 @@ export function cloudFront(
       autoDeleteObjects: true,
       publicReadAccess: true,
     });
-    outputVariable(construct, 'StaticBucket', name, bucket.bucketName, ghaInfo);
-    ghaInfo.resources.buckets.push(bucket);
+    addGhaBucket(construct, 'StaticBucket', bucket);
     behavior = {
       origin: new origins.S3Origin(bucket),
       allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
@@ -358,8 +336,7 @@ export function cloudFront(
       region: 'us-east-1',
     }),
   });
-  outputVariable(construct, 'DistributionId', name, distribution.distributionId, ghaInfo);
-  ghaInfo.resources.distributions.push(distribution);
+  addGhaDistribution(construct, 'DistributionId', distribution);
 
   new route53.ARecord(construct, `${name}ARecord`, {
     zone,

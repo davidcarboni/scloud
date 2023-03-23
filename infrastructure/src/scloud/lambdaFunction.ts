@@ -5,20 +5,9 @@ import {
   Code, DockerImageCode, DockerImageFunction, DockerImageFunctionProps, Function, FunctionProps, IFunction, Runtime,
 } from 'aws-cdk-lib/aws-lambda';
 import { Repository } from 'aws-cdk-lib/aws-ecr';
-import { CfnOutput } from 'aws-cdk-lib';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import ecrRepository from './ecrRepository';
-import { addGhaVariable, GhaInfo } from './ghaUser';
-
-function output(
-  construct: Construct,
-  name: string,
-  lambda: IFunction,
-  ghaInfo: GhaInfo,
-) {
-  const lambdaOutputName = `${name}Lambda`;
-  addGhaVariable(new CfnOutput(construct, lambdaOutputName, { value: lambda.functionName }), ghaInfo);
-}
+import { addGhaLambda } from './ghaUser';
 
 /**
  * A Lambda function packaged as a container.
@@ -33,14 +22,13 @@ export function containerFunction(
   construct: Construct,
   initialPass: boolean,
   name: string,
-  ghaInfo: GhaInfo,
   environment?: { [key: string]: string; },
   lambdaProps?: Partial<DockerImageFunctionProps>,
   tagOrDigest?: string,
   ecr?: Repository,
 ): { lambda: Function, repository: Repository; } {
   // Repository for function container image
-  const repository = ecr || ecrRepository(construct, name, ghaInfo);
+  const repository = ecr || ecrRepository(construct, name);
 
   // Container
   const code = initialPass ? DockerImageCode.fromImageAsset(path.join(__dirname, './container')) : DockerImageCode.fromEcr(repository, {
@@ -54,7 +42,7 @@ export function containerFunction(
     description: name,
     ...lambdaProps,
   });
-  output(construct, name, lambda, ghaInfo);
+  addGhaLambda(construct, name, lambda);
   return { lambda, repository };
 }
 
@@ -68,7 +56,6 @@ export function containerFunction(
 export function zipFunctionTypescript(
   construct: Construct,
   name: string,
-  ghaInfo: GhaInfo,
   environment?: { [key: string]: string; },
   lambdaProps?: Partial<FunctionProps>,
 ): Function {
@@ -81,7 +68,7 @@ export function zipFunctionTypescript(
     description: name,
     ...lambdaProps,
   });
-  output(construct, name, lambda, ghaInfo);
+  addGhaLambda(construct, name, lambda);
   return lambda;
 }
 
@@ -95,7 +82,6 @@ export function zipFunctionTypescript(
 export function zipFunctionPython(
   construct: Construct,
   name: string,
-  ghaInfo: GhaInfo,
   environment?: { [key: string]: string; },
   lambdaProps?: Partial<FunctionProps>,
 ): Function {
@@ -108,7 +94,7 @@ export function zipFunctionPython(
     description: name,
     ...lambdaProps,
   });
-  output(construct, name, lambda, ghaInfo);
+  addGhaLambda(construct, name, lambda);
   return lambda;
 }
 
@@ -122,7 +108,6 @@ export function zipFunctionPython(
 export function edgeFunction(
   construct: Construct,
   name: string,
-  ghaInfo: GhaInfo,
   environment?: { [key: string]: string; },
 ): cloudfront.experimental.EdgeFunction {
   const edge = new cloudfront.experimental.EdgeFunction(
@@ -138,6 +123,6 @@ export function edgeFunction(
       environment,
     },
   );
-  output(construct, name, edge.lambda, ghaInfo);
+  addGhaLambda(construct, name, edge);
   return edge;
 }

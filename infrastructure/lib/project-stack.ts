@@ -7,7 +7,7 @@ import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
 import { Function } from 'aws-cdk-lib/aws-lambda';
 import { webApp } from '../src/scloud/cloudfront';
 import { CognitoConstructs, cognitoPool } from '../src/scloud/cognito';
-import { ghaResources, ghaUser } from '../src/scloud/ghaUser';
+import { ghaUser } from '../src/scloud/ghaUser';
 import { queueLambda } from '../src/scloud/queueLambda';
 import { apiGateway } from '../src/scloud/apigateway';
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
@@ -45,11 +45,9 @@ export default class ProjectStack extends cdk.Stack {
    */
   slack(): Queue {
     // Metric message handler
-    const { lambda, queue } = queueLambda(this, 'slack', {
+    const { queue } = queueLambda(this, 'slack', {
       SLACK_WEBHOOK: env('SLACK_WEBHOOK'),
     });
-
-    ghaResources.lambdas.push(lambda);
     return queue;
   }
 
@@ -81,11 +79,9 @@ export default class ProjectStack extends cdk.Stack {
       SLACK_QUEUE_URL: slackQueue.queueUrl,
     });
 
-    ghaResources.lambdas.push(lambda);
     table.grantWriteData(lambda);
     slackQueue.grantSendMessages(lambda);
 
-    ghaResources.lambdas.push(lambda);
     return queue;
   }
 
@@ -101,7 +97,6 @@ export default class ProjectStack extends cdk.Stack {
     metricsQueue.grantSendMessages(lambda);
     slackQueue.grantSendMessages(lambda);
 
-    ghaResources.lambdas.push(lambda);
     return lambda;
   }
 
@@ -123,7 +118,7 @@ export default class ProjectStack extends cdk.Stack {
 
   web(zone: IHostedZone, cognito: CognitoConstructs, slackQueue: Queue) {
     const {
-      lambda, bucket, // api, distribution,
+      lambda, // api, distribution,
     } = webApp(this, 'web', zone, {
       PRODUCT: name,
       COMPONENT: 'web',
@@ -132,8 +127,5 @@ export default class ProjectStack extends cdk.Stack {
     });
 
     slackQueue.grantSendMessages(lambda);
-
-    ghaResources.lambdas.push(lambda);
-    ghaResources.buckets.push(bucket);
   }
 }

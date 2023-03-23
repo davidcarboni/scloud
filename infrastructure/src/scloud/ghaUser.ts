@@ -9,41 +9,75 @@ import { IFargateService } from 'aws-cdk-lib/aws-ecs';
 import { IBucket } from 'aws-cdk-lib/aws-s3';
 import { IDistribution } from 'aws-cdk-lib/aws-cloudfront';
 import * as fs from 'fs';
+import { Construct } from 'constructs';
+import _ from 'lodash';
 
-export interface GhaInfo {
+const ghaInfo = {
   resources: {
-  repositories: IRepository[],
-  buckets: IBucket[],
-  lambdas: IFunction[],
-  services: IFargateService[],
-  distributions: IDistribution[],
+    repositories: <IRepository[]>[],
+    buckets: <IBucket[]>[],
+    lambdas: <IFunction[]>[],
+    services: <IFargateService[]>[],
+    distributions: <IDistribution[]>[],
   },
-  variables: string[],
-  secrets: string[],
+  secrets: <string[]>[],
+  variables: <string[]>[],
+};
+
+export function addGhaSecret(
+  construct: Construct,
+  name: string,
+  value: string,
+) {
+  const cfnOutput = new CfnOutput(construct, name, { value });
+  ghaInfo.secrets.push(cfnOutput.node.id);
 }
 
-export function newGhaInfo(): GhaInfo {
-  return {
-    resources: {
-      repositories: [],
-      buckets: [],
-      lambdas: [],
-      services: [],
-      distributions: [],
-    },
-    secrets: [],
-    variables: [],
-  };
-}
-
-export function addGhaVariable(cfnOutput: CfnOutput, ghaInfo: GhaInfo) {
-  ghaInfo.variables = ghaInfo.variables || [];
+export function addGhaVariable(
+  construct: Construct,
+  type: string,
+  name: string,
+  value: string,
+) {
+  const variableName = `${_.lowerFirst(name)}${_.capitalize(type)}`;
+  const cfnOutput = new CfnOutput(construct, variableName, { value });
   ghaInfo.variables.push(cfnOutput.node.id);
 }
 
-export function addGhaSecret(cfnOutput: CfnOutput, ghaInfo: GhaInfo) {
-  ghaInfo.secrets = ghaInfo.secrets || [];
-  ghaInfo.secrets.push(cfnOutput.node.id);
+export function addGhaLambda(
+  construct: Construct,
+  name: string,
+  lambda: IFunction,
+) {
+  ghaInfo.resources.lambdas.push(lambda);
+  addGhaVariable(construct, 'lambda', name, lambda.functionName);
+}
+
+export function addGhaBucket(
+  construct: Construct,
+  name: string,
+  bucket: IBucket,
+) {
+  ghaInfo.resources.buckets.push(bucket);
+  addGhaVariable(construct, 'bucket', name, bucket.bucketName);
+}
+
+export function addGhaDistribution(
+  construct: Construct,
+  name: string,
+  distribution: IDistribution,
+) {
+  ghaInfo.resources.distributions.push(distribution);
+  addGhaVariable(construct, 'distribution', name, distribution.distributionId);
+}
+
+export function addGhaRepository(
+  construct: Construct,
+  name: string,
+  repository: IRepository,
+) {
+  ghaInfo.resources.repositories.push(repository);
+  addGhaVariable(construct, 'repository', name, repository.repositoryName);
 }
 
 function addToPolicy(stack: Stack, name: string, policy: ManagedPolicy, resources: string[], actions: string[]) {
@@ -59,7 +93,7 @@ function addToPolicy(stack: Stack, name: string, policy: ManagedPolicy, resource
 /**
  * A user for Gihud Actions CI/CD.
  */
-export function ghaUser(stack: Stack, ghaInfo: GhaInfo): { user: User, accessKey: CfnAccessKey | undefined; } {
+export function ghaUser(stack: Stack): { user: User, accessKey: CfnAccessKey | undefined; } {
   // A user with the policy attached
   const user = new User(stack, 'ghaUser', { userName: `gha-${stack.stackName}` });
   const policy = new ManagedPolicy(stack, `gha-${stack.stackName}-policy`, {
@@ -75,8 +109,8 @@ export function ghaUser(stack: Stack, ghaInfo: GhaInfo): { user: User, accessKey
     });
 
     // Access key details for GHA secrets
-    addGhaSecret(new CfnOutput(stack, 'awsAccessKeyId', { value: accessKey.ref }), ghaInfo);
-    addGhaSecret(new CfnOutput(stack, 'awsSecretAccessKey', { value: accessKey.attrSecretAccessKey }), ghaInfo);
+    addGhaSecret(stack, 'awsAccessKeyId', accessKey.ref);
+    addGhaSecret(stack, 'awsSecretAccessKey', accessKey.attrSecretAccessKey);
   }
 
   // ECR repositories - push/pull images
