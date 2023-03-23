@@ -75,18 +75,16 @@ export function webApp(
 ): { lambda: Function, api: LambdaRestApi, bucket: Bucket, distribution: Distribution; } {
   const domainName = domain || `${zone.zoneName}`;
 
-  // Web app handler - default values can be overridden using lambdaProps
-  const lambda = zipFunctionTypescript(stack, name, environment, { memorySize: 3008, timeout: Duration.seconds(10), ...lambdaProps });
-
-  // const headerFilter = edgeFunction(construct, 'headerFilter');
-
   // Static content
   const bucket = new Bucket(stack, `${name}Static`, {
     removalPolicy: RemovalPolicy.DESTROY,
     autoDeleteObjects: true,
     publicReadAccess: true,
   });
-  addGhaBucket(stack, 'StaticBucket', bucket);
+  addGhaBucket(stack, name, bucket);
+
+  // Web app handler - default values can be overridden using lambdaProps
+  const lambda = zipFunctionTypescript(stack, name, environment, { memorySize: 3008, timeout: Duration.seconds(10), ...lambdaProps });
 
   const api = new LambdaRestApi(stack, `${name}ApiGateway`, {
     handler: lambda,
@@ -141,7 +139,7 @@ export function webApp(
     },
     certificate,
   });
-  addGhaDistribution(stack, 'DistributionId', distribution);
+  addGhaDistribution(stack, name, distribution);
 
   // Disabled for now as routing "*.*" to s3 may handle most of what we need to junk:
   // // Handle junk requests by routing to the static bucket
@@ -197,7 +195,7 @@ export function webAppRoutes(
     autoDeleteObjects: true,
     publicReadAccess: true,
   });
-  addGhaBucket(stack, 'StaticBucket', bucket);
+  addGhaBucket(stack, name, bucket);
 
   // Cloudfromt distribution - handle static requests
   // TODO add a secret so only Cludfront can access APIg
@@ -256,7 +254,7 @@ export function webAppRoutes(
     );
     lambdas[pathPattern] = lambda;
   });
-  addGhaDistribution(stack, 'DistributionId', distribution);
+  addGhaDistribution(stack, name, distribution);
 
   // Redirect www -> zone root
   if (wwwRedirect) {
@@ -316,7 +314,7 @@ export function cloudFront(
       autoDeleteObjects: true,
       publicReadAccess: true,
     });
-    addGhaBucket(construct, 'StaticBucket', bucket);
+    addGhaBucket(construct, name, bucket);
     behavior = {
       origin: new origins.S3Origin(bucket),
       allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
@@ -336,7 +334,7 @@ export function cloudFront(
       region: 'us-east-1',
     }),
   });
-  addGhaDistribution(construct, 'DistributionId', distribution);
+  addGhaDistribution(construct, name, distribution);
 
   new route53.ARecord(construct, `${name}ARecord`, {
     zone,

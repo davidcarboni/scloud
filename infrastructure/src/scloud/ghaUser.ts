@@ -35,8 +35,8 @@ export function addGhaSecret(
 
 export function addGhaVariable(
   construct: Construct,
-  type: string,
   name: string,
+  type: string,
   value: string,
 ) {
   const variableName = `${_.lowerFirst(name)}${_.capitalize(type)}`;
@@ -50,7 +50,7 @@ export function addGhaLambda(
   lambda: IFunction,
 ) {
   ghaInfo.resources.lambdas.push(lambda);
-  addGhaVariable(construct, 'lambda', name, lambda.functionName);
+  addGhaVariable(construct, name, 'lambda', lambda.functionName);
 }
 
 export function addGhaBucket(
@@ -59,7 +59,7 @@ export function addGhaBucket(
   bucket: IBucket,
 ) {
   ghaInfo.resources.buckets.push(bucket);
-  addGhaVariable(construct, 'bucket', name, bucket.bucketName);
+  addGhaVariable(construct, name, 'bucket', bucket.bucketName);
 }
 
 export function addGhaDistribution(
@@ -68,7 +68,7 @@ export function addGhaDistribution(
   distribution: IDistribution,
 ) {
   ghaInfo.resources.distributions.push(distribution);
-  addGhaVariable(construct, 'distribution', name, distribution.distributionId);
+  addGhaVariable(construct, name, 'distributionId', distribution.distributionId);
 }
 
 export function addGhaRepository(
@@ -77,7 +77,7 @@ export function addGhaRepository(
   repository: IRepository,
 ) {
   ghaInfo.resources.repositories.push(repository);
-  addGhaVariable(construct, 'repository', name, repository.repositoryName);
+  addGhaVariable(construct, name, 'repository', repository.repositoryName);
 }
 
 function addToPolicy(stack: Stack, name: string, policy: ManagedPolicy, resources: string[], actions: string[]) {
