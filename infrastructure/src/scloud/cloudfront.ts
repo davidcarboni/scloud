@@ -101,6 +101,7 @@ export function webApp(
     publicReadAccess: true,
   });
   outputVariable(stack, 'StaticBucket', name, bucket.bucketName, ghaInfo);
+  ghaInfo.resources.buckets.push(bucket);
 
   const api = new LambdaRestApi(stack, `${name}ApiGateway`, {
     handler: lambda,
@@ -156,6 +157,7 @@ export function webApp(
     certificate,
   });
   outputVariable(stack, 'DistributionId', name, distribution.distributionId, ghaInfo);
+  ghaInfo.resources.distributions.push(distribution);
 
   // Disabled for now as routing "*.*" to s3 may handle most of what we need to junk:
   // // Handle junk requests by routing to the static bucket
@@ -214,6 +216,7 @@ export function webAppRoutes(
     publicReadAccess: true,
   });
   outputVariable(stack, 'StaticBucket', name, bucket.bucketName, ghaInfo);
+  ghaInfo.resources.buckets.push(bucket);
 
   // Cloudfromt distribution - handle static requests
   // TODO add a secret so only Cludfront can access APIg
@@ -272,6 +275,8 @@ export function webAppRoutes(
     );
     lambdas[pathPattern] = lambda;
   });
+  outputVariable(stack, 'DistributionId', name, distribution.distributionId, ghaInfo);
+  ghaInfo.resources.distributions.push(distribution);
 
   // Redirect www -> zone root
   if (wwwRedirect) {
@@ -333,6 +338,7 @@ export function cloudFront(
       publicReadAccess: true,
     });
     outputVariable(construct, 'StaticBucket', name, bucket.bucketName, ghaInfo);
+    ghaInfo.resources.buckets.push(bucket);
     behavior = {
       origin: new origins.S3Origin(bucket),
       allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
@@ -353,6 +359,7 @@ export function cloudFront(
     }),
   });
   outputVariable(construct, 'DistributionId', name, distribution.distributionId, ghaInfo);
+  ghaInfo.resources.distributions.push(distribution);
 
   new route53.ARecord(construct, `${name}ARecord`, {
     zone,
