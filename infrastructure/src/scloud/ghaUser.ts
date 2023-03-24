@@ -175,5 +175,14 @@ export function ghaUser(stack: Stack): { user: User, accessKey: CfnAccessKey | u
     fs.writeFileSync(`secrets/${stack.stackName}.ghaVariables.json`, JSON.stringify(ghaInfo.variables));
   }
 
+  // Flush ghaInfo so we're free to build another stack if needed:
+  ghaInfo.resources.buckets = [];
+  ghaInfo.resources.distributions = [];
+  ghaInfo.resources.lambdas = [];
+  ghaInfo.resources.repositories = [];
+  ghaInfo.resources.services = [];
+  ghaInfo.secrets = [];
+  ghaInfo.variables = [];
+
   return { user, accessKey };
 }
