@@ -4,7 +4,7 @@ import * as path from 'path';
 import {
   Code, DockerImageCode, DockerImageFunction, DockerImageFunctionProps, Function, FunctionProps, Runtime,
 } from 'aws-cdk-lib/aws-lambda';
-import { Repository } from 'aws-cdk-lib/aws-ecr';
+import { IRepository, } from 'aws-cdk-lib/aws-ecr';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import ecrRepository from './ecrRepository';
 import { addGhaLambda } from './ghaUser';
@@ -25,8 +25,8 @@ export function containerFunction(
   environment?: { [key: string]: string; },
   lambdaProps?: Partial<DockerImageFunctionProps>,
   tagOrDigest?: string,
-  ecr?: Repository,
-): { lambda: Function, repository: Repository; } {
+  ecr?: IRepository,
+): { lambda: Function, repository: IRepository; } {
   // Repository for function container image
   const repository = ecr || ecrRepository(construct, name);
 
