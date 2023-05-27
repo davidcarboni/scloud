@@ -8,7 +8,7 @@ import {
 } from 'aws-cdk-lib';
 import { DnsValidatedCertificate, ICertificate } from 'aws-cdk-lib/aws-certificatemanager';
 import { CloudFrontTarget } from 'aws-cdk-lib/aws-route53-targets';
-import { Bucket } from 'aws-cdk-lib/aws-s3';
+import { Bucket, BucketEncryption } from 'aws-cdk-lib/aws-s3';
 import { RestApiOrigin, S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
 import {
   AllowedMethods, BehaviorOptions, CachePolicy, Distribution,
@@ -191,11 +191,17 @@ export function webAppRoutes(
   // We consider the objects in the static bucket ot be expendable because
   // they're static content we generate (rather than user data).
   const bucket = new Bucket(stack, `${name}Static`, {
-    removalPolicy: RemovalPolicy.DESTROY,
+    encryption: BucketEncryption.S3_MANAGED,
     autoDeleteObjects: true,
-    publicReadAccess: true,
+    removalPolicy: RemovalPolicy.DESTROY,
   });
   addGhaBucket(stack, name, bucket);
+
+  // Permissions to access the bucket from Cloudfront
+  const originAccessIdentity = new cloudfront.OriginAccessIdentity(stack, `${name}OAI`, {
+    comment: 'Access to static bucket',
+  });
+  bucket.grantRead(originAccessIdentity);
 
   // Cloudfromt distribution - handle static requests
   // TODO add a secret so only Cludfront can access APIg
@@ -205,7 +211,7 @@ export function webAppRoutes(
     defaultRootObject: defaultIndex ? 'index.html' : undefined,
     defaultBehavior: {
       // Request bin: default is to deflect all requests that aren't known to the API - mostly scripts probing for Wordpress installations
-      origin: new S3Origin(bucket),
+      origin: new S3Origin(bucket, { originAccessIdentity }),
       allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS, // Minimal methods - do we need Options?
       viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
       cachePolicy: CachePolicy.CACHING_OPTIMIZED,
