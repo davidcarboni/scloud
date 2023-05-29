@@ -6,6 +6,7 @@ module.exports = {
   },
   extends: [
     'airbnb-base',
+    'plugin:import/typescript',
   ],
   parser: '@typescript-eslint/parser',
   parserOptions: {
@@ -56,6 +57,8 @@ module.exports = {
       // We lint unit tests differently.
       files: ['*.spec.ts'],
       rules: {
+        // Can't fathom how to resolve imprts in tests so heigh-ho, whatever, mystery
+        'import/no-unresolved': 'off',
 
         // Avoid mocha/chai "Expected an assignment or function call and instead saw an expression"
         'no-unused-expressions': 'off',
