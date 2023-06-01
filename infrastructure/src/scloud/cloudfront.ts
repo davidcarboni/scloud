@@ -181,7 +181,8 @@ export function webAppRoutes(
   stack: Stack,
   name: string,
   zone: route53.IHostedZone,
-  routes: {[pathPattern:string]:{lambda?:Function, headers?: string[]}|undefined} = { '/': undefined },
+  routes: { [pathPattern: string]: Function | undefined; } = { '/': undefined },
+  allowedHeaders: string[] = [],
   domain: string|undefined = undefined,
   defaultIndex: boolean = true,
   wwwRedirect: boolean = true,
@@ -229,14 +230,19 @@ export function webAppRoutes(
   });
 
   // Handle API paths
-  const lambdas :{[path:string]:Function} = {};
+  const lambdas: { [path: string]: Function; } = {};
+  // Allowed headers:
+  // https://stackoverflow.com/questions/71367982/cloudfront-gives-403-when-origin-request-policy-include-all-headers-querystri
+  // OriginRequestHeaderBehavior.all() gives an error so just cookie, user-agent, referer
+  const headers = ['user-agent', 'User-Agent', 'Referer', 'referer'].concat(allowedHeaders || []);
+  const originRequestPolicy = new OriginRequestPolicy(stack, `${name}OriginRequestPolicy`, {
+    headerBehavior: OriginRequestHeaderBehavior.allowList(...headers),
+    cookieBehavior: OriginRequestCookieBehavior.all(),
+    queryStringBehavior: OriginRequestQueryStringBehavior.all(),
+  });
   Object.keys(routes).forEach((pathPattern) => {
     // Use the provided function, or generate a default one:
-    const lambda = routes[pathPattern]?.lambda || zipFunctionTypescript(stack, name, {}, { memorySize: 3008 });
-    // Allowed headers:
-    // https://stackoverflow.com/questions/71367982/cloudfront-gives-403-when-origin-request-policy-include-all-headers-querystri
-    // OriginRequestHeaderBehavior.all() gives an error so just cookie, user-agent, referer
-    const allowHeaders = ['user-agent', 'User-Agent', 'Referer', 'referer'].concat(routes[pathPattern]?.headers || []);
+    const lambda = routes[pathPattern] || zipFunctionTypescript(stack, name, {}, { memorySize: 3008 });
     distribution.addBehavior(
       pathPattern,
       new RestApiOrigin(new LambdaRestApi(stack, `${name}${pathPattern}`, {
@@ -251,11 +257,7 @@ export function webAppRoutes(
         cachePolicy: CachePolicy.CACHING_DISABLED,
         // https://stackoverflow.com/questions/71367982/cloudfront-gives-403-when-origin-request-policy-include-all-headers-querystri
         // OriginRequestHeaderBehavior.all() gives an error so just cookie, user-agent, referer
-        originRequestPolicy: new OriginRequestPolicy(stack, `${name}${pathPattern}OriginRequestPolicy`, {
-          headerBehavior: OriginRequestHeaderBehavior.allowList(...allowHeaders),
-          cookieBehavior: OriginRequestCookieBehavior.all(),
-          queryStringBehavior: OriginRequestQueryStringBehavior.all(),
-        }),
+        originRequestPolicy,
       },
     );
     lambdas[pathPattern] = lambda;
