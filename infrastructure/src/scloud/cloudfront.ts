@@ -182,7 +182,6 @@ export function webAppRoutes(
   name: string,
   zone: route53.IHostedZone,
   routes: { [pathPattern: string]: Function | undefined; } = { '/': undefined },
-  allowedHeaders: string[] = [],
   domain: string|undefined = undefined,
   defaultIndex: boolean = true,
   wwwRedirect: boolean = true,
@@ -234,12 +233,24 @@ export function webAppRoutes(
   // Allowed headers:
   // https://stackoverflow.com/questions/71367982/cloudfront-gives-403-when-origin-request-policy-include-all-headers-querystri
   // OriginRequestHeaderBehavior.all() gives an error so just cookie, user-agent, referer
-  const headers = ['user-agent', 'User-Agent', 'Referer', 'referer'].concat(allowedHeaders || []);
-  const originRequestPolicy = new OriginRequestPolicy(stack, `${name}OriginRequestPolicy`, {
-    headerBehavior: OriginRequestHeaderBehavior.allowList(...headers),
-    cookieBehavior: OriginRequestCookieBehavior.all(),
-    queryStringBehavior: OriginRequestQueryStringBehavior.all(),
-  });
+  // const originRequestPolicy = new OriginRequestPolicy(stack, `${name}OriginRequestPolicy`, {
+  //   headerBehavior: OriginRequestHeaderBehavior.allowList(...allowedHeaders, 'user-agent', 'User-Agent', 'Referer', 'referer'),
+  //   cookieBehavior: OriginRequestCookieBehavior.all(),
+  //   queryStringBehavior: OriginRequestQueryStringBehavior.all(),
+  // });
+
+  // At some point we cah probably move to:
+  // OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER
+  // It's in the docs, but not showing up in code: https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudfront.OriginRequestPolicy.html#static-all_viewer_except_host_header
+  // (seems like it's not available yet? This seems like an old issue though: https://github.com/aws/aws-cdk/issues/24552)
+  const originRequestPolicy = cloudfront.OriginRequestPolicy.fromOriginRequestPolicyId(stack, `${name}AllViewerExceptHostHeader`, 'b689b0a8-53d0-40ab-baf2-68738e2966ac');
+
+  // const cachePolicy = new CachePolicy(stack, 'cache', {
+  //   ...CachePolicy.CACHING_DISABLED,
+  //   cookieBehavior: cloudfront.CacheCookieBehavior.all(),
+  //   headerBehavior: cloudfront.CacheHeaderBehavior.allowList(...headers, ...allowedHeaders, 'Authorization'),
+  //   queryStringBehavior: cloudfront.CacheQueryStringBehavior.all(),
+  // });
   Object.keys(routes).forEach((pathPattern) => {
     // Use the provided function, or generate a default one:
     const lambda = routes[pathPattern] || zipFunctionTypescript(stack, name, {}, { memorySize: 3008 });
