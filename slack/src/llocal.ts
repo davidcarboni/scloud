@@ -7,6 +7,8 @@ import { handler } from './lambda';
 
 const port = 3000;
 const app = express();
+
+// https://stackoverflow.com/questions/12345166/how-to-force-parse-request-body-as-plain-text-instead-of-json-in-express
 app.use(express.text({ type: '*/*' }));
 
 app.post('/*', async (req: Request, res: Response) => {
