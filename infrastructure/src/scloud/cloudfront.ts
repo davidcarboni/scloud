@@ -186,7 +186,7 @@ export function webAppRoutes(
   zone: route53.IHostedZone,
   routes: { [pathPattern: string]: Function | undefined; } = { '/': undefined },
   domain: string|undefined = undefined,
-  cognitoPool: UserPool = undefined,
+  cognitoPool: UserPool | undefined = undefined,
   defaultIndex: boolean = true,
   wwwRedirect: boolean = true,
 ): { lambdas: {[path:string]:Function}, bucket: Bucket, distribution: Distribution; } {
