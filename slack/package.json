@@ -4,6 +4,7 @@
   "description": "Sends queued messages to Slack.",
   "main": "src/lambda.ts",
   "scripts": {
+    "local": "nodemon src/llocal",
     "lint": "eslint --fix --ext ts .",
     "test": "mocha -r ts-node/register test/**/*.spec.ts",
     "compile": "tsc",
@@ -11,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/DownloadCreations/SalonDC"
+    "url": "https://github.com/davidcarboni/scloud"
   },
   "author": "David Carboni",
   "license": "ISC",
@@ -19,6 +20,7 @@
     "@types/aws-lambda": "*",
     "@types/chai": "*",
     "@types/expect": "*",
+    "@types/express": "*",
     "@types/mocha": "*",
     "@types/node": "*",
     "@typescript-eslint/eslint-plugin": "*",
@@ -28,7 +30,9 @@
     "eslint-config-airbnb-base": "*",
     "eslint-import-resolver-typescript": "*",
     "eslint-plugin-import": "*",
+    "express": "*",
     "mocha": "*",
+    "nodemon": "*",
     "ts-node": "*",
     "typescript": "*"
   },
