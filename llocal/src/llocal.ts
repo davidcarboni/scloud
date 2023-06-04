@@ -3,8 +3,9 @@ import express, { Request, Response } from 'express';
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
 import { handler } from './lambda';
 
-const app = express();
 const port = 3000;
+const app = express();
+app.use(express.text({ type: '*/*' }));
 
 app.get('/*', async (req: Request, res: Response) => {
   // const url = new URL(req.originalUrl, 'https://example.com');
