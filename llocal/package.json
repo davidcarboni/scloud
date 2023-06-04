@@ -1,7 +1,7 @@
 {
-  "name": "web",
+  "name": "llocal",
   "version": "1.0.0",
-  "description": "MetricPipeline website.",
+  "description": "Demonstrate running an API Gateway Proxy Lambda handler locally.",
   "main": "src/lambda.ts",
   "scripts": {
     "local": "nodemon src/llocal",
@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/metricpipeline/metricpipeline"
+    "url": "https://github.com/davidcarboni/scloud"
   },
   "author": "David Carboni",
   "license": "ISC",
