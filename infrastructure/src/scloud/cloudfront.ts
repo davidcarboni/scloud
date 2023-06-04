@@ -18,8 +18,11 @@ import {
   OriginRequestQueryStringBehavior,
   ViewerProtocolPolicy,
 } from 'aws-cdk-lib/aws-cloudfront';
-import { LambdaRestApi } from 'aws-cdk-lib/aws-apigateway';
+import {
+  AuthorizationType, CognitoUserPoolsAuthorizer, LambdaRestApi, LambdaRestApiProps,
+} from 'aws-cdk-lib/aws-apigateway';
 import { Function, FunctionProps } from 'aws-cdk-lib/aws-lambda';
+import { UserPool } from 'aws-cdk-lib/aws-cognito';
 import { zipFunctionTypescript } from './lambdaFunction';
 import { addGhaBucket, addGhaDistribution } from './ghaUser';
 
@@ -183,6 +186,7 @@ export function webAppRoutes(
   zone: route53.IHostedZone,
   routes: { [pathPattern: string]: Function | undefined; } = { '/': undefined },
   domain: string|undefined = undefined,
+  cognitoPool: UserPool = undefined,
   defaultIndex: boolean = true,
   wwwRedirect: boolean = true,
 ): { lambdas: {[path:string]:Function}, bucket: Bucket, distribution: Distribution; } {
@@ -254,13 +258,29 @@ export function webAppRoutes(
   Object.keys(routes).forEach((pathPattern) => {
     // Use the provided function, or generate a default one:
     const lambda = routes[pathPattern] || zipFunctionTypescript(stack, name, {}, { memorySize: 3008 });
+
+    let lambdaRestApiProps: LambdaRestApiProps = {
+      handler: lambda,
+      proxy: true,
+      description: `${stack.stackName} ${name}-${pathPattern}`,
+    };
+
+    if (cognitoPool) {
+      const authorizer = new CognitoUserPoolsAuthorizer(stack, 'auth', {
+        cognitoUserPools: [cognitoPool],
+      });
+      lambdaRestApiProps = {
+        ...lambdaRestApiProps,
+        defaultMethodOptions: {
+          authorizationType: AuthorizationType.COGNITO,
+          authorizer,
+        },
+      };
+    }
+    const api = new LambdaRestApi(stack, `${name}${pathPattern}`, lambdaRestApiProps);
     distribution.addBehavior(
       pathPattern,
-      new RestApiOrigin(new LambdaRestApi(stack, `${name}${pathPattern}`, {
-        handler: lambda,
-        proxy: true,
-        description: `${stack.stackName} ${name}-${pathPattern}`,
-      })),
+      new RestApiOrigin(api),
       {
         allowedMethods: AllowedMethods.ALLOW_ALL,
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
