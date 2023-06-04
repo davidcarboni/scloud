@@ -19,7 +19,7 @@ app.post('/*', async (req: Request, res: Response) => {
         eventSourceARN: '',
         md5OfBody: '',
         messageAttributes: {},
-        messageId: '',
+        messageId: '1',
         receiptHandle: '',
         attributes: {
           ApproximateFirstReceiveTimestamp: '',
