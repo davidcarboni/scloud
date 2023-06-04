@@ -17,6 +17,8 @@ export async function processMessage(body: string) {
   const slackWebhook = process.env.SLACK_WEBHOOK || '';
   if (slackWebhook) {
     await axios.post(slackWebhook, { text: `${body}` });
+  } else {
+    console.log(`Message would be sent to Slack: ${body} (process.env.SLACK_WEBHOOK isn't set)`);
   }
 }
 
