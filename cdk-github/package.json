@@ -1,0 +1,51 @@
+{
+  "name": "@scloud/cdk-github",
+  "version": "0.1.0",
+  "description": "Automates setting variables and secrets on a Github repo/environment based on output produced by the ghaUser() feature of @scloud/cdk-patterns",
+  "main": "dist/index.js",
+  "scripts": {
+    "lint": "eslint --fix --ext ts",
+    "package": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/davidcarboni/scloud.git"
+  },
+  "keywords": [
+    "AWS",
+    "CDK",
+    "Cloud",
+    "Develoment",
+    "Kit",
+    "Serverless",
+    "patterns"
+  ],
+  "author": "David Carboni",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/davidcarboni/scloud/issues"
+  },
+  "homepage": "https://github.com/davidcarboni/scloud#readme",
+  "devDependencies": {
+    "@types/libsodium-wrappers": "*",
+    "@types/node": "*",
+    "@typescript-eslint/eslint-plugin": "*",
+    "@typescript-eslint/parser": "*",
+    "aws-cdk": "*",
+    "eslint": "*",
+    "eslint-config-airbnb-base": "*",
+    "eslint-import-resolver-typescript": "*",
+    "eslint-plugin-import": "*",
+    "ts-node": "*",
+    "typescript": "*"
+  },
+  "dependencies": {
+    "@octokit/rest": "*",
+    "@scloud/cdk-patterns": "*",
+    "aws-cdk-lib": "*",
+    "aws-lambda": "*",
+    "constructs": "*",
+    "libsodium-wrappers": "*",
+    "source-map-support": "*"
+  }
+}
