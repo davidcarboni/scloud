@@ -5,6 +5,7 @@ module.exports = {
   },
   extends: [
     'airbnb-base',
+    'plugin:import/typescript',
   ],
   parser: '@typescript-eslint/parser',
   parserOptions: {
@@ -39,7 +40,13 @@ module.exports = {
     'no-console': 'off', // Because we want to print some things out about the stack.
   },
   settings: {
+    'import/parsers': {
+      '@typescript-eslint/parser': ['.ts', '.js'],
+    },
     'import/resolver': {
+      typescript: {
+        alwaysTryTypes: true,
+      },
       node: {
         extensions: ['.js', '.ts'],
       },
