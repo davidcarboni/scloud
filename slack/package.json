@@ -4,11 +4,11 @@
   "description": "Sends queued messages to Slack.",
   "main": "src/lambda.ts",
   "scripts": {
-    "local": "nodemon src/llocal",
-    "lint": "eslint --fix --ext ts .",
+    "local": "nodemon src/lambda.ts --local",
+    "lint": "eslint --fix --ext ts src test",
     "test": "mocha -r ts-node/register test/**/*.spec.ts",
     "compile": "tsc",
-    "package": "rm -rf dist && mkdir -p dist && cp -r js/src dist && cp package*.json dist && cd dist && npm ci --production && echo $(git rev-parse --short HEAD) > COMMIT_HASH && zip -r function.zip ."
+    "package": "mkdir -p dist && cp -r js/src dist && cp package*.json dist && cd dist && npm ci --production && echo $(git rev-parse --short HEAD) > COMMIT_HASH && zip -r function.zip ."
   },
   "repository": {
     "type": "git",
@@ -37,6 +37,7 @@
     "typescript": "*"
   },
   "dependencies": {
+    "@scloud/lambda-local": "*",
     "aws-lambda": "*",
     "aws-sdk": "*",
     "axios": "*"

@@ -1,0 +1,52 @@
+{
+  "name": "@scloud/lambda-local",
+  "version": "0.1.1",
+  "description": "Run typical Lambda handlers locally.",
+  "main": "dist/src/index.js",
+  "scripts": {
+    "lint": "eslint --fix --ext ts",
+    "test": "mocha -r ts-node/register -r tsconfig-paths/register 'test/**/*.spec.ts' # tsconfig-paths/register helps resolve imports in tests",
+    "package": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/davidcarboni/scloud.git"
+  },
+  "keywords": [
+    "AWS",
+    "Lambda",
+    "Serverless",
+    "run",
+    "locally"
+  ],
+  "author": "David Carboni",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/davidcarboni/scloud/issues"
+  },
+  "homepage": "https://github.com/davidcarboni/scloud#readme",
+  "devDependencies": {
+    "@types/aws-lambda": "*",
+    "@types/chai": "*",
+    "@types/expect": "*",
+    "@types/express": "*",
+    "@types/mocha": "*",
+    "@types/node": "*",
+    "@typescript-eslint/eslint-plugin": "*",
+    "@typescript-eslint/parser": "*",
+    "chai": "*",
+    "eslint": "*",
+    "eslint-config-airbnb-base": "*",
+    "eslint-import-resolver-typescript": "*",
+    "eslint-plugin-import": "*",
+    "express": "*",
+    "mocha": "*",
+    "nodemon": "*",
+    "ts-node": "*",
+    "tsconfig-paths": "*",
+    "typescript": "*"
+  },
+  "dependencies": {
+    "aws-lambda": "*"
+  }
+}
