@@ -30,7 +30,6 @@
     "typescript": "*"
   },
   "dependencies": {
-    "@octokit/plugin-throttling": "*",
     "@octokit/rest": "*",
     "@scloud/cdk-patterns": "*",
     "aws-cdk-lib": "*",
