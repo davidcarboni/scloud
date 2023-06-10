@@ -5,12 +5,9 @@ import { Queue } from 'aws-cdk-lib/aws-sqs';
 import { Construct } from 'constructs';
 import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
 import { Function } from 'aws-cdk-lib/aws-lambda';
-import { webApp } from '../src/scloud/cloudfront';
-import { CognitoConstructs, cognitoPool } from '../src/scloud/cognito';
-import { ghaUser } from '../src/scloud/ghaUser';
-import { queueLambda } from '../src/scloud/queueLambda';
-import { apiGateway } from '../src/scloud/apigateway';
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
+import {
+  webApp, CognitoConstructs, cognitoPool, ghaUser, queueLambda, apiGateway,
+} from '@scloud/cdk-patterns';
 
 const name = 'project';
 const domainName = 'example.com';
