@@ -4,9 +4,9 @@ import * as path from 'path';
 import {
   Code, DockerImageCode, DockerImageFunction, DockerImageFunctionProps, Function, FunctionProps, Runtime,
 } from 'aws-cdk-lib/aws-lambda';
-import { IRepository, } from 'aws-cdk-lib/aws-ecr';
+import { IRepository } from 'aws-cdk-lib/aws-ecr';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
-import ecrRepository from './ecrRepository';
+import { ecrRepository } from './ecrRepository';
 import { addGhaLambda } from './ghaUser';
 
 /**

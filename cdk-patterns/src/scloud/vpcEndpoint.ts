@@ -1,9 +1,10 @@
+/* eslint-disable import/prefer-default-export */
 import {
   InterfaceVpcEndpoint, InterfaceVpcEndpointAwsService, InterfaceVpcEndpointOptions, IVpc,
 } from 'aws-cdk-lib/aws-ec2';
 import { Construct } from 'constructs';
 
-export default function privateEndpoint(
+export function privateEndpoint(
   construct: Construct,
   name: string,
   vpc: IVpc,

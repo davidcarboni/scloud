@@ -10,7 +10,7 @@ import { addGhaRepository } from './ghaUser';
  * @param name The name for this repository
  * @returns The created repository
  */
-export default function ecrRepository(
+export function ecrRepository(
   construct: Construct,
   name: string,
 ): Repository {
