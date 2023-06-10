@@ -59,7 +59,6 @@
     "jsonwebtoken": "*",
     "jwk-to-pem": "*",
     "nunjucks": "*",
-    "parse-multipart-data": "*",
-    "stripe": "*"
+    "parse-multipart-data": "*"
   }
 }
