@@ -1,6 +1,6 @@
 {
   "name": "@scloud/lambda-local",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Run typical Lambda handlers locally.",
   "main": "dist/src/index.js",
   "scripts": {
