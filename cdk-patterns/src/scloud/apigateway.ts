@@ -2,7 +2,7 @@ import * as route53 from 'aws-cdk-lib/aws-route53';
 import { Construct } from 'constructs';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import { Function } from 'aws-cdk-lib/aws-lambda';
-import { Repository } from 'aws-cdk-lib/aws-ecr';
+import { IRepository } from 'aws-cdk-lib/aws-ecr';
 import { LambdaRestApi } from 'aws-cdk-lib/aws-apigateway';
 import { DnsValidatedCertificate } from 'aws-cdk-lib/aws-certificatemanager';
 import { RecordTarget } from 'aws-cdk-lib/aws-route53';
@@ -74,7 +74,7 @@ export function apiGatewayContainer(
   zone: route53.IHostedZone,
   environment?: { [key: string]: string; },
   apiDomainName?: string,
-): { lambda: Function, api: LambdaRestApi, repository: Repository; } {
+): { lambda: Function, api: LambdaRestApi, repository: IRepository; } {
   const domainName = apiDomainName || `api.${zone.zoneName}`;
 
   const { lambda, repository } = containerFunction(construct, initialPass, name, environment);
