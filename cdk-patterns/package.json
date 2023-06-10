@@ -1,0 +1,50 @@
+{
+  "name": "cdk-patterns",
+  "version": "0.1.0",
+  "description": "Serverless CDK patterns for common infrastructure needs",
+  "main": "dist/index.js",
+  "scripts": {
+    "lint": "eslint --fix --ext ts src",
+    "package": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/davidcarboni/scloud.git"
+  },
+  "keywords": [
+    "AWS",
+    "CDK",
+    "Cloud",
+    "Develoment",
+    "Kit",
+    "Serverless",
+    "patterns"
+  ],
+  "author": "David Carboni",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/davidcarboni/scloud/issues"
+  },
+  "homepage": "https://github.com/davidcarboni/scloud#readme",
+  "devDependencies": {
+    "@types/node": "*",
+    "@typescript-eslint/eslint-plugin": "*",
+    "@typescript-eslint/parser": "*",
+    "aws-cdk": "*",
+    "eslint": "*",
+    "eslint-config-airbnb-base": "*",
+    "eslint-import-resolver-typescript": "*",
+    "eslint-plugin-import": "*",
+    "ts-node": "*",
+    "typescript": "*"
+  },
+  "dependencies": {
+    "@types/aws-lambda": "*",
+    "@types/lodash": "^4.14.195",
+    "aws-cdk-lib": "*",
+    "aws-lambda": "*",
+    "constructs": "*",
+    "lodash": "*",
+    "source-map-support": "*"
+  }
+}
