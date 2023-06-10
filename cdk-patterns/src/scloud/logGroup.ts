@@ -8,7 +8,7 @@ import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
  * @param name Name (and base for an ID) for the logGroup
  * @param retention Defaults to RetentionDays.ONE_MONTH
  */
-export default function logGroup(
+export function logGroup(
   stack: Stack,
   category: string,
   name: string,

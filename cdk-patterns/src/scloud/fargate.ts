@@ -7,7 +7,7 @@ import { Repository } from 'aws-cdk-lib/aws-ecr';
 import { IHostedZone } from 'aws-cdk-lib/aws-route53';
 import { CfnService, ContainerImage, LogDrivers } from 'aws-cdk-lib/aws-ecs';
 import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
-import ecrRepository from './ecrRepository';
+import { ecrRepository } from './ecrRepository';
 
 interface Deployment {
   repository: Repository,
@@ -25,7 +25,7 @@ interface Deployment {
  * @param vpc Optional VPC to host the cluster in
  * @returns Deplyment detais
  */
-export default function fargate(
+export function fargate(
   stack: Stack,
   name: string,
   serviceName: string,
