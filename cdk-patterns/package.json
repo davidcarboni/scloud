@@ -4,7 +4,7 @@
   "description": "Serverless CDK patterns for common infrastructure needs",
   "main": "dist/index.js",
   "scripts": {
-    "lint": "eslint --fix --ext ts src",
+    "lint": "eslint --fix --ext ts",
     "package": "tsc"
   },
   "repository": {
