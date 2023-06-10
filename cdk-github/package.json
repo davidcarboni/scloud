@@ -14,11 +14,10 @@
   "keywords": [
     "AWS",
     "CDK",
-    "Cloud",
-    "Develoment",
-    "Kit",
-    "Serverless",
-    "patterns"
+    "Github",
+    "Actions",
+    "secrets",
+    "variables"
   ],
   "author": "David Carboni",
   "license": "MIT",
