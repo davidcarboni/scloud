@@ -1,11 +1,10 @@
 {
   "compilerOptions": {
-    "target": "es2021",
+    "target": "es2018",
     "module": "commonjs",
     "lib": [
-      "es2021"
+      "es2018"
     ],
-    "baseUrl": "src", // Helps resolve imports in tests
     "declaration": true,
     "strict": true,
     "noImplicitAny": true,
@@ -26,5 +25,7 @@
     ],
     "outDir": "dist",
   },
-  // No include or exclude as these seem to mess with resolving imports from tests
+  "include": [
+    "src/**/*"
+  ]
 }
