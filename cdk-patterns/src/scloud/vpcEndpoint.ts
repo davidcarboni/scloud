@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import {
   InterfaceVpcEndpoint, InterfaceVpcEndpointAwsService, InterfaceVpcEndpointOptions, IVpc,
 } from 'aws-cdk-lib/aws-ec2';
