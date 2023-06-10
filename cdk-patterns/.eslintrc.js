@@ -2,7 +2,6 @@ module.exports = {
   env: {
     es2021: true,
     node: true,
-    mocha: true,
   },
   extends: [
     'airbnb-base',
@@ -26,10 +25,10 @@ module.exports = {
       },
     ],
     quotes: [2, 'single', 'avoid-escape'],
-    'max-len': [
+    'max-len': [ // Allow a longer line length
       'error',
       {
-        code: 150,
+        code: 180,
         tabWidth: 2,
         ignoreComments: true, // comments: 80
         ignoreUrls: true,
@@ -37,7 +36,9 @@ module.exports = {
         ignoreTemplateLiterals: true,
       },
     ],
-    'no-console': 'off', // Because container logging goes to stdout.
+    'no-new': 'off', // Because CDK likes to 'new' things
+    'import/prefer-default-export': 'off', // So we can import everythng in the same way from index.ts
+    'no-console': 'off', // Because we want to print some things out about the stack.
   },
   settings: {
     'import/parsers': {
@@ -52,21 +53,4 @@ module.exports = {
       },
     },
   },
-  overrides: [
-    {
-      // We lint unit tests differently.
-      files: ['*.spec.ts'],
-      rules: {
-        // Can't fathom how to resolve imprts in tests so heigh-ho, whatever, mystery
-        'import/no-unresolved': 'off',
-
-        // Avoid mocha/chai "Expected an assignment or function call and instead saw an expression"
-        'no-unused-expressions': 'off',
-
-        // Avoid "* should be listed in the project's dependencies, not devDependencies"
-        'import/no-extraneous-dependencies': 'off',
-      },
-    },
-  ],
-  ignorePatterns: ['node_modules', 'dist'],
 };
