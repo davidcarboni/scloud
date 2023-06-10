@@ -294,7 +294,7 @@ async function processSecrets(): Promise<KeyValuesCollection> {
   return newSecrets;
 }
 
-(async () => {
+export async function updateGithub() {
   console.log(`Updating variables and secrets on ${owner}/${repo}`);
   try {
     const newVariables = await processVariables();
@@ -307,4 +307,4 @@ async function processSecrets(): Promise<KeyValuesCollection> {
     console.error(err);
     throw err;
   }
-})();
+}
