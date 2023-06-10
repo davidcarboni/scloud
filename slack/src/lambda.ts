@@ -3,6 +3,7 @@ import {
 } from 'aws-lambda';
 import axios from 'axios';
 import * as fs from 'fs';
+import { sqsLocal } from '@scloud/lambda-local';
 
 // Provided by the container/environment/file
 if (fs.existsSync('COMMIT_HASH')) {
@@ -47,3 +48,9 @@ export async function handler(event: SQSEvent, context: Context): Promise<SQSBat
   };
   return result;
 }
+
+(async () => {
+  if (process.argv.includes('--local')) {
+    sqsLocal(handler);
+  }
+})();
