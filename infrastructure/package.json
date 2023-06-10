@@ -32,7 +32,6 @@
   "dependencies": {
     "@octokit/plugin-throttling": "*",
     "@octokit/rest": "*",
-    "@scloud/cdk-patterns": "^0.1.0",
     "aws-cdk-lib": "*",
     "aws-lambda": "*",
     "constructs": "*",
