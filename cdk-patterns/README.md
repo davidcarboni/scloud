@@ -4,13 +4,13 @@ Provides a set of functions that can be called to build common serverless CDK pa
 
 ## Overview
 
-I'm publishing this to help others because I've been using it for a couple of years now and it's been a real help for projects I've worked on (personal and professional). It's grown organically, accumulating patterns I've reached for repeatedly, so there's not comprehensive documentation at his stage! Please be kind.
+I'm publishing this to help others because I've been using it for a couple of years now and it's been a real help for projects I've worked on (personal and professional). It's grown organically, accumulating patterns I've reached for repeatedly, so there's no comprehensive documentation at his stage! Please be kind.
 
 A couple of highlights:
 
  * `queueLambda()` - creates a Lambda function fed by an SQS queue
- * `webAppRoutes` - creates a Cloudfront distribution with a bucket for hosting static content and Lambda functions to handle requests made to specific path prefixes
- * `cognitoPool` - creates a Cognito user pool and optionally configures Google, Facebook and SAML login
+ * `webAppRoutes` - creates a Cloudfront distribution with a bucket for hosting static content (e.g. a React app) and Lambda functions to handle requests made to specific path prefixes
+ * `cognitoPool` - creates a Cognito user pool and optionally configures Google, Facebook and SAML (sso) login
  * `ghaUser` - if you use Github Actions, this generates an IAM user access key with permission to deploy to resources defined in your stack (see also `addGha*` functions such as `addGhaSecret`, `addGhaVariable`, `addGhaLambda` etc.)
 
 ## Philosophy and contribution
