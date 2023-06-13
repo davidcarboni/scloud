@@ -6,10 +6,10 @@
   "main": "github.sh",
   "bin": {
     "cdk-github": "./github.sh",
-    "cdk-github-secrets": "src/github.ts"
+    "cdk-github-secrets": "dist/github.js"
   },
   "files": [
-    "src/*"
+    "dist/*"
   ],
   "scripts": {
     "lint": "eslint --fix --ext ts",
