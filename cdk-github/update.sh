@@ -16,6 +16,6 @@ fi
 
 # Update secrets
 echo "Setting Github secrets"
-npm run secrets
+npx cdk-github-secrets
 
 echo "End: $(date)"
