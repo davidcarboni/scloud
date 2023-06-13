@@ -6,9 +6,12 @@
   "files": [
     "dist/*"
   ],
+  "bin": {
+    "cdk-patterns": "dist/update.sh"
+  },
   "scripts": {
     "lint": "eslint --fix --ext ts",
-    "package": "tsc && cp -r src/container src/edge src/express src/lambda dist/ "
+    "package": "tsc && cp -r update.sh src/container src/edge src/express src/lambda dist/ "
   },
   "repository": {
     "type": "git",
