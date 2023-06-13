@@ -1,11 +1,11 @@
 {
   "name": "@scloud/cdk-patterns",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Serverless CDK patterns for common infrastructure needs",
   "main": "dist/index.js",
   "scripts": {
     "lint": "eslint --fix --ext ts",
-    "package": "tsc"
+    "package": "tsc && cp -r src/container src/edge src/express src/lambda dist/ "
   },
   "repository": {
     "type": "git",
