@@ -12,7 +12,7 @@
   ],
   "scripts": {
     "lint": "eslint --fix --ext ts",
-    "package": "tsc && cp update.sh dist/"
+    "package": "tsc && cp secrets.sh dist/"
   },
   "repository": {
     "type": "git",
