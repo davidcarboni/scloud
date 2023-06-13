@@ -30,21 +30,16 @@
     "@types/node": "*",
     "@typescript-eslint/eslint-plugin": "*",
     "@typescript-eslint/parser": "*",
-    "aws-cdk": "*",
     "eslint": "*",
     "eslint-config-airbnb-base": "*",
     "eslint-import-resolver-typescript": "*",
     "eslint-plugin-import": "*",
     "ts-node": "*",
-    "typescript": "*"
+    "typescript": "*",
+    "source-map-support": "*"
   },
   "dependencies": {
     "@octokit/rest": "*",
-    "@scloud/cdk-patterns": "*",
-    "aws-cdk-lib": "*",
-    "aws-lambda": "*",
-    "constructs": "*",
-    "libsodium-wrappers": "*",
-    "source-map-support": "*"
+    "libsodium-wrappers": "*"
   }
 }
