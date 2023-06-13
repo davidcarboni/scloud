@@ -310,3 +310,7 @@ export async function updateGithub() {
     throw err;
   }
 }
+
+(async () => {
+  await updateGithub();
+})();
