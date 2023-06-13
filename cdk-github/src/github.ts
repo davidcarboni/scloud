@@ -1,4 +1,4 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env node
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import {
   deleteEnvironmentSecret, deleteEnvironmentVariable, listEnvironmentSecrets, listEnvironmentVariables, setEnvironmentSecret, setEnvironmentVariable,
