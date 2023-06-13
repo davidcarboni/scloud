@@ -1,11 +1,14 @@
 {
   "name": "@scloud/cdk-github",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Automates setting variables and secrets on a Github repo/environment based on output produced by the ghaUser() feature of @scloud/cdk-patterns",
   "main": "dist/index.js",
+  "bin": {
+    "cdk-github": "dist/update.sh"
+  },
   "scripts": {
     "lint": "eslint --fix --ext ts",
-    "package": "tsc"
+    "package": "tsc && cp update.sh dist/"
   },
   "repository": {
     "type": "git",
