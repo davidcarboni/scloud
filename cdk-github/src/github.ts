@@ -267,6 +267,7 @@ async function processSecrets(): Promise<KeyValuesCollection> {
 
   // Delete leftover secrets - keeps things clean and tidy
   if (deleteLeftoverValues) {
+    console.log('Deleting leftover secrets and variables...');
     await Promise.all(leftoverSecretNames.repo.map(async (secretName) => deleteRepoSecret(secretName, owner, repo)));
     await Promise.all(Object.keys(leftoverSecretNames.environment).map(async (environment) => {
       const environmentSecrets = leftoverSecretNames.environment[environment];
