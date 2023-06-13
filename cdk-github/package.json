@@ -1,6 +1,6 @@
 {
   "name": "@scloud/cdk-github",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Automates setting variables and secrets on a Github repo/environment based on output produced by the ghaUser() feature of @scloud/cdk-patterns",
   "main": "dist/index.js",
   "bin": {
@@ -37,9 +37,9 @@
     "eslint-config-airbnb-base": "*",
     "eslint-import-resolver-typescript": "*",
     "eslint-plugin-import": "*",
+    "source-map-support": "*",
     "ts-node": "*",
-    "typescript": "*",
-    "source-map-support": "*"
+    "typescript": "*"
   },
   "dependencies": {
     "@octokit/rest": "*",
