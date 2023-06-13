@@ -1,8 +1,11 @@
 {
   "name": "@scloud/lambda-local",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Run typical Lambda handlers locally.",
   "main": "dist/src/index.js",
+  "files": [
+    "dist/*"
+  ],
   "scripts": {
     "lint": "eslint --fix --ext ts",
     "test": "mocha -r ts-node/register -r tsconfig-paths/register 'test/**/*.spec.ts' # tsconfig-paths/register helps resolve imports in tests",
