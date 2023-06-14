@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       component: slack
-      lambdaName: ${{ secrets.SLACK_LAMBDA }}
+      lambdaName: ${{ vars.SLACK_LAMBDA }}
 
     steps:
 
@@ -41,9 +41,11 @@ jobs:
     - name: Build
       working-directory: ./${{ env.component }}
       run: |
-        npm ci
-        npm run test
-        npm run compile
+        yarn
+        yarn lint
+        yarn test
+        yarn compile
+        yarn package
 
     - name: Package
       working-directory: ./${{ env.component }}
