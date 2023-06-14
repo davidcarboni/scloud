@@ -16,6 +16,18 @@ This repo contains a bunch of useful example code. If you'd prefer to install so
  * *@scloud/lambda-queue* - a helper function to take the boilerplate out of building Lambda functions that handle SQS mw
 essages: https://www.npmjs.com/package/@scloud/lambda-queue
 
+## Scloud structure and conventions
+
+Scloud makes a few assumptions about what the repository structure looks like:
+
+ * A folder `/infrastructure` containing CDK Cloudformation Stack code
+ * A folder `/infrastructure/secrets` containing inputs for the stack, outputs from stack deployment and optionally Github credentials for automating setting variables and secrets on your repository
+ * Folders at the top level (alongside `/infrastructure`) that represent deployable components (e.g. Lambda function code)
+ * Actions workflows under `.github/workflows` named to match deployable components (e.g. a top-level folder `/component1` would have a matching workflow called `.github/workflows/component1.yml`)
+ * By convention, each deployable component has a correspondingly-named function in the CDK code that builds the infrastructure for that component (e.g. `/component1` would relate to a function called `component1()` in `/infrastructure/lib/project-stack.ts`)
+
+ The aim is to reduce cognitive load and build good expectations about the pieces that make up your system.
+
 ## Serverless CDK infrastructure
 
 The folder you're likely looking for is: https://github.com/davidcarboni/scloud/tree/main/cdk-patterns/src
