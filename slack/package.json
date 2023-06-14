@@ -17,7 +17,6 @@
   "author": "David Carboni",
   "license": "ISC",
   "devDependencies": {
-    "@scloud/lambda-local": "*",
     "@types/aws-lambda": "*",
     "@types/chai": "*",
     "@types/expect": "*",
@@ -38,6 +37,7 @@
     "typescript": "*"
   },
   "dependencies": {
+    "@scloud/lambda-local": "*",
     "@scloud/lambda-queue": "*",
     "aws-lambda": "*",
     "aws-sdk": "*",
