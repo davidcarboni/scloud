@@ -31,7 +31,6 @@
   "devDependencies": {
     "@types/aws-lambda": "*",
     "@types/chai": "*",
-    "@types/expect": "*",
     "@types/express": "*",
     "@types/mocha": "*",
     "@types/node": "*",
