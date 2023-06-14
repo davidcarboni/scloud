@@ -8,7 +8,7 @@
     "lint": "eslint --fix --ext ts src test",
     "test": "mocha -r ts-node/register test/**/*.spec.ts",
     "compile": "tsc",
-    "package": "mkdir -p dist && cp -r js/src dist && cp package*.json dist && cd dist && npm ci --production && echo $(git rev-parse --short HEAD) > COMMIT_HASH && zip -r function.zip ."
+    "package": "mkdir -p dist && cp -r js/src package*.json dist && cd dist && yarn --prod && echo $(git rev-parse --short HEAD) > COMMIT_HASH && zip -r function.zip ."
   },
   "repository": {
     "type": "git",
@@ -17,6 +17,7 @@
   "author": "David Carboni",
   "license": "ISC",
   "devDependencies": {
+    "@scloud/lambda-local": "*",
     "@types/aws-lambda": "*",
     "@types/chai": "*",
     "@types/expect": "*",
@@ -37,7 +38,7 @@
     "typescript": "*"
   },
   "dependencies": {
-    "@scloud/lambda-local": "*",
+    "@scloud/lambda-queue": "*",
     "aws-lambda": "*",
     "aws-sdk": "*",
     "axios": "*"
