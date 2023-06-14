@@ -1,8 +1,8 @@
 {
   "name": "@scloud/lambda-queue",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A Lambda handler that processess SQS messages.",
-  "main": "dist/src/index.js",
+  "main": "dist/index.js",
   "files": [
     "dist/*"
   ],
@@ -10,7 +10,7 @@
     "lint": "eslint --fix --ext ts src test",
     "test": "mocha -r ts-node/register test/**/*.spec.ts",
     "compile": "tsc",
-    "package": "mv js/src dist/"
+    "package": "mkdir -p dist && cp -r js/src/* dist/"
   },
   "repository": {
     "type": "git",
@@ -21,7 +21,6 @@
   "devDependencies": {
     "@types/aws-lambda": "*",
     "@types/chai": "*",
-    "@types/expect": "*",
     "@types/mocha": "*",
     "@types/node": "*",
     "@typescript-eslint/eslint-plugin": "*",
