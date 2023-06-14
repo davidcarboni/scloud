@@ -1,0 +1,40 @@
+{
+  "name": "@scloud/utils",
+  "version": "0.1.0",
+  "description": "Useful functions, mainly for building Lambdas.",
+  "main": "dist/index.js",
+  "files": [
+    "dist/*"
+  ],
+  "scripts": {
+    "local": "nodemon src/lambda.ts --local",
+    "lint": "eslint --fix --ext ts src test",
+    "test": "mocha -r ts-node/register test/**/*.spec.ts",
+    "compile": "tsc",
+    "package": "mkdir -p dist && cp -r js/src/* dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/davidcarboni/scloud"
+  },
+  "author": "David Carboni",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/chai": "*",
+    "@types/mocha": "*",
+    "@types/node": "*",
+    "@typescript-eslint/eslint-plugin": "*",
+    "@typescript-eslint/parser": "*",
+    "chai": "*",
+    "eslint": "*",
+    "eslint-config-airbnb-base": "*",
+    "eslint-import-resolver-typescript": "*",
+    "eslint-plugin-import": "*",
+    "mocha": "*",
+    "ts-node": "*",
+    "typescript": "*"
+  },
+  "dependencies": {
+    "aws-sdk": "*"
+  }
+}
