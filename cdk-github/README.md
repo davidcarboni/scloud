@@ -4,7 +4,7 @@ Takes outputs produced by the `ghaUser` feature of `@scloud/cdk-patterns` and au
 
 ## Setup
 
-Assubing you've called the `ghaUser` function, you should have some output fikes under your `infrastructure/secrets` directory, e.g.:
+Assuming you've called the `ghaUser` function, you should have some output fikes under your `infrastructure/secrets` directory, e.g.:
 
  * `infrastructure/secrets/StackName.ghaSecrets.json`
  * `infrastructure/secrets/StackName.ghaVariables.json`
