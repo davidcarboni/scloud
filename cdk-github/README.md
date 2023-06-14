@@ -1,136 +1,26 @@
-# CDK project setup suggestions
+# CDK Github secrets and variables
 
-NB: See `dependencies.sh` for commands to install linter and libraries for interacting with Github
+Takes outputs produced by the `ghaUser` feature of `@scloud/cdk-patterns` and automates setting repo/environment secrets and variables for Github Actions.
 
-## SSO Configuration
+## Setup
 
-If you're going to be using a SAML SSO configuration, here are the values you're going to need:
+Assubing you've called the `ghaUser` function, you should have some output fikes under your `infrastructure/secrets` directory, e.g.:
 
- * ACS URL: `https://auth.<zone name>/saml2/idpresponse`
- * Entity ID: `urn:amazon:cognito:sp:<user pool ID>`
+ * `infrastructure/secrets/StackName.ghaSecrets.json`
+ * `infrastructure/secrets/StackName.ghaVariables.json`
 
-## Install AWS CDK for Typescript
+`@scloud/cdk-github` uses these files as inputs to understand the values that need to be set on the repo (or environment) and whether the value needs to be handled as a secret or not.
 
-    npm install -g typescript aws-cdk
+## Running
 
-### Run in a clean environment (optional)
+To set variables and/or secrets, you can use the following example code:
 
-    docker run -it --rm --entrypoint bash node
-    git config --global user.email "you@example.com"
-    git config --global init.defaultBranch nain
+```
+import { updateGithub } from '@scloud/cdk-github';
 
-## Initialise our project
+(async () => {
+  await updateGithub();
+})();
+```
 
-    mkdir project && cd project
-    cdk init app --language=typescript
-
-Check the versions of any dependencies (e.g. `aws-cdk`) and either switch to `*` or make sure there's a `^` in front of them to avoid confusing errors that trace back to slightly mismatched dependencies.
-
-## Ignore infrastructure secrets directory
-
-Add this to `infrastructure/.gitignore`:
-
-    # Ignore infrastructure secrets
-    secrets
-
-## Configure linting
-
-    npm install --save-dev \
-      @typescript-eslint/eslint-plugin \
-      @typescript-eslint/parser \
-      eslint \
-      eslint-config-airbnb-base \
-      eslint-plugin-import
-
- You'll need to add an `!.eslintrc.js` line to the generated `.gitignore` file (at the time of writing it specifies to ignore `*.js`).
-
-`.eslintrc.js`:
-
-````
-module.exports = {
-  env: {
-    es2021: true,
-    node: true,
-  },
-  extends: [
-    'airbnb-base',
-  ],
-  parser: '@typescript-eslint/parser',
-  parserOptions: {
-    ecmaVersion: 12,
-    sourceType: 'module',
-  },
-  plugins: [
-    '@typescript-eslint',
-  ],
-  rules: {
-    'import/extensions': [
-      'error',
-      'ignorePackages',
-      {
-        js: 'never',
-        ts: 'never',
-      },
-    ],
-    quotes: [2, 'single', 'avoid-escape'],
-    'no-new': 'off', // Because CDK likes to 'new' things
-    'no-console': 'off', // Because we want to print some things out about the stack.
-  },
-  settings: {
-    'import/resolver': {
-      node: {
-        extensions: ['.js', '.ts'],
-      },
-    },
-  },
-};
-````
-
-`package.json`
-
-````
-...
-  "scripts": {
-    ...,
-    "lint": "eslint --fix --ext ts bin lib"
-  },
-...
-````
-
-Running `npm run lint` will likely give you the following errors for `lib/project-stack.ts`:
-
-  5:1  error  Prefer default export  import/prefer-default-export
-  6:3  error  Useless constructor    no-useless-constructor
-
-The former is resolved by adding `default` to line 5:
-
-    export default class ProjectStack extends Stack {
-
-The latter is resolved when you start building your stack. For now you can clear it with a `console.log()` if you want.
-
-## Tag everything in the stack
-
-This can be useful for seeing the cost of a stack.
-
-Update `bin/project-stack.ts` something like this:
-
-    const stack = new ProjectStack(app, 'ProjectStack', {
-    ...
-    });
-    Tags.of(stack).add('product', stack.stackName);
-
-## Configure Typescript
-
-You may want to make the following changes to the `compilerOptions` section of `tsconfig.json`:
-
- * Add `"outDir": "js"` to avoid generating .js files in amongst your Typescript source
- * Add `"esModuleInterop": true` - hard to say why but it occasionally seems to help
-
-## Useful commands
-
-* `npm run build`   compile typescript to js
-* `npm run watch`   watch for changes and compile
-* `npm run test`    perform the jest unit tests
-* `cdk deploy`      deploy this stack to your default AWS account/region
-* `cdk diff`        compare deployed stack with current state
-* `cdk synth`       emits the synthesized CloudFormation template
+The key part is the call to the `updateGithub` function.

@@ -8,13 +8,6 @@ import {
 } from './repo';
 
 //
-// Delete "leftover" secrets and variables?
-//
-// Pass --delete on the command line. Keeps things tidy, but will also delete any secrets or variables you've set manually
-//
-const deleteLeftoverValues = process.argv.includes('--delete');
-
-//
 // Values from /secrets/github.sh:
 //
 // export USERNAME=octocat
@@ -131,7 +124,7 @@ async function readSecrets(): Promise<KeyValuesCollection> {
 /**
  * Handles synching variables with Github
  */
-async function processVariables(): Promise<KeyValuesCollection> {
+async function processVariables(deleteLeftoverValues: boolean): Promise<KeyValuesCollection> {
   const currentVariableNames: KeysCollection = {
     repo: [],
     environment: {},
@@ -167,24 +160,29 @@ async function processVariables(): Promise<KeyValuesCollection> {
   });
 
   // List out any leftover variables
+  let leftover = false;
   if (leftoverVariableNames.repo.length > 0) {
     console.log(` * NB: Some repo variables were not included in the CloudFormation outputs (${leftoverVariableNames.repo.length}):`);
     leftoverVariableNames.repo.forEach((variableName) => console.log(` - ${variableName}`));
+    leftover = true;
   }
   Object.keys(leftoverVariableNames.environment).forEach((environment) => {
     if (leftoverVariableNames.environment[environment].length > 0) {
       console.log(` * NB: Some environment variables in ${environment} were not included in the CloudFormation outputs (${leftoverVariableNames.environment[environment].length}):`);
       const environmentVariables = leftoverVariableNames.environment[environment];
       environmentVariables.forEach((variableName) => console.log(` - ${variableName}`));
+      leftover = true;
     }
   });
 
-  // Delete any leftover variables
-  await Promise.all(leftoverVariableNames.repo.map(async (variableName) => deleteRepoVariable(variableName, owner, repo)));
-  await Promise.all(Object.keys(leftoverVariableNames.environment).map(async (environment) => {
-    const environmentVariables = leftoverVariableNames.environment[environment];
-    await Promise.all(environmentVariables.map(async (secretName) => deleteEnvironmentVariable(secretName, owner, repo, environment)));
-  }));
+  // Delete leftover variables - keeps things clean and tidy
+  if (deleteLeftoverValues) {
+    await Promise.all(leftoverVariableNames.repo.map(async (variableName) => deleteRepoVariable(variableName, owner, repo)));
+    await Promise.all(Object.keys(leftoverVariableNames.environment).map(async (environment) => {
+      const environmentVariables = leftoverVariableNames.environment[environment];
+      await Promise.all(environmentVariables.map(async (secretName) => deleteEnvironmentVariable(secretName, owner, repo, environment)));
+    }));
+  } else if (leftover) console.log('(Not deleted - pass "--delete" to tidy up these values)');
 
   // Set variables
   await Promise.all(Object.keys(newVariables.repo).map(async (variableName) => setRepoVariable(
@@ -209,8 +207,10 @@ async function processVariables(): Promise<KeyValuesCollection> {
 
 /**
  * Handles synching secrets with Github
+ *
+ * @param deleteLeftoverValues If true, deletes any secrets in GHA that are not specified by the stack.
  */
-async function processSecrets(): Promise<KeyValuesCollection> {
+async function processSecrets(deleteLeftoverValues: boolean): Promise<KeyValuesCollection> {
   const currentSecretNames: KeysCollection = {
     repo: [],
     environment: {},
@@ -262,12 +262,12 @@ async function processSecrets(): Promise<KeyValuesCollection> {
       console.log(` * NB: Some environment secrets in ${environment} were not included in the CloudFormation outputs (${leftoverSecretNames.environment[environment].length}):`);
       const environmentSecrets = leftoverSecretNames.environment[environment];
       environmentSecrets.forEach((secretName) => console.log(` - ${secretName}`));
+      leftover = true;
     }
   });
 
   // Delete leftover secrets - keeps things clean and tidy
   if (deleteLeftoverValues) {
-    console.log('Deleting leftover secrets and variables...');
     await Promise.all(leftoverSecretNames.repo.map(async (secretName) => deleteRepoSecret(secretName, owner, repo)));
     await Promise.all(Object.keys(leftoverSecretNames.environment).map(async (environment) => {
       const environmentSecrets = leftoverSecretNames.environment[environment];
@@ -296,11 +296,17 @@ async function processSecrets(): Promise<KeyValuesCollection> {
   return newSecrets;
 }
 
-export async function updateGithub() {
+/**
+ *
+ * @param deleteLeftoverValues Pass true if you would like any leftover/orphaned values that are not specified by the stack to be automatically deleted from Github.
+ * Alternatively pass --delete on the command line.
+ * Keeps things tidy, but will delete any secrets or variables you've set manually!
+ */
+export async function updateGithub(deleteLeftoverValues: boolean = false) {
   console.log(`Updating variables and secrets on ${owner}/${repo}`);
   try {
-    const newVariables = await processVariables();
-    const newSecrets = await processSecrets();
+    const newVariables = await processVariables(deleteLeftoverValues || process.argv.includes('--delete'));
+    const newSecrets = await processSecrets(deleteLeftoverValues || process.argv.includes('--delete'));
 
     // Useful for debugging secret values being passed to Github:
     writeFileSync('secrets/gha_secrets.txt', JSON.stringify(newSecrets, null, 2));
