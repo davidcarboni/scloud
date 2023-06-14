@@ -3,6 +3,7 @@ set -eu
 
 rm -rf js dist
 
+yarn
 yarn upgrade
 yarn lint
 yarn test
