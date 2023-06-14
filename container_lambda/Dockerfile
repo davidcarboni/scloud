@@ -3,7 +3,7 @@
 
 # Lint and test
 
-FROM node:14-alpine as build
+FROM node:lts-alpine as build
 
 WORKDIR /build
 ADD . .
@@ -16,14 +16,14 @@ RUN npm run compile
 
 # Package
 
-FROM amazon/aws-lambda-nodejs:14 as package
+FROM amazon/aws-lambda-nodejs as package
 
 # Store the current commit, if provided:
 ARG COMMIT_HASH
 ENV COMMIT_HASH=${COMMIT_HASH}
 
 # Copy in compiled JS and install dependencies
-COPY --from=build /build/js/* /build/package*.json ${LAMBDA_TASK_ROOT}/
-RUN npm install --only=prod
+COPY --from=build /build/js/* /build/package*.json ./
+RUN npm ci
 
 CMD [ "lambda.handler" ]
