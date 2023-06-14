@@ -23,4 +23,4 @@ import { updateGithub } from '@scloud/cdk-github';
 })();
 ```
 
-The key part is the call to the `updateGithub` function.
+The key part is the call to the `updateGithub` function. You can optionally pass `true` to this function if you would like this process to delete any "leftover" (or orphaned) values. This removes secrets and variables if they are no longer specified by the stack. However, be aware tht this will also delete any variables you've set manually! This is because any variable or secret not specified by the stack will be removed.
