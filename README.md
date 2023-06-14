@@ -6,6 +6,16 @@ If you're not massively interested in infrastructure, but want to do it well, wi
 
 It's bunch of things done well that you can benefit from. I use it to store chunks of reference code I use each time I build a new service.
 
+## NPM packages
+
+This repo contains a bunch of useful example code. If you'd prefer to install some useful libraries to get going with creating serverless infrastructure and code, I've published a bunch of packages on NPM:
+
+ * *@scloud/cdk-patterns* - patterns I use regularly to put together serverless architectures: https://www.npmjs.com/package/@scloud/cdk-patterns
+ * *@scloud/cdk-github* - works with the CDK patterns to automate setting secrets and variables in Github Actions, based on the outputs of the `ghaUser` pattern: https://www.npmjs.com/package/@scloud/cdk-github
+ * *@scloud/lambda-local* - enables you to run a Lambda habdler locally for development using an Express server to translate HTTP requests to Lambda events. Implemented for API Gateway and SQS: https://www.npmjs.com/package/@scloud/lambda-local
+ * *@scloud/lambda-queue* - a helper function to take the boilerplate out of building Lambda functions that handle SQS mw
+essages: https://www.npmjs.com/package/@scloud/lambda-queue
+
 ## Serverless CDK infrastructure
 
 The folder you're likely looking for is: https://github.com/davidcarboni/scloud/tree/main/cdk-patterns/src
