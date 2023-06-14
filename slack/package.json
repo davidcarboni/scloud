@@ -8,7 +8,7 @@
     "lint": "eslint --fix --ext ts src test",
     "test": "mocha -r ts-node/register test/**/*.spec.ts",
     "compile": "tsc",
-    "package": "mkdir -p dist && cp -r js/src package*.json dist && cd dist && yarn --prod && echo $(git rev-parse --short HEAD) > COMMIT_HASH && zip -r function.zip ."
+    "package": "mkdir -p dist && cp -r js/src package*.json dist && cd dist && echo $(git rev-parse --short HEAD) > COMMIT_HASH && yarn --prod && zip -r function.zip ."
   },
   "repository": {
     "type": "git",
