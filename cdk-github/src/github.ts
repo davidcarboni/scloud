@@ -311,6 +311,6 @@ export async function updateGithub() {
   }
 }
 
-(async () => {
-  await updateGithub();
-})();
+// (async () => {
+//   await updateGithub();
+// })();
