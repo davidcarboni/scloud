@@ -57,7 +57,7 @@ export function redirectWww(
  * @param stack The CDK stack. The name of the stack will be included in the API Gateway description to aid readability/identification in the AWS console.
  * @param name The name for the web app. This will infulence naming for Cloudfront, API Gateway, Lambda and the static bucket.
  * @param zone The DNS zone for this web app.
- * @param environment Any environment variables your lanbda will need to handle requests.
+ * @param environment Any environment variables your lambda will need to handle requests.
  * @param domain Optional: by default the zone apex will be mapped to the Cloudfront distribution (e.g. 'example.com') but yo ucan specify a subdomain here (e.g. 'subdomain.example.com').
  * @param lambdaProps Optional: if you need to modify the properties of the Lambda function, you can use this parameter.
  * @param headers Optional: any headers you want passed through Cloudfront in addition to the defaults of User-Agent and Referer
