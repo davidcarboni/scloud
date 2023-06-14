@@ -1,0 +1,7 @@
+node_modules
+
+# Compiler output
+js
+
+# Packaging output
+dist

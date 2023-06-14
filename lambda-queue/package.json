@@ -1,0 +1,41 @@
+{
+  "name": "@scloud/lambda-queue",
+  "version": "0.1.0",
+  "description": "A Lambda handler that processess SQS messages.",
+  "main": "dist/src/index.js",
+  "files": [
+    "dist/*"
+  ],
+  "scripts": {
+    "lint": "eslint --fix --ext ts src test",
+    "test": "mocha -r ts-node/register test/**/*.spec.ts",
+    "compile": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/davidcarboni/scloud"
+  },
+  "author": "David Carboni",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/aws-lambda": "*",
+    "@types/chai": "*",
+    "@types/expect": "*",
+    "@types/mocha": "*",
+    "@types/node": "*",
+    "@typescript-eslint/eslint-plugin": "*",
+    "@typescript-eslint/parser": "*",
+    "chai": "*",
+    "eslint": "*",
+    "eslint-config-airbnb-base": "*",
+    "eslint-import-resolver-typescript": "*",
+    "eslint-plugin-import": "*",
+    "mocha": "*",
+    "ts-node": "*",
+    "typescript": "*"
+  },
+  "dependencies": {
+    "aws-lambda": "*",
+    "aws-sdk": "*"
+  }
+}
