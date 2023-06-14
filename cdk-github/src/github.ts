@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable no-param-reassign */
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import {
   deleteEnvironmentSecret, deleteEnvironmentVariable, listEnvironmentSecrets, listEnvironmentVariables, setEnvironmentSecret, setEnvironmentVariable,
@@ -14,10 +15,8 @@ import {
 // export PERSONAL_ACCESS_TOKEN=xxxxxxxxxxx
 // export OWNER=organization
 // export REPO=repository
-const owner = process.env.OWNER || process.env.USERNAME || '';
-const repo = process.env.REPO || '';
-if (!owner) throw new Error('No repo owner: please set an environment variable for either USERNAME or OWNER');
-if (!repo) throw new Error('No repo: please set an environment variable for REPO');
+let owner = process.env.OWNER || process.env.USERNAME || '';
+let repo = process.env.REPO || '';
 
 //
 // Optional: map stack name(s) to Github environment name(s)
@@ -302,8 +301,29 @@ async function processSecrets(deleteLeftoverValues: boolean): Promise<KeyValuesC
  * Alternatively pass --delete on the command line.
  * Keeps things tidy, but will delete any secrets or variables you've set manually!
  */
-export async function updateGithub(deleteLeftoverValues: boolean = false) {
-  console.log(`Updating variables and secrets on ${owner}/${repo}`);
+export async function updateGithub(deleteLeftoverValues: boolean = false, repoDetails: Record<string, string> = {}) {
+  // Collate details
+  repoDetails.username = repoDetails.username || process.env.USERNAME || '';
+  repoDetails.owner = repoDetails.owner || process.env.OWNER || process.env.USERNAME || '';
+  repoDetails.repo = repoDetails.repo || process.env.REPO || '';
+  repoDetails.personalAccessToken = repoDetails.personalAccessToken || process.env.PERSONAL_ACCESS_TOKEN || '';
+
+  // Validate
+  if (!repoDetails.owner) throw new Error('No repo owner: please pass repoDetails.owner or set an environment variable for either USERNAME or OWNER');
+  if (!repoDetails.repo) throw new Error('No repo: please pass repoDetails.repo or set an environment variable for REPO');
+  if (!repoDetails.username) throw new Error('No username: please pass repoDetails.username or set an environment variable for USERNAME');
+  if (!repoDetails.personalAccessToken) throw new Error('No repo: please pass repoDetails.personalAccessToken or set an environment variable for PERSONAL_ACCESS_TOKEN');
+
+  // Update the environment and variables
+  process.env.USERNAME = repoDetails.username;
+  process.env.OWNER = repoDetails.owner;
+  process.env.REPO = repoDetails.repo;
+  process.env.PERSONAL_ACCESS_TOKEN = repoDetails.personalAccessToken;
+  owner = repoDetails.owner;
+  repo = repoDetails.repo;
+
+  console.log(`Updating variables and secrets on ${repoDetails.owner}/${repoDetails.repo}`);
+
   try {
     const newVariables = await processVariables(deleteLeftoverValues || process.argv.includes('--delete'));
     const newSecrets = await processSecrets(deleteLeftoverValues || process.argv.includes('--delete'));
