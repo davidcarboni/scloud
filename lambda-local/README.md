@@ -29,7 +29,11 @@ export async function handler(event: SQSEvent, context: Context): Promise<SQSBat
 
 Add a script to your `package.json` to trigger the code. Add `nodemon` as a dependency if you want to watch for changes, e.g.:
 
-`nodemon src/lambda.ts --local`
+```
+  "scripts": {
+    "local": "nodemon src/lambda.ts --local",
+    ...
+```
 
 You can now invoke your Lambda handler function with e.g.:
 
