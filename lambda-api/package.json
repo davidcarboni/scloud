@@ -1,0 +1,45 @@
+{
+  "name": "@scloud/lambda-api",
+  "version": "0.1.0",
+  "description": "Lambda handler for API Gateway proxy requests",
+  "main": "dist/index.js",
+  "files": [
+    "dist/*"
+  ],
+  "scripts": {
+    "lint": "eslint --fix --ext ts src test",
+    "test": "mocha -r ts-node/register test/**/*.spec.ts",
+    "compile": "tsc",
+    "package": "mkdir -p dist && cp -r js/src/* dist/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/davidcarboni/scloud"
+  },
+  "author": "David Carboni",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/aws-lambda": "*",
+    "@types/chai": "*",
+    "@types/cookie": "*",
+    "@types/expect": "*",
+    "@types/mocha": "*",
+    "@types/node": "*",
+    "@types/nunjucks": "*",
+    "@typescript-eslint/eslint-plugin": "*",
+    "@typescript-eslint/parser": "*",
+    "axios": "*",
+    "chai": "*",
+    "eslint": "*",
+    "eslint-config-airbnb-base": "*",
+    "eslint-import-resolver-typescript": "*",
+    "eslint-plugin-import": "*",
+    "mocha": "*",
+    "ts-node": "*",
+    "typescript": "*"
+  },
+  "dependencies": {
+    "aws-lambda": "*",
+    "cookie": "*"
+  }
+}
