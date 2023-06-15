@@ -4,7 +4,7 @@ import {
 } from 'aws-lambda';
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import sqsHandler from '../src';
+import { sqsHandler } from '../src/handler';
 
 const event: SQSEvent = {
   Records: [],
