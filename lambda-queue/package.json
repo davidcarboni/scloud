@@ -1,6 +1,6 @@
 {
   "name": "@scloud/lambda-queue",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "A Lambda handler that processess SQS messages.",
   "main": "dist/index.js",
   "files": [
