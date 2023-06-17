@@ -7,7 +7,7 @@
     "dist/*"
   ],
   "scripts": {
-    "lint": "eslint --fix --ext ts src test",
+    "lint": "eslint --fix --ext ts",
     "test": "mocha -r ts-node/register test/**/*.spec.ts",
     "compile": "tsc",
     "package": "mkdir -p dist && cp -r js/src/* dist/"
@@ -16,8 +16,21 @@
     "type": "git",
     "url": "https://github.com/davidcarboni/scloud"
   },
+  "keywords": [
+    "AWS",
+    "Lambda",
+    "Serverless",
+    "API",
+    "Gateway",
+    "Proxy",
+    "Handler"
+  ],
   "author": "David Carboni",
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/davidcarboni/scloud/issues"
+  },
+  "homepage": "https://github.com/davidcarboni/scloud#readme",
   "devDependencies": {
     "@types/aws-lambda": "*",
     "@types/chai": "*",
