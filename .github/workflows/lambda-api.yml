@@ -16,11 +16,11 @@ jobs:
 
       - name: git setup
         run: |
-          git config --global user.name "${{ vars.GITHUB_WORKFLOW }}"
+          git config --global user.name "${{ github.workflow }}"
           git config --global user.email "gha@scloud"
 
       - name: Build
-        working-directory: ./${{ vars.GITHUB_WORKFLOW }}
+        working-directory: ./${{ github.workflow }}
         run: |
           yarn
           yarn lint
@@ -28,7 +28,7 @@ jobs:
           yarn compile
 
       - name: Publish
-        working-directory: ./${{ vars.GITHUB_WORKFLOW }}
+        working-directory: ./${{ github.workflow }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
