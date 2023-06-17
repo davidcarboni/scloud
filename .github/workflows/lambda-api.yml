@@ -32,6 +32,5 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          yarn version patch
-          yarn publish --access public
+          yarn publish --patch --access public
           git push
