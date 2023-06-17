@@ -34,6 +34,6 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          yarn publish --patch --access public || \
-          git commit -am "Version bump" || \
-          git push # Make sure we push any version update even if publish says it failed to keep clear of existing versions
+          yarn publish --patch --access public
+          git commit -am "Version bump" || true
+          git push
