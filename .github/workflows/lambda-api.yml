@@ -18,12 +18,20 @@ jobs:
         run: |
           git config --global user.name "${{ vars.GITHUB_WORKFLOW }}"
           git config --global user.email "gha@scloud"
-      - run: yarn
-      - run: yarn lint
-      - run: yarn test
-      - run: yarn compile
-      - run: yarn version patch
-      - run: yarn publish --access public
+
+      - name: Build
+        working-directory: ./${{ vars.GITHUB_WORKFLOW }}
+        run: |
+          yarn
+          yarn lint
+          yarn test
+          yarn compile
+
+      - name: Publish
+        working-directory: ./${{ vars.GITHUB_WORKFLOW }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - run: git push
+        run: |
+          yarn version patch
+          yarn publish --access public
+          git push
