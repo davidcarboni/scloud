@@ -1,9 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { APIGatewayProxyEvent, Context } from 'aws-lambda';
-import {
-  apiHandler,
-} from '../src/handler';
+import { apiHandler } from '../src/handler';
 import { Request } from '../src/types';
 
 const event: APIGatewayProxyEvent = {
