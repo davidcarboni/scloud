@@ -35,5 +35,5 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           yarn publish --patch --access public
-          git commit -am "Patch version"
+          git commit -am "Patch version" || true
           git push
