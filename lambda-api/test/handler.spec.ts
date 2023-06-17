@@ -1,113 +1,106 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
+import { APIGatewayProxyEvent, Context } from 'aws-lambda';
 import {
-  parseBody, standardHeaders, standardPath,
-  standardQueryParameters,
+  apiHandler,
 } from '../src/handler';
+import { Request } from '../src/types';
 
-describe('lambda.ts', () => {
-  describe('standardPath', () => {
-    it('Should parse a standard path', () => {
-      const path = standardPath('/a/b/c');
-      expect(path).to.equal('/a/b/c');
-    });
+const event: APIGatewayProxyEvent = {
+  body: '',
+  headers: {},
+  multiValueHeaders: {},
+  httpMethod: '',
+  isBase64Encoded: false,
+  path: '',
+  pathParameters: null,
+  queryStringParameters: {},
+  multiValueQueryStringParameters: {},
+  stageVariables: null,
+  resource: '?',
+  requestContext: {
+    accountId: '',
+    apiId: '',
+    authorizer: null,
+    httpMethod: '',
+    identity: {
+      accessKey: null,
+      accountId: null,
+      apiKey: null,
+      apiKeyId: null,
+      caller: null,
+      clientCert: null,
+      cognitoAuthenticationProvider: null,
+      cognitoAuthenticationType: null,
+      cognitoIdentityId: null,
+      cognitoIdentityPoolId: null,
+      principalOrgId: null,
+      sourceIp: '',
+      user: null,
+      userAgent: null,
+      userArn: null,
+    },
+    path: '',
+    protocol: '',
+    requestId: '',
+    requestTimeEpoch: 0,
+    resourceId: '',
+    resourcePath: '',
+    stage: '',
+  },
+};
+const context: Context = {
+  awsRequestId: '',
+  callbackWaitsForEmptyEventLoop: false,
+  functionName: '',
+  functionVersion: '',
+  invokedFunctionArn: '',
+  logGroupName: '',
+  logStreamName: '',
+  memoryLimitInMB: '',
+  getRemainingTimeInMillis: () => 0,
+  done: () => { },
+  fail: () => { },
+  succeed: () => { },
+};
 
-    it('Should parse an empty path', () => {
-      const path = standardPath('');
-      expect(path).to.equal('/');
-    });
-
-    it('Should parse an root path', () => {
-      const path = standardPath('/');
-      expect(path).to.equal('/');
-    });
-
-    it('Should remove a trailing slash', () => {
-      const path = standardPath('/path/');
-      expect(path).to.equal('/path');
-    });
-
-    it('Should add a leading slash', () => {
-      const path = standardPath('path');
-      expect(path).to.equal('/path');
-    });
-
-    it('Should lowercase', () => {
-      const path = standardPath('/PATH');
-      expect(path).to.equal('/path');
-    });
-
-    it('Should remove blank segments', () => {
-      const path = standardPath('/a//b');
-      expect(path).to.equal('/a/b');
-    });
-  });
-
-  describe('standardQueryParameters', () => {
-    it('Should handle a query string', () => {
-      const query = standardQueryParameters({ a: '1', b: '2' });
-      expect(query).to.deep.equal({ a: '1', b: '2' });
-    });
-
-    it('Should remove blank values', () => {
-      const query = standardQueryParameters({
-        a: '1', b: '2', c: undefined, d: '',
+describe('handler.ts', () => {
+  describe('handler', () => {
+    it('Should return 200 for a matched route', async () => {
+      const result = await apiHandler({ ...event, path: '/ok', httpMethod: 'GET' }, context, {
+        '/ok': {
+          // eslint-disable-next-line no-unused-vars
+          GET: async (r: Request) => ({ statusCode: 200 }),
+        },
       });
-      expect(query).to.deep.equal({ a: '1', b: '2' });
+      expect(result.statusCode).to.equal(200);
     });
 
-    it('Should handle no query', () => {
-      const query = standardQueryParameters(null);
-      expect(query).to.deep.equal({});
-    });
-  });
-
-  describe('standardHeaders', () => {
-    it('Should lowercase header names', () => {
-      const query = standardHeaders({ Cookie: '1', 'Content-Type': '2' });
-      expect(query).to.deep.equal({ cookie: '1', 'content-type': '2' });
+    it('Should return 404 for an unmatched path', async () => {
+      const result = await apiHandler({ ...event, path: '/unmatched' }, context);
+      expect(result.statusCode).to.equal(404);
     });
 
-    it('Should remove blank values', () => {
-      const query = standardHeaders({ a: '1', b: '', c: undefined });
-      expect(query).to.deep.equal({ a: '1' });
-    });
-  });
-
-  describe('parseBody', () => {
-    it('Should parse body', () => {
-      const query = parseBody(JSON.stringify({ a: '1', b: '2' }));
-      expect(query).to.deep.equal({ a: '1', b: '2' });
+    it('Should return 405 for an unmatched method', async () => {
+      const result = await apiHandler({ ...event, path: '/method', httpMethod: 'GET' }, context, {
+        '/method': {
+          // eslint-disable-next-line no-unused-vars
+          POST: async (r: Request) => ({ statusCode: 200, body: { method: 'POST' } }),
+        },
+      });
+      expect(result.statusCode).to.equal(405);
     });
 
-    it('Should gracefully handle unparseable body', () => {
-      const query = parseBody('Ain\'t nobody here but us chickens');
-      expect(query).to.deep.equal({});
-    });
-
-    it('Should handle empty body', () => {
-      const query = parseBody('');
-      expect(query).to.deep.equal({});
-    });
-
-    it('Should handle no body', () => {
-      const query = parseBody(null);
-      expect(query).to.deep.equal({});
+    it('Should return 500 for an error', async () => {
+      const result = await apiHandler({ ...event, path: '/boom', httpMethod: 'GET' }, context, {
+        '/boom': {
+          // eslint-disable-next-line no-unused-vars
+          GET: async (r: Request) => {
+            throw new Error('Intended error');
+          },
+        },
+      });
+      expect(result.statusCode).to.equal(500);
     });
   });
 });
-
-// /**
-//  * Parses the body (if present) to a JSON string. Returns at mimimum an empty object.
-//  * @param body APIGatewayProxyEvent.body
-//  */
-// export function parseBody(body: string | null): { [name: string]: string; } {
-//   if (!body) return {};
-//   let result = {};
-//   try {
-//     result = JSON.parse(body);
-//   } catch (e) {
-//     console.error(`Error parsing request body: ${e}`);
-//   }
-//   return result;
-// }
