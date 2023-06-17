@@ -2,6 +2,11 @@ name: lambda-local
 on:
   push:
     branches: [ main ]
+    paths:
+    # Build when there are changes in the directory that holds the component,
+    # or when this workflow file is changed
+    - 'lambda-local/**'
+    - '.github/workflows/lambda-local.yml'
 jobs:
   build:
     runs-on: ubuntu-latest
