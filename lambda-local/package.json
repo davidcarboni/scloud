@@ -9,7 +9,8 @@
   "scripts": {
     "lint": "eslint --fix --ext ts",
     "test": "mocha -r ts-node/register -r tsconfig-paths/register 'test/**/*.spec.ts' # tsconfig-paths/register helps resolve imports in tests",
-    "package": "tsc"
+    "compile": "tsc",
+    "package": "mkdir -p dist && cp -r js/src/* dist/"
   },
   "repository": {
     "type": "git",

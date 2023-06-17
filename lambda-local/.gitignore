@@ -1,6 +1,8 @@
 node_modules
+yarn-error.log
+
+# Compiler output
+js
 
 # Packaging output
 dist
-
-yarn-error.log
