@@ -2,6 +2,11 @@ name: lambda-api
 on:
   push:
     branches: [ main ]
+    paths:
+    # Build when there are changes in the directory that holds the component,
+    # or when this workflow file is changed
+    - 'lambda-api/**'
+    - '.github/workflows/lambda-api.yml'
 jobs:
   build:
     runs-on: ubuntu-latest
