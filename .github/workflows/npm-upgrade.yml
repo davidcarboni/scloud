@@ -37,7 +37,6 @@ jobs:
         }
 
         upgrade infrastructure
-        upgrade integration-test
         upgrade metrics
         upgrade slack
         upgrade static
