@@ -36,7 +36,6 @@ jobs:
           git commit -m "Automated upgrade" package-lock.json || true # Ignore error if no change
         }
 
-        upgrade accelerate
         upgrade infrastructure
         upgrade integration-test
         upgrade metrics
