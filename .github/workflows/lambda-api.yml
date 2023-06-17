@@ -36,4 +36,5 @@ jobs:
         run: |
           yarn publish --patch --access public
           git commit -am "Patch version" || true
+          git pull --rebase
           git push
