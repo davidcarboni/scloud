@@ -2,6 +2,11 @@ name: lambda-queue
 on:
   push:
     branches: [ main ]
+    paths:
+    # Build when there are changes in the directory that holds the component,
+    # or when this workflow file is changed
+    - 'lambda-queue/**'
+    - '.github/workflows/lambda-queue.yml'
 jobs:
   build:
     runs-on: ubuntu-latest
