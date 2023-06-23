@@ -1,0 +1,46 @@
+name: cdk-patterns
+on:
+  push:
+    branches: [ main ]
+    paths:
+    # Build when there are changes in the directory that holds the component,
+    # or when this workflow file is changed
+    - 'cdk-patterns/**'
+    - '.github/workflows/cdk-patterns.yml'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+
+      # Setup .npmrc file to publish to npm
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: git setup
+        run: |
+          git config --global user.name "${{ github.workflow }}"
+          git config --global user.email "gha@scloud"
+
+      - name: Build
+        working-directory: ./${{ github.workflow }}
+        run: |
+          yarn
+          yarn lint
+          yarn test
+          yarn compile
+          yarn package
+
+      - name: Publish
+        working-directory: ./${{ github.workflow }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          yarn publish --patch --access public
+          git commit -am "Patch version" || true
+          git pull --rebase
+          git push
