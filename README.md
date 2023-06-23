@@ -13,8 +13,12 @@ This repo contains a bunch of useful example code. If you'd prefer to install so
  * *@scloud/cdk-patterns* - patterns I use regularly to put together serverless architectures: https://www.npmjs.com/package/@scloud/cdk-patterns
  * *@scloud/cdk-github* - works with the CDK patterns to automate setting secrets and variables in Github Actions, based on the outputs of the `ghaUser` pattern: https://www.npmjs.com/package/@scloud/cdk-github
  * *@scloud/lambda-local* - enables you to run a Lambda habdler locally for development using an Express server to translate HTTP requests to Lambda events. Implemented for API Gateway and SQS: https://www.npmjs.com/package/@scloud/lambda-local
- * *@scloud/lambda-queue* - a helper function to take the boilerplate out of building Lambda functions that handle SQS mw
+ * *@scloud/lambda-queue* - a helper function to take the boilerplate out of building Lambda functions that handle SQS messages
 essages: https://www.npmjs.com/package/@scloud/lambda-queue
+ * *@scloud/lambda-api* - a helper function to take the boilerplate out of building Lambda functions that handle API Gateway proxy requests
+essages: https://www.npmjs.com/package/@scloud/lambda-api
+ * *@scloud/utils* - utility functions, primarily for acessin dynamodb and graceful json parsing
+essages: https://www.npmjs.com/package/@scloud/utils
 
 ## Scloud structure and conventions
 
