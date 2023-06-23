@@ -34,7 +34,7 @@ Scloud makes a few assumptions about what the repository structure looks like:
 
 ## Serverless CDK infrastructure
 
-The folder you're likely looking for is: https://github.com/davidcarboni/scloud/tree/main/cdk-patterns/src
+The folder you're likely looking for is: https://github.com/davidcarboni/scloud/tree/main/cdk-patterns/src or the package `@scloud/cdk-patterns`
 
 This repo contains a set of AWS CDK patterns packaged as functions so you can put serverless architectures together with a few function calls. The aim is to make it easy to put together typical infrastructure building blocks that can be reused (and/or tweaked) across projects.
 
@@ -42,7 +42,7 @@ The name 'scloud' means 'simple cloud', but could equally mean other things. The
 
 ## Github secrets and variables
 
-The other folder you'll want to look in is: https://github.com/davidcarboni/scloud/tree/main/cdk-github/src
+The other folder you'll want to look in is: https://github.com/davidcarboni/scloud/tree/main/cdk-github/src or the package `@scloud/cdk-github`
 
 If you use Github Actions, chances are you'll want to pass variables and secrets from your infrasturcture build to your Github Actions workflows, for example generated bucket and Lambda names. Once you're set up, you can use `npm run secrets` to read in values output by CDK deploy and use them to set up secrets and variables on Github automatically.
 
