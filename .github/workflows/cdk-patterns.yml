@@ -40,6 +40,15 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           yarn publish --patch --access public
+
+      - name: Push
+        working-directory: ./${{ github.workflow }}
+        if: always()
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          # Push updated pakage.json to Github
+          # We need this to happen always to avoid the repo getting stuck on an already-published version
           git commit -am "Patch version" || true
           git pull --rebase
           git push
