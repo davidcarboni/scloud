@@ -1,4 +1,5 @@
 node_modules
+yarn-error.log
 
 # Compiler output
 js
@@ -7,5 +8,4 @@ js
 dist
 
 # Lock files
-package.lock
 yarn.lock

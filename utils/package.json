@@ -9,7 +9,7 @@
   "scripts": {
     "local": "nodemon src/lambda.ts --local",
     "lint": "eslint --fix --ext ts src test",
-    "test": "mocha -r ts-node/register test/**/*.spec.ts",
+    "test": "mocha -r ts-node/register -r tsconfig-paths/register 'test/**/*.spec.ts' # tsconfig-paths/register helps resolve imports in tests",
     "compile": "tsc",
     "package": "mkdir -p dist && cp -r js/src/* dist"
   },
