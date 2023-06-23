@@ -1,12 +1,12 @@
-name: cdk-github
+name: utils
 on:
   push:
     branches: [ main ]
     paths:
     # Build when there are changes in the directory that holds the component,
     # or when this workflow file is changed
-    - 'cdk-github/**'
-    - '.github/workflows/cdk-github.yml'
+    - 'utils/**'
+    - '.github/workflows/utils.yml'
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -31,6 +31,7 @@ jobs:
         run: |
           yarn
           yarn lint
+          yarn test
           yarn compile
           yarn package
 

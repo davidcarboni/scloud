@@ -24,7 +24,7 @@ jobs:
       - name: git setup
         run: |
           git config --global user.name "${{ github.workflow }}"
-          git config --global user.email "gha@scloud"
+          git config --global user.email "gha@scloud/${{ github.workflow }}"
 
       - name: Build
         working-directory: ./${{ github.workflow }}
