@@ -11,7 +11,8 @@
   },
   "scripts": {
     "lint": "eslint --fix --ext ts",
-    "package": "tsc && cp -r update.sh src/container src/edge src/express src/lambda dist/ "
+    "compile": "tsc",
+    "package": "cp -r update.sh src/container src/edge src/express src/lambda dist/ "
   },
   "repository": {
     "type": "git",
