@@ -38,3 +38,11 @@ Add a script to your `package.json` to trigger the code. Add `nodemon` as a depe
 You can now invoke your Lambda handler function with e.g.:
 
 `curl -X POST -d "SQS messgae body content" http://localhost:3000`
+
+## Available handlers
+
+The following havdlers are available:
+
+ * `sqsHandler` - takes the boby of a post as the content of an SQS message to be dlievered to your handler
+ * `apiGatewayHandler` - takes the headers, query string and body of a post request and delivers them to your handler
+ * `cludfrontHandler` - works the same as `apiGatewayHandler` but allows you to pass multiple cloudfront path mappings and multiple handler functions (simulating the pattern Cloudfront mapped to multiple API Gateways provided in `@scloud/cdk-patterns`)
