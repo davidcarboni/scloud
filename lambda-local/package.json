@@ -42,7 +42,6 @@
     "eslint-config-airbnb-base": "*",
     "eslint-import-resolver-typescript": "*",
     "eslint-plugin-import": "*",
-    "express": "*",
     "mocha": "*",
     "nodemon": "*",
     "ts-node": "*",
@@ -50,6 +49,7 @@
     "typescript": "*"
   },
   "dependencies": {
-    "aws-lambda": "*"
+    "aws-lambda": "*",
+    "express": "*"
   }
 }
