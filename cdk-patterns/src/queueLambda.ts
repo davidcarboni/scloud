@@ -12,7 +12,8 @@ export function queueLambda(
   name: string,
   environment?: { [key: string]: string; },
   lambdaProps?: Partial<FunctionProps>,
-): { queue: Queue, lambda: Function, policy: ManagedPolicy; } {
+  createPolicy: boolean = false,
+): { queue: Queue, lambda: Function, policy?: ManagedPolicy; } {
   // NB Message timeout needs to match netween the queue and the lambda:
   const timeout: Duration = lambdaProps?.timeout || Duration.seconds(60);
 
@@ -27,18 +28,21 @@ export function queueLambda(
   lambda.addEventSource(new SqsEventSource(queue, { reportBatchItemFailures: true }));
 
   // Policy enabling message sending to the queue
-  const policy = new ManagedPolicy(construct, `${name}SenderPolicy`, {
+  let policy: ManagedPolicy | undefined;
+  if (createPolicy) {
+    policy = new ManagedPolicy(construct, `${name}SenderPolicy`, {
     // managedPolicyName: `${name}-sender`,
-    statements: [
-      new PolicyStatement({
-        effect: Effect.ALLOW,
-        resources: [queue.queueArn],
-        actions: [
-          'sqs:SendMessage',
-        ],
-      }),
-    ],
-  });
+      statements: [
+        new PolicyStatement({
+          effect: Effect.ALLOW,
+          resources: [queue.queueArn],
+          actions: [
+            'sqs:SendMessage',
+          ],
+        }),
+      ],
+    });
+  }
 
   return {
     queue, lambda, policy,
