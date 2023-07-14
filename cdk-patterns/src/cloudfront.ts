@@ -80,6 +80,7 @@ export function webApp(
 
   // Static content
   const bucket = new Bucket(stack, `${name}Static`, {
+    encryption: BucketEncryption.S3_MANAGED,
     removalPolicy: RemovalPolicy.DESTROY,
     autoDeleteObjects: true,
     publicReadAccess: true,
@@ -349,6 +350,7 @@ export function cloudFront(
     // We consider the objects in the static bucket ot be expendable because
     // they're static content we generate (rather than user data).
     bucket = new Bucket(construct, `${name}Static`, {
+      encryption: BucketEncryption.S3_MANAGED,
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
       publicReadAccess: true,
