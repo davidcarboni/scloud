@@ -25,6 +25,7 @@ import { Function, FunctionProps } from 'aws-cdk-lib/aws-lambda';
 import { UserPool } from 'aws-cdk-lib/aws-cognito';
 import { zipFunctionTypescript } from './lambdaFunction';
 import { addGhaBucket, addGhaDistribution } from './ghaUser';
+import { privateBucket } from './bucket';
 
 // Disabled for now as routing "*.*" to s3 may handle most of what we need to junk:
 // export const junkPaths: string[] = ['/wp-includes/*', '/wp-admin*', '*.xml', '*.php', '*.aspx', '*.env', '/.git*', '/.remote*', '/.production*', '/.local*'];
@@ -80,11 +81,7 @@ export function webApp(
   const domainName = domain || `${zone.zoneName}`;
 
   // Static content
-  const bucket = new Bucket(stack, `${name}Static`, {
-    encryption: BucketEncryption.S3_MANAGED,
-    removalPolicy: RemovalPolicy.DESTROY,
-    autoDeleteObjects,
-  });
+  const bucket = privateBucket(stack, `${name}Static`, { autoDeleteObjects });
   addGhaBucket(stack, name, bucket);
 
   // Permissions to access the bucket from Cloudfront
@@ -202,11 +199,7 @@ export function webAppRoutes(
 
   // We consider the objects in the static bucket ot be expendable because
   // they're static content we generate (rather than user data).
-  const bucket = new Bucket(stack, `${name}Static`, {
-    encryption: BucketEncryption.S3_MANAGED,
-    removalPolicy: RemovalPolicy.DESTROY,
-    autoDeleteObjects,
-  });
+  const bucket = privateBucket(stack, `${name}Static`, { autoDeleteObjects });
   addGhaBucket(stack, name, bucket);
 
   // Permissions to access the bucket from Cloudfront
@@ -357,11 +350,7 @@ export function cloudFront(
     // Default: Cloudfont -> bucket on domain name
     // We consider the objects in the static bucket ot be expendable because
     // they're static content we generate (rather than user data).
-    bucket = new Bucket(stack, `${name}Static`, {
-      encryption: BucketEncryption.S3_MANAGED,
-      removalPolicy: RemovalPolicy.DESTROY,
-      autoDeleteObjects,
-    });
+    bucket = privateBucket(stack, `${name}Static`, { autoDeleteObjects });
     addGhaBucket(stack, name, bucket);
 
     // Permissions to access the bucket from Cloudfront
