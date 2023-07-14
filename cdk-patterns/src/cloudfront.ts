@@ -75,6 +75,7 @@ export function webApp(
   headers?: string[],
   defaultIndex: boolean = true,
   wwwRedirect: boolean = true,
+  autoDeleteObjects: boolean = true,
 ): { lambda: Function, api: LambdaRestApi, bucket: Bucket, distribution: Distribution; } {
   const domainName = domain || `${zone.zoneName}`;
 
@@ -82,10 +83,15 @@ export function webApp(
   const bucket = new Bucket(stack, `${name}Static`, {
     encryption: BucketEncryption.S3_MANAGED,
     removalPolicy: RemovalPolicy.DESTROY,
-    autoDeleteObjects: true,
-    publicReadAccess: true,
+    autoDeleteObjects,
   });
   addGhaBucket(stack, name, bucket);
+
+  // Permissions to access the bucket from Cloudfront
+  const originAccessIdentity = new cloudfront.OriginAccessIdentity(stack, `${name}OAI`, {
+    comment: 'Access to static bucket',
+  });
+  bucket.grantRead(originAccessIdentity);
 
   // Web app handler - default values can be overridden using lambdaProps
   const lambda = zipFunctionTypescript(stack, name, environment, { memorySize: 3008, timeout: Duration.seconds(10), ...lambdaProps });
@@ -190,6 +196,7 @@ export function webAppRoutes(
   cognitoPool: UserPool | undefined = undefined,
   defaultIndex: boolean = true,
   wwwRedirect: boolean = true,
+  autoDeleteObjects: boolean = true,
 ): { lambdas: {[path:string]:Function}, bucket: Bucket, distribution: Distribution; } {
   const domainName = domain || `${zone.zoneName}`;
 
@@ -197,8 +204,8 @@ export function webAppRoutes(
   // they're static content we generate (rather than user data).
   const bucket = new Bucket(stack, `${name}Static`, {
     encryption: BucketEncryption.S3_MANAGED,
-    autoDeleteObjects: true,
     removalPolicy: RemovalPolicy.DESTROY,
+    autoDeleteObjects,
   });
   addGhaBucket(stack, name, bucket);
 
@@ -325,13 +332,14 @@ export function webAppRoutes(
  * @returns The distribution and (if created) static bucket
  */
 export function cloudFront(
-  construct: Construct,
+  stack: Stack,
   name: string,
   zone: route53.IHostedZone,
   defaultBehavior?: BehaviorOptions,
   domain: string | undefined = undefined,
   defaultIndex: boolean = true,
   wwwRedirect: boolean = true,
+  autoDeleteObjects: boolean = true,
   // initialPass: boolean,
   // environment?: { [key: string]: string; },
   // apiDomain?: string,
@@ -349,13 +357,19 @@ export function cloudFront(
     // Default: Cloudfont -> bucket on domain name
     // We consider the objects in the static bucket ot be expendable because
     // they're static content we generate (rather than user data).
-    bucket = new Bucket(construct, `${name}Static`, {
+    bucket = new Bucket(stack, `${name}Static`, {
       encryption: BucketEncryption.S3_MANAGED,
       removalPolicy: RemovalPolicy.DESTROY,
-      autoDeleteObjects: true,
-      publicReadAccess: true,
+      autoDeleteObjects,
     });
-    addGhaBucket(construct, name, bucket);
+    addGhaBucket(stack, name, bucket);
+
+    // Permissions to access the bucket from Cloudfront
+    const originAccessIdentity = new cloudfront.OriginAccessIdentity(stack, `${name}OAI`, {
+      comment: 'Access to static bucket',
+    });
+
+    bucket.grantRead(originAccessIdentity);
     behavior = {
       origin: new origins.S3Origin(bucket),
       allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
@@ -364,20 +378,20 @@ export function cloudFront(
     };
   }
 
-  const distribution = new cloudfront.Distribution(construct, `${name}Distribution`, {
+  const distribution = new cloudfront.Distribution(stack, `${name}Distribution`, {
     domainNames: [domainName],
     comment: domainName,
     defaultRootObject: defaultIndex ? 'index.html' : undefined,
     defaultBehavior: behavior,
-    certificate: new DnsValidatedCertificate(construct, `${name}Certificate`, {
+    certificate: new DnsValidatedCertificate(stack, `${name}Certificate`, {
       domainName,
       hostedZone: zone,
       region: 'us-east-1',
     }),
   });
-  addGhaDistribution(construct, name, distribution);
+  addGhaDistribution(stack, name, distribution);
 
-  new route53.ARecord(construct, `${name}ARecord`, {
+  new route53.ARecord(stack, `${name}ARecord`, {
     zone,
     recordName: domainName,
     target: route53.RecordTarget.fromAlias(new CloudFrontTarget(distribution)),
@@ -385,11 +399,11 @@ export function cloudFront(
 
   // Redirect www -> zone root
   if (wwwRedirect) {
-    new route53patterns.HttpsRedirect(construct, `${name}WwwRedirect`, {
+    new route53patterns.HttpsRedirect(stack, `${name}WwwRedirect`, {
       recordNames: [`www.${domainName}`],
       targetDomain: domainName,
       zone,
-      certificate: new DnsValidatedCertificate(construct, `${name}CertificateWww`, {
+      certificate: new DnsValidatedCertificate(stack, `${name}CertificateWww`, {
         domainName: `www.${domainName}`,
         hostedZone: zone,
         region: 'us-east-1',
