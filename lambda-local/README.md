@@ -17,9 +17,9 @@ export async function handler(event: SQSEvent, context: Context): Promise<SQSBat
   # Lambda handler code
 }
 
-#
-# This will call sqsLocal() if '--local' is specified on the command line:
-#
+//
+// This will call sqsLocal() if '--local' is specified on the command line:
+//
 (async () => {
   if (process.argv.includes('--local')) {
     sqsLocal(handler);
