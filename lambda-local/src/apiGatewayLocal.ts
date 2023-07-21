@@ -127,7 +127,7 @@ export function apiGatewayLocal(handler: (event: APIGatewayProxyEvent, context: 
       if (result) {
         console.log('Result:');
         Object.keys(result).forEach((key) => {
-          console.log(` - ${key}: ${JSON.stringify(result[key as keyof APIGatewayProxyResult])}`);
+          console.log(` - ${key}: ${JSON.stringify(result[key as keyof APIGatewayProxyResult]).slice(0, 100)}`);
         });
       }
 
