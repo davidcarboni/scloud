@@ -26,6 +26,10 @@ export async function getRepo(owner: string, repo: string): Promise<any> {
   throw new Error('Error getting repo information');
 }
 
+export async function getRepoId(owner: string, repo: string) {
+  return (await octokit.repos.get({ owner, repo })).data.id;
+}
+
 export async function getRepoPublicKey(owner: string, repo: string) {
   if (repoPublicKey) return repoPublicKey;
 
@@ -73,35 +77,6 @@ export async function listRepoSecrets(owner: string, repo: string): Promise<stri
   return names;
 }
 
-export async function listRepoVariables(owner: string, repo: string): Promise<string[]> {
-  const response = await octokit.actions.listRepoVariables({
-    owner,
-    repo,
-    per_page: 100,
-  });
-
-  if (response.status !== 200) {
-    console.log(response);
-    throw new Error('Error listing repo variables');
-  }
-
-  const { variables } = response.data;
-  const totalCount = response.data.total_count;
-
-  // Check we've got all the secrets
-  if (totalCount > 100) {
-    throw new Error('Too many variables, need to paginate.');
-  }
-
-  // Collate variable names
-  const names: string[] = [];
-  variables.forEach((variable) => {
-    names.push(variable.name);
-  });
-
-  return names;
-}
-
 export async function setRepoSecret(
   secretName: string,
   secretValue: string,
@@ -127,14 +102,6 @@ export async function setRepoSecret(
   throw new Error(`Error setting secret value: ${secretName}: status code ${response.status}`);
 }
 
-/**
- * Updates (or creates) a variable at the repository level.
- * @param name name of the variable
- * @param value value for the variable
- * @param owner Owner (or organisation) for the repository
- * @param repo Repository name
- * @returns
- */
 export async function setRepoVariable(
   name: string,
   value: string,
@@ -168,7 +135,8 @@ export async function setRepoVariable(
     if (response.status === 201 || response.status === 204) {
       return name;
     }
-
+    // Looks like that didn't work.
+    console.log(response);
     throw new Error(`Error setting repo variable value: ${name}: status code ${response.status}`);
   }
 }
