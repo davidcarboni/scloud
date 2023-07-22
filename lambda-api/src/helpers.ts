@@ -1,6 +1,6 @@
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import * as cookie from 'cookie';
-import { Request } from './types';
+import { Request, Route, Routes } from './types';
 
 /**
  * Ensures the path is lowercased, always has a leading slash and never a trailing slash
@@ -97,4 +97,20 @@ export function parseRequest(event: APIGatewayProxyEvent): Request {
     body: parseBody(event.body),
     cookies: parseCookie(event.headers),
   };
+}
+
+export function matchRoute(routes: Routes, path: string): Route | undefined {
+  let route: Route | undefined;
+
+  // Simple match
+  if (routes[path]) return routes[path];
+
+  // Case insensitive match
+  Object.keys(routes).forEach((candidate) => {
+    if (candidate.toLowerCase() === path.toLowerCase()) route = routes[candidate];
+  });
+
+  // TODO: path-parameter matching
+
+  return route;
 }

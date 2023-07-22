@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import {
+  matchRoute,
   parseBody, standardHeaders, standardPath,
   standardQueryParameters,
 } from '../src/helpers';
@@ -93,6 +94,30 @@ describe('helpers.ts', () => {
     it('Should handle no body', () => {
       const query = parseBody(null);
       expect(query).to.deep.equal({});
+    });
+  });
+
+  describe('matchRoute', () => {
+    const route1 = {};
+    const route2 = {};
+    const routes = {
+      '/path1': route1,
+      '/path2': route2,
+    };
+
+    it('Should match an exact route', () => {
+      const result = matchRoute(routes, '/path1');
+      expect(result).to.equal(route1);
+    });
+
+    it('Should not match an unknown route', () => {
+      const result = matchRoute(routes, '/path3');
+      expect(result).to.be.undefined;
+    });
+
+    it('Should match an route casae-insensitively', () => {
+      const result = matchRoute(routes, '/Path2');
+      expect(result).to.equal(route2);
     });
   });
 });

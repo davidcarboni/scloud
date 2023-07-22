@@ -7,7 +7,7 @@ import {
 import {
   Handler, Request, Response, Route, Routes,
 } from './types';
-import { buildCookie, parseRequest } from './helpers';
+import { buildCookie, matchRoute, parseRequest } from './helpers';
 
 /**
  * API route handler
@@ -26,7 +26,7 @@ export async function apiHandler(
 
   let response: Response;
   try {
-    const route = routes[request.path];
+    const route = matchRoute(routes, request.path);
     if (!route) {
       // Catch-all / 404
       response = await catchAll(request);
