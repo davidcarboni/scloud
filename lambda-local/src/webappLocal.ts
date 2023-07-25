@@ -67,7 +67,7 @@ const contextTemplate: Context = {
 };
 
 // eslint-disable-next-line no-unused-vars
-export function cloudfrontLocal(cloudfrontPathMappings: CloudfrontPathMappings, staticContent?: string) {
+export function webappLocal(cloudfrontPathMappings: CloudfrontPathMappings, staticContent?: string) {
   const port = 3000;
   const app = express();
 
