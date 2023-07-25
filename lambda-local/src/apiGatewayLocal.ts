@@ -68,7 +68,7 @@ export function apiGatewayLocal(handler: (event: APIGatewayProxyEvent, context: 
   // https://stackoverflow.com/questions/12345166/how-to-force-parse-request-body-as-plain-text-instead-of-json-in-express
   app.use(express.text({ type: '*/*' }));
 
-  app.get('/*', async (req: Request, res: Response) => {
+  app.all('/*', async (req: Request, res: Response) => {
     // const url = new URL(req.originalUrl, 'https://example.com');
     // Headers - NB it seems that in Lambda multiValueHeaders always contains the values from headers
     const headers: Record<string, string | undefined> = {};
