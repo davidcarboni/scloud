@@ -68,7 +68,7 @@ export function webappLocal(
     event: APIGatewayProxyEvent, context: Context) => Promise<APIGatewayProxyResult>,
   staticContent?: { sourceDirectory: string, appPath: string; },
 ) {
-  const port = 3000;
+  const port = +(process.env.port || '3000');
   const app = express();
 
   // https://stackoverflow.com/questions/12345166/how-to-force-parse-request-body-as-plain-text-instead-of-json-in-express
