@@ -74,8 +74,10 @@ export function cloudfrontLocal(cloudfrontPathMappings: CloudfrontPathMappings, 
   // https://stackoverflow.com/questions/12345166/how-to-force-parse-request-body-as-plain-text-instead-of-json-in-express
   app.use(express.text({ type: '*/*' }));
 
-  if (staticContent) app.use(express.static(staticContent));
+  // "Static bucket" serving
+  if (staticContent) app.use('/static', express.static(staticContent));
 
+  // Route everything else to the Lambda handler function
   app.get('/*', async (req: Request, res: Response) => {
     // const url = new URL(req.originalUrl, 'https://example.com');
     // Headers - NB it seems that in Lambda multiValueHeaders always contains the values from headers
