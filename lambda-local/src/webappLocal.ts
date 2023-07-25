@@ -130,29 +130,8 @@ export function webappLocal(
         console.log(` - ${key}: ${JSON.stringify(event[key as keyof APIGatewayProxyEvent])}`);
       });
 
-      const paths = Object.keys(cloudfrontPathMappings);
-
-      // Try a simple mapping
-      let handler = cloudfrontPathMappings[event.path];
-
-      // Fall back to a '*' match:
-      paths.forEach((path) => {
-        let partialMatch = path;
-        // Strip leading slash:
-        if (partialMatch.startsWith('/')) {
-          partialMatch = path.slice(1);
-        }
-        // Remove trailing '*' wildcard:
-        if (partialMatch.endsWith('*')) {
-          partialMatch = path.slice(0, -1);
-        }
-        // Get the first match:
-        const candidate = event.path.startsWith(partialMatch) ? cloudfrontPathMappings[path] : undefined;
-        handler = handler || candidate;
-      });
-
       // Invoke the function handler:
-      const result: APIGatewayProxyResult = handler ? await handler(event, contextTemplate) : { statusCode: 404, body: `Path not matched: ${event.path} (${paths})` };
+      const result: APIGatewayProxyResult = await handler(event, contextTemplate);
 
       // Print out the response if successful
       if (result) {
