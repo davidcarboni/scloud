@@ -2,7 +2,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import express, { Request, Response } from 'express';
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
-import { request } from 'http';
+import * as fs from 'fs';
 
 const eventTemplate: APIGatewayProxyEvent = {
   body: '',
@@ -68,6 +68,12 @@ export function webappLocal(
     event: APIGatewayProxyEvent, context: Context) => Promise<APIGatewayProxyResult>,
   staticContent?: { sourceDirectory: string, appPath: string; },
 ) {
+  if (staticContent?.sourceDirectory) {
+    if (!fs.existsSync(staticContent.sourceDirectory)) {
+      throw new Error(`Static directory not found: ${staticContent.sourceDirectory}`);
+    }
+  }
+
   const port = +(process.env.port || '3000');
   const app = express();
 
