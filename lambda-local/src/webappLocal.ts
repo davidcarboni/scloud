@@ -84,7 +84,7 @@ export function webappLocal(
   if (staticContent) app.use(staticContent.appPath, express.static(staticContent.sourceDirectory));
 
   // Route everything else to the Lambda handler function
-  app.get('/*', async (req: Request, res: Response) => {
+  app.all('/*', async (req: Request, res: Response) => {
     // const url = new URL(req.originalUrl, 'https://example.com');
     // Headers - NB it seems that in Lambda multiValueHeaders always contains the values from headers
     const headers: Record<string, string | undefined> = {};
@@ -137,7 +137,7 @@ export function webappLocal(
       });
 
       // Invoke the function handler:
-      const result: APIGatewayProxyResult = await handler(event, contextTemplate);
+      const result = await handler(event, contextTemplate);
 
       // Print out the response if successful
       if (result) {

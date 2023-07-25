@@ -75,7 +75,7 @@ export function webappRoutesLocal(cloudfrontPathMappings: CloudfrontPathMappings
   app.use(express.text({ type: '*/*' }));
 
   Object.keys(cloudfrontPathMappings).forEach((route) => {
-    app.all('route', async (req: Request, res: Response) => {
+    app.all(route, async (req: Request, res: Response) => {
       // const url = new URL(req.originalUrl, 'https://example.com');
       // Headers - NB it seems that in Lambda multiValueHeaders always contains the values from headers
       const headers: Record<string, string | undefined> = {};
@@ -129,24 +129,8 @@ export function webappRoutesLocal(cloudfrontPathMappings: CloudfrontPathMappings
 
         const paths = Object.keys(cloudfrontPathMappings);
 
-        // Try a simple mapping
-        let handler = cloudfrontPathMappings[event.path];
-
-        // Fall back to a '*' match:
-        paths.forEach((path) => {
-          let partialMatch = path;
-          // Strip leading slash:
-          if (partialMatch.startsWith('/')) {
-            partialMatch = path.slice(1);
-          }
-          // Remove trailing '*' wildcard:
-          if (partialMatch.endsWith('*')) {
-            partialMatch = path.slice(0, -1);
-          }
-          // Get the first match:
-          const candidate = event.path.startsWith(partialMatch) ? cloudfrontPathMappings[path] : undefined;
-          handler = handler || candidate;
-        });
+        // Use the handler for this Express route
+        const handler = cloudfrontPathMappings[route];
         if (!handler) console.log(`Unmatched path: ${event.path}`);
 
         // Invoke the function handler:
