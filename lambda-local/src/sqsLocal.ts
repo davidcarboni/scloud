@@ -63,10 +63,14 @@ export function sqsLocal(handler: (event: SQSEvent, context: Context) => Promise
 
       // Print out the response if successful
       if (result) {
-        console.log('Result:');
-        Object.keys(result).forEach((key) => {
-          console.log(` - ${key}: ${JSON.stringify(result[key as keyof SQSBatchResponse])}`);
-        });
+        if (result.statusCode === 404) {
+          console.log(`404: ${event.path}`);
+        } else {
+          console.log('Result:');
+          Object.keys(result).forEach((key) => {
+            console.log(` - ${key}: ${JSON.stringify(result[key as keyof APIGatewayProxyResult]).slice(0, 100)}`);
+          });
+        }
       }
 
       // Send the response
