@@ -4,10 +4,6 @@ import express, { Request, Response } from 'express';
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
 import { request } from 'http';
 
-export interface CloudfrontPathMappings {
-  [key: string]: (event: APIGatewayProxyEvent, context: Context) => Promise<APIGatewayProxyResult>;
-}
-
 const eventTemplate: APIGatewayProxyEvent = {
   body: '',
   headers: {},
@@ -67,7 +63,11 @@ const contextTemplate: Context = {
 };
 
 // eslint-disable-next-line no-unused-vars
-export function webappLocal(cloudfrontPathMappings: CloudfrontPathMappings, staticContent?: string) {
+export function webappLocal(
+  handler: (
+    event: APIGatewayProxyEvent, context: Context) => Promise<APIGatewayProxyResult>,
+  staticContent?: { sourceDirectory: string, appPath: string; },
+) {
   const port = 3000;
   const app = express();
 
@@ -75,7 +75,7 @@ export function webappLocal(cloudfrontPathMappings: CloudfrontPathMappings, stat
   app.use(express.text({ type: '*/*' }));
 
   // "Static bucket" serving
-  if (staticContent) app.use('/static', express.static(staticContent));
+  if (staticContent) app.use(staticContent.appPath, express.static(staticContent.sourceDirectory));
 
   // Route everything else to the Lambda handler function
   app.get('/*', async (req: Request, res: Response) => {
