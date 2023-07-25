@@ -7,6 +7,8 @@
     ],
     "baseUrl": "src", // Helps resolve imports in tests
     "declaration": true,
+    "inlineSourceMap": true,
+    "inlineSources": true,
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
@@ -16,8 +18,6 @@
     "noUnusedParameters": false,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": false,
-    "inlineSourceMap": true,
-    "inlineSources": true,
     "experimentalDecorators": true,
     "strictPropertyInitialization": false,
     "esModuleInterop": true,
