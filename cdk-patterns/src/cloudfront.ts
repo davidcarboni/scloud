@@ -256,32 +256,40 @@ export function webAppRoutes(
   //   headerBehavior: cloudfront.CacheHeaderBehavior.allowList(...headers, ...allowedHeaders, 'Authorization'),
   //   queryStringBehavior: cloudfront.CacheQueryStringBehavior.all(),
   // });
+  const originMap: { [functionName: string]: RestApiOrigin; } = {};
   Object.keys(routes).forEach((pathPattern) => {
     // Use the provided function, or generate a default one:
     const lambda = routes[pathPattern] || zipFunctionTypescript(stack, name, {}, { memorySize: 3008 });
+    let origin = originMap[lambda.functionName];
 
-    let lambdaRestApiProps: LambdaRestApiProps = {
-      handler: lambda,
-      proxy: true,
-      description: `${stack.stackName} ${name}-${pathPattern}`,
-    };
-
-    if (cognitoPool) {
-      const authorizer = new CognitoUserPoolsAuthorizer(stack, 'auth', {
-        cognitoUserPools: [cognitoPool],
-      });
-      lambdaRestApiProps = {
-        ...lambdaRestApiProps,
-        defaultMethodOptions: {
-          authorizationType: AuthorizationType.COGNITO,
-          authorizer,
-        },
+    if (!origin) {
+      let lambdaRestApiProps: LambdaRestApiProps = {
+        handler: lambda,
+        proxy: true,
+        description: `${stack.stackName} ${name}-${pathPattern}`,
       };
+
+      if (cognitoPool) {
+        const authorizer = new CognitoUserPoolsAuthorizer(stack, 'auth', {
+          cognitoUserPools: [cognitoPool],
+        });
+        lambdaRestApiProps = {
+          ...lambdaRestApiProps,
+          defaultMethodOptions: {
+            authorizationType: AuthorizationType.COGNITO,
+            authorizer,
+          },
+        };
+      }
+
+      const api = new LambdaRestApi(stack, `${name}${pathPattern}`, lambdaRestApiProps);
+
+      origin = new RestApiOrigin(api);
+      originMap[lambda.functionName] = origin;
     }
-    const api = new LambdaRestApi(stack, `${name}${pathPattern}`, lambdaRestApiProps);
     distribution.addBehavior(
       pathPattern,
-      new RestApiOrigin(api),
+      origin,
       {
         allowedMethods: AllowedMethods.ALLOW_ALL,
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
