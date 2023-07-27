@@ -282,7 +282,7 @@ export function webAppRoutes(
         };
       }
 
-      const api = new LambdaRestApi(stack, `${name}${pathPattern}`, lambdaRestApiProps);
+      const api = new LambdaRestApi(stack, `${name}${lambda.functionName}`, lambdaRestApiProps);
 
       origin = new RestApiOrigin(api);
       originMap[lambda.functionName] = origin;
