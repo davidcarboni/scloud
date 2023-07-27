@@ -4,11 +4,11 @@ import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
 import * as route53patterns from 'aws-cdk-lib/aws-route53-patterns';
 import {
-  Duration, RemovalPolicy, Stack,
+  Duration, Stack,
 } from 'aws-cdk-lib';
 import { DnsValidatedCertificate, ICertificate } from 'aws-cdk-lib/aws-certificatemanager';
 import { CloudFrontTarget } from 'aws-cdk-lib/aws-route53-targets';
-import { Bucket, BucketEncryption } from 'aws-cdk-lib/aws-s3';
+import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { RestApiOrigin, S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
 import {
   AllowedMethods, BehaviorOptions, CachePolicy, Distribution,
@@ -282,7 +282,7 @@ export function webAppRoutes(
         };
       }
 
-      const api = new LambdaRestApi(stack, `${name}${lambda.functionName}`, lambdaRestApiProps);
+      const api = new LambdaRestApi(stack, `${name}${pathPattern}`, lambdaRestApiProps);
 
       origin = new RestApiOrigin(api);
       originMap[lambda.functionName] = origin;
