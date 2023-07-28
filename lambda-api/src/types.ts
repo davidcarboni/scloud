@@ -4,7 +4,7 @@ export interface Request {
   query: { [name: string]: string; },
   headers: { [name: string]: string; },
   cookies: { [name: string]: string; },
-  body: { [name: string]: string; },
+  body: { [name: string]: any; },
 }
 
 export interface Response {
