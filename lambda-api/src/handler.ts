@@ -18,7 +18,8 @@ export async function apiHandler(
   routes: Routes = {
     '/api/ping': { GET: async (request: Request) => ({ statusCode: 200, body: request }) },
   },
-  errorHandler: Handler = async (request: Request) => ({ statusCode: 500, body: { error: `Internal server error: ${request.path}` } }),
+  // eslint-disable-next-line no-unused-vars
+  errorHandler: (request: Request, e: Error) => Promise<Response> = async (request: Request) => ({ statusCode: 500, body: { error: `Internal server error: ${request.path}` } }),
   catchAll: Handler = async (request: Request) => ({ statusCode: 404, body: { error: `Not found: ${request.path}` } }),
 ): Promise<APIGatewayProxyResult> {
   console.log(`Executing ${context.functionName} version: ${process.env.COMMIT_HASH}`);
@@ -41,7 +42,7 @@ export async function apiHandler(
     console.error(`${(e as Error).message}\n${(e as Error).stack}`);
     try {
       // Error handling
-      response = await errorHandler(request);
+      response = await errorHandler(request, e as Error);
     } catch (ee) {
       response = { statusCode: 500, body: { error: `Internal server error: ${request.path} [errorHandler]` } };
     }
