@@ -8,6 +8,8 @@ It's bunch of things done well that you can benefit from. I use it to store chun
 
 ## NPM packages
 
+Npmjs organization: https://www.npmjs.com/org/scloud
+
 This repo contains a bunch of useful example code. If you'd prefer to install some useful libraries to get going with creating serverless infrastructure and code, I've published a bunch of packages on NPM:
 
  * *@scloud/cdk-patterns* - patterns I use regularly to put together serverless architectures: https://www.npmjs.com/package/@scloud/cdk-patterns
