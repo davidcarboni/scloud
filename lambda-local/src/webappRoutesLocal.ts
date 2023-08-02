@@ -103,6 +103,7 @@ export function webappRoutesLocal(cloudfrontPathMappings: CloudfrontPathMappings
         if (Array.isArray(req.query[parameter])) multiValueQueryStringParameters[parameter] = req.query[parameter] as string[];
       });
 
+      console.log(JSON.stringify(req.body));
       const event = {
         ...eventTemplate,
         body: req.body,
