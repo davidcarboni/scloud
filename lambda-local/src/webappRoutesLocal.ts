@@ -105,7 +105,7 @@ export function webappRoutesLocal(cloudfrontPathMappings: CloudfrontPathMappings
 
       const event = {
         ...eventTemplate,
-        body: JSON.stringify(req.body),
+        body: typeof req.body === 'string' ? req.body : JSON.stringify(req.body),
         headers,
         multiValueHeaders,
         httpMethod: req.method,
