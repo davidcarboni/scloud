@@ -104,7 +104,7 @@ export function cloudfrontLocal(cloudfrontPathMappings: CloudfrontPathMappings) 
 
     const event = {
       ...eventTemplate,
-      body: req.body,
+      body: JSON.stringify(req.body),
       headers,
       multiValueHeaders,
       httpMethod: req.method,
