@@ -79,7 +79,7 @@ export function webappLocal(
 
 
   // https://stackoverflow.com/questions/12345166/how-to-force-parse-request-body-as-plain-text-instead-of-json-in-express
-  app.use(express.text({ type: '*/*', limit: '50mb' }));
+  app.use(express.text({ type: '*/*', limit: '6mb' }));
 
   // "Static bucket" serving
   if (staticContent) app.use(staticContent.appPath, express.static(staticContent.sourceDirectory));
