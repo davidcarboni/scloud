@@ -35,7 +35,6 @@
     "@types/aws-lambda": "*",
     "@types/chai": "*",
     "@types/cookie": "*",
-    "@types/expect": "*",
     "@types/mocha": "*",
     "@types/node": "*",
     "@types/nunjucks": "*",
@@ -52,7 +51,6 @@
     "typescript": "*"
   },
   "dependencies": {
-    "aws-lambda": "*",
     "cookie": "*"
   }
 }
