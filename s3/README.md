@@ -1,4 +1,4 @@
-# s3 CRUD tility functions
+# s3 CRUD utility functions
 
 A collection of wrapper functions for the AWS SDKv3 that provide simplified CRUD and list operations.
 
