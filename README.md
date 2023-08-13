@@ -1,6 +1,6 @@
 # scloud
 
-_AWS CDK patterns for assembling serverless infrastructures_
+_AWS CDK patterns and NPM packages for assembling serverless infrastructures_
 
 If you're not massively interested in infrastructure, but want to do it well, without making it your mission in life then scloud could be what you need.
 
@@ -8,18 +8,41 @@ It's bunch of things done well that you can benefit from. I use it to store chun
 
 ## NPM packages
 
-Npmjs organization: https://www.npmjs.com/org/scloud
+Npmjs organization: **@scloud** https://www.npmjs.com/org/scloud
 
 This repo contains a bunch of useful example code. If you'd prefer to install some useful libraries to get going with creating serverless infrastructure and code, I've published a bunch of packages on NPM:
 
+### Infrastructure as code and CI/CD
+
+These packages focus on clipping together serverless infrastructure with AWS CDK (Cloudformation) and integrating with Github actiond CI/CD for environment, variable and secrets handling:
+
  * *@scloud/cdk-patterns* - patterns I use regularly to put together serverless architectures: https://www.npmjs.com/package/@scloud/cdk-patterns
  * *@scloud/cdk-github* - works with the CDK patterns to automate setting secrets and variables in Github Actions, based on the outputs of the `ghaUser` pattern: https://www.npmjs.com/package/@scloud/cdk-github
- * *@scloud/lambda-local* - enables you to run a Lambda habdler locally for development using an Express server to translate HTTP requests to Lambda events. Implemented for API Gateway and SQS: https://www.npmjs.com/package/@scloud/lambda-local
+
+### Standard Lambda handlers
+
+These packages give you template Lambda handlers so you can develop for common use-cases with more consistency and less boilerplate:
+
  * *@scloud/lambda-queue* - a helper function to take the boilerplate out of building Lambda functions that handle SQS messages
 essages: https://www.npmjs.com/package/@scloud/lambda-queue
  * *@scloud/lambda-api* - a helper function to take the boilerplate out of building Lambda functions that handle API Gateway proxy requests
 essages: https://www.npmjs.com/package/@scloud/lambda-api
- * *@scloud/utils* - utility functions, primarily for acessin dynamodb and graceful json parsing
+
+### Local development
+
+These packages help reduce your cycle time from minutes to seconds and make developing Lambdas feel enjoyable and productive:
+
+ * *@scloud/lambda-local* - enables you to run a Lambda habdler locally for development using an Express server to translate HTTP requests to Lambda events. Implemented for API Gateway and SQS: https://www.npmjs.com/package/@scloud/lambda-local
+
+### Utilities and patterns
+
+These packages help you build for common use-cases, skipping boilerplate and avoiding complexity:
+
+ * *@scloud/lambda-fileupload* - implements file upload/download with API Gateway and Lambda to avoids request/response size limits by using presigned URLs to access s3 directly
+essages: https://www.npmjs.com/package/@scloud/lambda-fileupload
+ * *@scloud/s3* - CRUD and listing functions for s3
+essages: https://www.npmjs.com/package/@scloud/s3
+ * *@scloud/utils* - utility functions for acessing dynamodb and graceful json parsing
 essages: https://www.npmjs.com/package/@scloud/utils
 
 ## Scloud structure and conventions
