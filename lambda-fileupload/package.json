@@ -7,17 +7,31 @@
     "dist/*"
   ],
   "scripts": {
-    "lint": "eslint --fix --ext ts src test",
+    "lint": "eslint --fix --ext ts",
     "test": "mocha -r ts-node/register -r tsconfig-paths/register 'test/**/*.spec.ts' # tsconfig-paths/register helps resolve imports in tests",
     "compile": "tsc",
-    "package": "mkdir -p dist && cp -r js/src/* dist"
+    "package": "mkdir -p dist && cp -r js/src/* dist/"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/davidcarboni/scloud"
+    "url": "git+https://github.com/davidcarboni/scloud.git"
   },
+  "keywords": [
+    "AWS",
+    "Serverless",
+    "Lambda",
+    "API Gateway",
+    "s3",
+    "presigned",
+    "file",
+    "upload"
+  ],
   "author": "David Carboni",
-  "license": "ISC",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/davidcarboni/scloud/issues"
+  },
+  "homepage": "https://github.com/davidcarboni/scloud#readme",
   "devDependencies": {
     "@types/chai": "*",
     "@types/mocha": "*",
@@ -31,6 +45,7 @@
     "eslint-plugin-import": "*",
     "mocha": "*",
     "ts-node": "*",
+    "tsconfig-paths": "*",
     "typescript": "*"
   },
   "dependencies": {
