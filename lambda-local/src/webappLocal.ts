@@ -1,8 +1,8 @@
 /* eslint-disable no-unused-vars */
 // eslint-disable-next-line import/no-extraneous-dependencies
+import * as fs from 'fs';
 import express, { Request, Response } from 'express';
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
-import * as fs from 'fs';
 
 const eventTemplate: APIGatewayProxyEvent = {
   body: '',
@@ -76,7 +76,6 @@ export function webappLocal(
 
   const port = +(process.env.PORT || '3000');
   const app = express();
-
 
   // https://stackoverflow.com/questions/12345166/how-to-force-parse-request-body-as-plain-text-instead-of-json-in-express
   app.use(express.text({ type: '*/*', limit: '6mb' }));

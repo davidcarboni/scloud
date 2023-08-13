@@ -7,7 +7,7 @@
     "dist/*"
   ],
   "scripts": {
-    "lint": "eslint --fix --ext ts",
+    "lint": "eslint --fix --ext ts src test",
     "test": "mocha -r ts-node/register test/**/*.spec.ts",
     "compile": "tsc",
     "package": "mkdir -p dist && cp -r js/src/* dist/"
@@ -18,8 +18,9 @@
   },
   "keywords": [
     "AWS",
-    "Lambda",
     "Serverless",
+    "Lambda",
+    "API Gateway",
     "API",
     "Gateway",
     "Proxy",
@@ -32,7 +33,6 @@
   },
   "homepage": "https://github.com/davidcarboni/scloud#readme",
   "devDependencies": {
-    "@types/aws-lambda": "*",
     "@types/chai": "*",
     "@types/cookie": "*",
     "@types/mocha": "*",
@@ -51,6 +51,7 @@
     "typescript": "*"
   },
   "dependencies": {
+    "@types/aws-lambda": "*",
     "cookie": "*"
   }
 }

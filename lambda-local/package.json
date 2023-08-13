@@ -7,7 +7,7 @@
     "dist/*"
   ],
   "scripts": {
-    "lint": "eslint --fix --ext ts",
+    "lint": "eslint --fix --ext ts src test",
     "test": "mocha -r ts-node/register -r tsconfig-paths/register 'test/**/*.spec.ts' # tsconfig-paths/register helps resolve imports in tests",
     "compile": "tsc",
     "package": "mkdir -p dist && cp -r js/src/* dist/"
@@ -18,8 +18,8 @@
   },
   "keywords": [
     "AWS",
-    "Lambda",
     "Serverless",
+    "Lambda",
     "run",
     "locally"
   ],
@@ -30,7 +30,6 @@
   },
   "homepage": "https://github.com/davidcarboni/scloud#readme",
   "devDependencies": {
-    "@types/aws-lambda": "*",
     "@types/chai": "*",
     "@types/express": "*",
     "@types/mocha": "*",
@@ -49,7 +48,7 @@
     "typescript": "*"
   },
   "dependencies": {
-    "aws-lambda": "*",
+    "@types/aws-lambda": "*",
     "express": "*"
   }
 }

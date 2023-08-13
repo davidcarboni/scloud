@@ -10,7 +10,7 @@
     "cdk-patterns": "dist/update.sh"
   },
   "scripts": {
-    "lint": "eslint --fix --ext ts",
+    "lint": "eslint --fix --ext ts src",
     "compile": "tsc",
     "package": "mkdir -p dist && cp -r js/* update.sh src/container src/edge src/express src/lambda dist/ "
   },
