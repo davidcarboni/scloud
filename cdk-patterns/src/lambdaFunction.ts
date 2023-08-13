@@ -48,48 +48,27 @@ export function containerFunction(
 
 /**
  * A Lambda function packaged as a zip file.
+ * Key defaults are:
+ *  - runtime: Runtime.NODEJS_18_X
+ *  - handler: 'src/lambda.handler'
+ *  - logRetention: logs.RetentionDays.TWO_YEARS
  * @param construct Parent CDK construct (typically 'this')
  * @param name The name for this function
  * @param environment Environment variables for the Lambda function
+ * @param lambdaProps Override properties for the Lambda function. you may want to pass e.g. { runtime: Runtime.PYTHON_3_10 }
  * @returns The lambda, if created, and associated ECR repository
  */
-export function zipFunctionTypescript(
+export function zipFunction(
   construct: Construct,
   name: string,
   environment?: { [key: string]: string; },
   lambdaProps?: Partial<FunctionProps>,
 ): Function {
   const lambda = new Function(construct, `${name}Function`, {
-    runtime: Runtime.NODEJS_16_X,
+    runtime: Runtime.NODEJS_18_X,
     handler: 'src/lambda.handler',
-    code: Code.fromAsset(path.join(__dirname, './lambda/nodejs')),
-    logRetention: logs.RetentionDays.THREE_MONTHS,
-    environment,
-    description: name,
-    ...lambdaProps,
-  });
-  addGhaLambda(construct, name, lambda);
-  return lambda;
-}
-
-/**
- * A Lambda function packaged as a zip file.
- * @param construct Parent CDK construct (typically 'this')
- * @param name The name for this function
- * @param environment Environment variables for the Lambda function
- * @returns The lambda, if created, and associated ECR repository
- */
-export function zipFunctionPython(
-  construct: Construct,
-  name: string,
-  environment?: { [key: string]: string; },
-  lambdaProps?: Partial<FunctionProps>,
-): Function {
-  const lambda = new Function(construct, `${name}Function`, {
-    runtime: Runtime.PYTHON_3_9,
-    handler: 'src/lambda.handler',
-    code: Code.fromAsset(path.join(__dirname, './lambda/python')),
-    logRetention: logs.RetentionDays.THREE_MONTHS,
+    code: Code.fromInline('Placeholder code'), // Asset(path.join(__dirname, './lambda/python')),
+    logRetention: logs.RetentionDays.TWO_YEARS,
     environment,
     description: name,
     ...lambdaProps,
