@@ -1,8 +1,6 @@
-import { Duration } from 'aws-cdk-lib';
 import { DockerImageFunctionProps, Function, FunctionProps } from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
 import { S3EventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
-import { ManagedPolicy } from 'aws-cdk-lib/aws-iam';
 import { Bucket, BucketProps, EventType } from 'aws-cdk-lib/aws-s3';
 import { IRepository } from 'aws-cdk-lib/aws-ecr';
 import { containerFunction, zipFunction } from './lambdaFunction';
