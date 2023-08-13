@@ -1,4 +1,5 @@
 /* eslint-disable no-param-reassign */
+import * as fs from 'fs';
 import {
   CfnAccessKey, ManagedPolicy, PolicyStatement, User,
 } from 'aws-cdk-lib/aws-iam';
@@ -8,7 +9,6 @@ import { IFunction } from 'aws-cdk-lib/aws-lambda';
 import { IFargateService } from 'aws-cdk-lib/aws-ecs';
 import { IBucket } from 'aws-cdk-lib/aws-s3';
 import { IDistribution } from 'aws-cdk-lib/aws-cloudfront';
-import * as fs from 'fs';
 import { Construct } from 'constructs';
 import _ from 'lodash';
 

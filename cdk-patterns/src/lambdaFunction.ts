@@ -1,6 +1,6 @@
+import * as path from 'path';
 import * as logs from 'aws-cdk-lib/aws-logs';
 import { Construct } from 'constructs';
-import * as path from 'path';
 import {
   Code, DockerImageCode, DockerImageFunction, DockerImageFunctionProps, Function, FunctionProps, Runtime,
 } from 'aws-cdk-lib/aws-lambda';
