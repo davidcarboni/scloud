@@ -1,0 +1,41 @@
+{
+  "name": "@scloud/lambda-fileupload",
+  "version": "0.0.0",
+  "description": "Functions uploading/downloading files with Lambda/API Gateway where the file size is greater than the payload limit.",
+  "main": "dist/index.js",
+  "files": [
+    "dist/*"
+  ],
+  "scripts": {
+    "lint": "eslint --fix --ext ts src test",
+    "test": "mocha -r ts-node/register -r tsconfig-paths/register 'test/**/*.spec.ts' # tsconfig-paths/register helps resolve imports in tests",
+    "compile": "tsc",
+    "package": "mkdir -p dist && cp -r js/src/* dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/davidcarboni/scloud"
+  },
+  "author": "David Carboni",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/chai": "*",
+    "@types/mocha": "*",
+    "@types/node": "*",
+    "@typescript-eslint/eslint-plugin": "*",
+    "@typescript-eslint/parser": "*",
+    "chai": "*",
+    "eslint": "*",
+    "eslint-config-airbnb-base": "*",
+    "eslint-import-resolver-typescript": "*",
+    "eslint-plugin-import": "*",
+    "mocha": "*",
+    "ts-node": "*",
+    "typescript": "*"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "*",
+    "@aws-sdk/s3-presigned-post": "*",
+    "@aws-sdk/s3-request-presigner": "*"
+  }
+}
