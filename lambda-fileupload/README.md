@@ -17,7 +17,7 @@ This package offers 3 functions, `GET`/`PUT` (good for programmatic access) and 
 Most useful for programmatic assess:
 
 ```
-import { getUrl, putUrl } 'from @scloud/lambda-fileupload'
+import { getUrl, putUrl } from '@scloud/lambda-fileupload';
 
 // Upload
 const put = await putUrl('mybucket', 'key/of/destination/file.png');
