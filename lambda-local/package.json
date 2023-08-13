@@ -21,7 +21,9 @@
     "Serverless",
     "Lambda",
     "run",
-    "locally"
+    "locally",
+    "local",
+    "runner"
   ],
   "author": "David Carboni",
   "license": "MIT",
