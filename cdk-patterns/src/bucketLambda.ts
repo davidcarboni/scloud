@@ -33,14 +33,11 @@ export function bucketLambda(
   lambdaProps?: Partial<FunctionProps>,
   bucketProps?: Partial<BucketProps>,
   events: EventType[] = [EventType.OBJECT_CREATED],
-): { bucket: Bucket, lambda: Function, policy?: ManagedPolicy; } {
-  // NB Message timeout needs to match netween the queue and the lambda:
-  const timeout: Duration = lambdaProps?.timeout || Duration.seconds(60);
-
+): { bucket: Bucket, lambda: Function; } {
   // Triggering bucket
   const bucket = privateBucket(construct, `${name}Bucket`, bucketProps);
 
-  const lambda = zipFunction(construct, name, environment, { ...lambdaProps, timeout });
+  const lambda = zipFunction(construct, name, environment, { ...lambdaProps });
   lambda.addEventSource(new S3EventSource(bucket, { events }));
 
   return {
@@ -75,14 +72,11 @@ export function bucketLambdaContainer(
   lambdaProps?: Partial<DockerImageFunctionProps>,
   bucketProps?: Partial<BucketProps>,
   events: EventType[] = [EventType.OBJECT_CREATED],
-): { repository: IRepository, bucket: Bucket, lambda: Function, policy?: ManagedPolicy; } {
-  // NB Message timeout needs to match netween the queue and the lambda:
-  const timeout: Duration = lambdaProps?.timeout || Duration.seconds(60);
-
+): { repository: IRepository, bucket: Bucket, lambda: Function; } {
   // Triggering bucket
   const bucket = privateBucket(construct, `${name}Bucket`, bucketProps);
 
-  const { repository, lambda } = containerFunction(construct, initialPass, name, environment, { ...lambdaProps, timeout }, 'latest', ecr);
+  const { repository, lambda } = containerFunction(construct, initialPass, name, environment, { ...lambdaProps }, 'latest', ecr);
   lambda.addEventSource(new S3EventSource(bucket, { events }));
 
   return {
