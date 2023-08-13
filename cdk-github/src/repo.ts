@@ -77,6 +77,35 @@ export async function listRepoSecrets(owner: string, repo: string): Promise<stri
   return names;
 }
 
+export async function listRepoVariables(owner: string, repo: string): Promise<string[]> {
+  const response = await octokit.actions.listRepoVariables({
+    owner,
+    repo,
+    per_page: 100,
+  });
+
+  if (response.status !== 200) {
+    console.log(response);
+    throw new Error('Error listing repo variables');
+  }
+
+  const { variables } = response.data;
+  const totalCount = response.data.total_count;
+
+  // Check we've got all the secrets
+  if (totalCount > 100) {
+    throw new Error('Too many variables, need to paginate.');
+  }
+
+  // Collate variable names
+  const names: string[] = [];
+  variables.forEach((variable) => {
+    names.push(variable.name);
+  });
+
+  return names;
+}
+
 export async function setRepoSecret(
   secretName: string,
   secretValue: string,
