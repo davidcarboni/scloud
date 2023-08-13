@@ -4,17 +4,23 @@ import { DockerImageFunctionProps, Function, FunctionProps } from 'aws-cdk-lib/a
 import { Queue, QueueEncryption } from 'aws-cdk-lib/aws-sqs';
 import { Construct } from 'constructs';
 import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
-import { Effect, ManagedPolicy, PolicyStatement } from 'aws-cdk-lib/aws-iam';
-import { containerFunction, zipFunctionTypescript } from './lambdaFunction';
+import { containerFunction, zipFunction } from './lambdaFunction';
 
+/**
+ * A Lambda function triggered by SQS queue events.
+ *
+ * Defaults for the queue are:
+ *  - visibilityTimeout: timeout from the lambdaProps or 60 seconds if not defined
+ *  - encryption: QueueEncryption.KMS_MANAGED
+ *  - removalPolicy: RemovalPolicy.DESTROY
+ */
 export function queueLambda(
   construct: Construct,
   name: string,
   environment?: { [key: string]: string; },
   lambdaProps?: Partial<FunctionProps>,
-  createPolicy: boolean = false,
-): { queue: Queue, lambda: Function, policy?: ManagedPolicy; } {
-  // NB Message timeout needs to match netween the queue and the lambda:
+): { queue: Queue, lambda: Function; } {
+  // NB Message timeout needs to match between the queue and the lambda:
   const timeout: Duration = lambdaProps?.timeout || Duration.seconds(60);
 
   // Incoming message queue
@@ -24,31 +30,22 @@ export function queueLambda(
     removalPolicy: RemovalPolicy.DESTROY,
   });
 
-  const lambda = zipFunctionTypescript(construct, name, environment, { ...lambdaProps, timeout });
+  const lambda = zipFunction(construct, name, environment, { ...lambdaProps, timeout });
   lambda.addEventSource(new SqsEventSource(queue, { reportBatchItemFailures: true }));
 
-  // Policy enabling message sending to the queue
-  let policy: ManagedPolicy | undefined;
-  if (createPolicy) {
-    policy = new ManagedPolicy(construct, `${name}SenderPolicy`, {
-    // managedPolicyName: `${name}-sender`,
-      statements: [
-        new PolicyStatement({
-          effect: Effect.ALLOW,
-          resources: [queue.queueArn],
-          actions: [
-            'sqs:SendMessage',
-          ],
-        }),
-      ],
-    });
-  }
-
   return {
-    queue, lambda, policy,
+    queue, lambda,
   };
 }
 
+/**
+ * A container Lambda function triggered by SQS queue events.
+ *
+ * Defaults for the queue are:
+ *  - visibilityTimeout: timeout from the lambdaProps or 60 seconds if not defined
+ *  - encryption: QueueEncryption.KMS_MANAGED
+ *  - removalPolicy: RemovalPolicy.DESTROY
+ */
 export function queueLambdaContainer(
   construct: Construct,
   name: string,
@@ -57,8 +54,7 @@ export function queueLambdaContainer(
   ecr?: IRepository,
   lambdaProps?: Partial<DockerImageFunctionProps>,
 ): { repository: IRepository, queue: Queue, lambda: Function; } {
-  // Message timeout
-  // This needs to match netween the queue and the lambda:
+  // NB Message timeout needs to match between the queue and the lambda:
   const timeout: Duration = lambdaProps?.timeout || Duration.seconds(60);
 
   // Incoming message queue
