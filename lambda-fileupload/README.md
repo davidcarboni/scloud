@@ -8,6 +8,8 @@ If you've done some Googling, you'll likely have come across the concept of pre-
 
 There's no magic here, these are straightforward wrapper functions that eliminate complexity and give you what you're likely to need.
 
+This is intended to provide you with the operations you'll mostly need most of the time and, if you have an edge-case, example code you can reuse that helps you get what you need done more easily.
+
 ## Functions
 
 This package offers 3 functions, `GET`/`PUT` (good for programmatic access) and `POST` (which is good for HTML forms, but a little more involved)

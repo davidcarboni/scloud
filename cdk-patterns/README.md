@@ -2,6 +2,8 @@
 
 Provides a set of functions that can be called to build common serverless CDK patterns.
 
+This is intended to provide you with the patterns you'll mostly need most of the time and, if you have an edge-case, example code you can reuse that helps you get what you need done more easily.
+
 ## Overview
 
 I'm publishing this to help others because I've been using it for a couple of years now and it's been a real help for projects I've worked on (personal and professional). It's grown organically, accumulating patterns I've reached for repeatedly, so there's no comprehensive documentation at his stage! Please be kind.

@@ -2,6 +2,8 @@
 
 A collection of wrapper functions for the AWS SDKv3 that provide simplified CRUD and list operations.
 
+This is intended to provide you with the operations you'll mostly need most of the time and, if you have an edge-case, example code you can reuse that helps you get what you need done more easily.
+
 ## Functions
 
 This package allows you to work with binary and JSON objects.

@@ -2,6 +2,8 @@
 
 Takes outputs produced by the `ghaUser` feature of `@scloud/cdk-patterns` and automates setting repo/environment secrets and variables for Github Actions.
 
+This is intended to provide you with the environment/variable/secret handling capabilities you'll mostly need most of the time and, if you have an edge-case, example code you can reuse that helps you get what you need done more easily.
+
 ## Setup
 
 Assuming you've called the `ghaUser` function, you should have some output fikes under your `infrastructure/secrets` directory, e.g.:
