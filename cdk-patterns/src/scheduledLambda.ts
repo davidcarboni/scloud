@@ -5,6 +5,8 @@ import { Rule, Schedule } from 'aws-cdk-lib/aws-events';
 import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets';
 import { containerFunction, zipFunction } from './lambdaFunction';
 
+// Based on: https://edwinradtke.com/eventtargets
+
 /**
  * A Lambda function triggered by scheduled Cloudwatch events.
  *
