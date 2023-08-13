@@ -1,5 +1,5 @@
-import { Octokit } from '@octokit/rest';
 import * as util from 'util';
+import { Octokit } from '@octokit/rest';
 import encrypt from './encrypt';
 
 /**
