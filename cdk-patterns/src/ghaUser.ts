@@ -80,6 +80,23 @@ export function addGhaRepository(
   addGhaVariable(construct, name, 'repository', repository.repositoryName);
 }
 
+export function saveGhaValues(stack: Stack) {
+  if (fs.existsSync('secrets')) {
+    // Write out the list of secret and variable names:
+    fs.writeFileSync(`secrets/${stack.stackName}.ghaSecrets.json`, JSON.stringify(ghaInfo.secrets));
+    fs.writeFileSync(`secrets/${stack.stackName}.ghaVariables.json`, JSON.stringify(ghaInfo.variables));
+  }
+
+  // Flush ghaInfo so we're free to build another stack if needed:
+  ghaInfo.resources.buckets = [];
+  ghaInfo.resources.distributions = [];
+  ghaInfo.resources.lambdas = [];
+  ghaInfo.resources.repositories = [];
+  ghaInfo.resources.services = [];
+  ghaInfo.secrets = [];
+  ghaInfo.variables = [];
+}
+
 function addToPolicy(stack: Stack, name: string, policy: ManagedPolicy, resources: string[], actions: string[]) {
   if (resources.length > 0) {
     policy.addStatements(new PolicyStatement({
@@ -157,15 +174,6 @@ export function ghaPolicy(stack: Stack, name: string = `gha-${stack.stackName}-p
     fs.writeFileSync(`secrets/${stack.stackName}.ghaVariables.json`, JSON.stringify(ghaInfo.variables));
   }
 
-  // Flush ghaInfo so we're free to build another stack if needed:
-  ghaInfo.resources.buckets = [];
-  ghaInfo.resources.distributions = [];
-  ghaInfo.resources.lambdas = [];
-  ghaInfo.resources.repositories = [];
-  ghaInfo.resources.services = [];
-  ghaInfo.secrets = [];
-  ghaInfo.variables = [];
-
   return policy;
 }
 
@@ -199,8 +207,9 @@ export function ghaOidc(stack: Stack, repo: { owner: string, name: string; filte
     roleName: `gha-oidc-${stack.stackName}`,
     description: `Role for GitHub Actions (${stack.stackName}) to assume when deploying to AWS`,
   });
-
   addGhaVariable(stack, 'ghaOidc', 'Role', role.roleName);
+
+  saveGhaValues(stack);
 }
 
 /**
@@ -224,20 +233,6 @@ export function ghaUser(stack: Stack): { user: User, accessKey: CfnAccessKey | u
     addGhaSecret(stack, 'awsSecretAccessKey', accessKey.attrSecretAccessKey);
   }
 
-  if (fs.existsSync('secrets')) {
-    // Write out the list of secret and variable names:
-    fs.writeFileSync(`secrets/${stack.stackName}.ghaSecrets.json`, JSON.stringify(ghaInfo.secrets));
-    fs.writeFileSync(`secrets/${stack.stackName}.ghaVariables.json`, JSON.stringify(ghaInfo.variables));
-  }
-
-  // Flush ghaInfo so we're free to build another stack if needed:
-  ghaInfo.resources.buckets = [];
-  ghaInfo.resources.distributions = [];
-  ghaInfo.resources.lambdas = [];
-  ghaInfo.resources.repositories = [];
-  ghaInfo.resources.services = [];
-  ghaInfo.secrets = [];
-  ghaInfo.variables = [];
-
+  saveGhaValues(stack);
   return { user, accessKey };
 }
