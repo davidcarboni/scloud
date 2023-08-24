@@ -1,0 +1,49 @@
+# NB: This workflow assumes that the component code is is in a subdirectory matching the workflow name, i.e. ${{ env.GITHUB_WORKFLOW }}
+
+name: Typescript Lambda
+
+on:
+  workflow_call:
+    inputs:
+      # The name of the lambda function to be updated
+      lambdaName:
+        type: string
+        required: true
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+
+jobs:
+  lambda:
+    name: Build and deploy Lambda
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - uses: actions/checkout@v3
+
+    - uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: eu-west-2
+
+    - name: Build
+      working-directory: ${{ env.GITHUB_WORKFLOW }}
+      run: |
+        yarn
+        yarn lint
+        yarn test
+        yarn compile
+
+    - name: Package
+      working-directory: ${{ env.GITHUB_WORKFLOW }}
+      run: |
+        yarn package
+
+    - name: Deploy
+      working-directory: ${{ env.GITHUB_WORKFLOW }}
+      run: |
+        aws lambda update-function-code --function-name=${{ inputs.lambdaName }} --zip-file fileb://dist/function.zip

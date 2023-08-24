@@ -13,56 +13,23 @@ on:
     # A weekly build to pick up updates to the base container image
     # A weekday at mid-day - when someone is likely to be working (avoid bank holidays)
     - cron: "0 12 * * 2"
-  workflow_dispatch:
-    inputs:
-      update_component:
-        description: 'Whether the workflow should attempt to update the lambda function'
-        required: true
-        default: 'yes'
 
 jobs:
+
   deploy:
-    name: Lambda
-    runs-on: ubuntu-latest
-    env:
-      component: slack
+    uses: davidcarboni/scloud/.github/workflows/typescript-lambda.yml@main
+    with:
       lambdaName: ${{ vars.SLACK_LAMBDA }}
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
+  notify:
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: always() && needs.deploy.result == 'failure'
     steps:
-
-    - uses: actions/checkout@v3
-
-    - uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: eu-west-2
-
-    - name: Build
-      working-directory: ./${{ env.component }}
-      run: |
-        yarn
-        yarn lint
-        yarn test
-        yarn compile
-        yarn package
-
-    - name: Package
-      working-directory: ./${{ env.component }}
-      run: |
-        cp package*.json dist/
-        cd dist
-        npm ci --production
-        echo $(git rev-parse --short HEAD) > COMMIT_HASH
-        zip -r function.zip .
-
-    - name: Update Lambda
-      working-directory: ./${{ env.component }}
-      run: |
-        aws lambda update-function-code --function-name=${{ env.lambdaName }} --zip-file fileb://dist/function.zip
-
     - name: Notify Slack
-      if: failure()
       uses: rtCamp/action-slack-notify@v2
       env:
         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
