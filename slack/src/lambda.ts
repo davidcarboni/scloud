@@ -1,3 +1,6 @@
+/* eslint-disable import/prefer-default-export */
+import * as fs from 'fs';
+import { sqsHandler } from '@scloud/lambda-queue';
 import {
   Context, SQSBatchResponse, SQSEvent, SQSRecord,
 } from 'aws-lambda';
@@ -12,12 +15,12 @@ if (fs.existsSync('COMMIT_HASH')) {
 process.env.COMMIT_HASH = process.env.COMMIT_HASH || 'development';
 
 /**
- * Process the content of an SQS message
+ * Process an individual Slack message
  */
-export async function processMessage(e: SQSRecord) {
+export async function processMessage(message: SQSRecord) {
   const slackWebhook = process.env.SLACK_WEBHOOK || '';
   if (slackWebhook) {
-    await axios.post(slackWebhook, { text: `${e.body}` });
+    await axios.post(slackWebhook, { text: `${message.body}` });
   } else {
     console.log(`Message would be sent to Slack: ${e.body} (process.env.SLACK_WEBHOOK isn't set)`);
   }
