@@ -8,10 +8,10 @@ for i in $(ls secrets/*.sh); do
 done
 
 # AWS profile
-if [ -z "$AWS_PROFILE" ]; then
-  echo "Using default AWS profile"
-else
+if [ -f 'secrets/aws.sh' ]; then
   echo "Using AWS profile: $AWS_PROFILE"
+else
+  echo "Using default AWS profile"
 fi
 
 echo "Starting infrastructure build: $(date)"
@@ -25,13 +25,17 @@ cdk diff
 
 read -p "Do you want to proceed? (y/N) " yn
 case $yn in
-	y ) echo Deploying...;;
-	* ) echo Exit;
-		exit 0;;
+ 	y ) echo Deploying...;;
+ 	* ) echo Exit;
+ 		exit 0;;
 esac
 
 # Skip approval on the basis we've already done a diff above so this creates a repeat y/n prompt:
-cdk deploy --require-approval never --outputs-file ./secrets/cdk-outputs.json
+cdk deploy --all --require-approval never --outputs-file ./secrets/cdk-outputs.json
+
+# Update secrets
+echo "Setting Github secrets"
+npm run secrets
 
 # Build an environment file for Docker Compose to run locally
 # echo "Writing Docker Compose environment file"
