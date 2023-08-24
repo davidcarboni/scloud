@@ -6,7 +6,6 @@ module.exports = {
   },
   extends: [
     'airbnb-base',
-    'plugin:import/typescript',
   ],
   parser: '@typescript-eslint/parser',
   parserOptions: {
@@ -25,8 +24,9 @@ module.exports = {
         ts: 'never',
       },
     ],
+    'import/no-import-module-exports': [0], // Unclear whether we should re-enable this: https://github.com/import-js/eslint-plugin-import/blob/main/docs/rules/no-import-module-exports.md
     quotes: [2, 'single', 'avoid-escape'],
-    'max-len': [
+    'max-len': [ // Allow a longer line length
       'error',
       {
         code: 150,
@@ -37,7 +37,12 @@ module.exports = {
         ignoreTemplateLiterals: true,
       },
     ],
-    'no-console': 'off', // Because container logging goes to stdout.
+    'no-console': 'off', // Because lambda logging goes to stdout.
+    'guard-for-in': [0], // May want to re-enable: https://eslint.org/docs/latest/rules/guard-for-in
+    'no-restricted-syntax': [0], // Might want to re-enable to keep things simple https://eslint.org/docs/latest/rules/no-restricted-syntax
+    // 'no-nested-ternary': [0], // on the rare occasion they're needed, they're needed [Carbs: massively unreadable though, probably a design smell]
+    'no-plusplus': [0], // plus plus is useful
+    'no-param-reassign': [0], // This could be a side-effect hygiene factor so may want to re-enable
   },
   settings: {
     'import/parsers': {
@@ -57,8 +62,6 @@ module.exports = {
       // We lint unit tests differently.
       files: ['*.spec.ts'],
       rules: {
-        // Can't fathom how to resolve imprts in tests so heigh-ho, whatever, mystery
-        'import/no-unresolved': 'off',
 
         // Avoid mocha/chai "Expected an assignment or function call and instead saw an expression"
         'no-unused-expressions': 'off',
@@ -68,5 +71,4 @@ module.exports = {
       },
     },
   ],
-  ignorePatterns: ['node_modules', 'dist'],
 };
