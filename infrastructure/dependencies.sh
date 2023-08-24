@@ -21,6 +21,8 @@ npm i \
   aws-lambda \
   lodash \
   libsodium-wrappers \
+  scloud/cdk-github \
+  scloud/cdk-patterns
   --
 
 #
@@ -29,7 +31,7 @@ npm i \
 #   "scripts": {
 #    ...,
 #    "lint": "eslint --fix --ext ts bin lib",
-#    "secrets": "ts-node src/github/secrets.ts
+#    "secrets": "ts-node lib/github.ts"
 #
 # find (regex): "\^?~?\d{1,3}\.\d{1,3}\.\d{1,3}"
 # replace: "*" (except package version)
