@@ -31,11 +31,11 @@ case $yn in
 esac
 
 # Skip approval on the basis we've already done a diff above so this creates a repeat y/n prompt:
-cdk deploy --all --require-approval never --outputs-file ./secrets/cdk-outputs.json
+cdk deploy --require-approval never --outputs-file ./secrets/cdk-outputs.json
 
 # Update secrets
-echo "Setting Github secrets"
-npm run secrets
+# echo "Setting Github secrets and variables"
+# npm run github
 
 # Build an environment file for Docker Compose to run locally
 # echo "Writing Docker Compose environment file"
