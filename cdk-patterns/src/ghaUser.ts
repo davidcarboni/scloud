@@ -178,25 +178,30 @@ export function ghaPolicy(stack: Stack, name: string = `gha-${stack.stackName}-p
 }
 
 /**
- * Create an OIDC connection fo Guthub Actions
+ * Create an OIDC connection fo Guthub Actions.
+ * NB only one OIDC provider for GitHub can be created per AWS account because (the provider URL must be unique).
+ * To provide access to resources, you can create multiple roles that trust the provider so you'll probably want to call ghaOidcRole() instead.
  * See: https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services
- * @param repo The repository to grant access to (owner and name). You can also specify a filter to limit access e.g. to a branch.
+ * @param repo What to grant access to. This is a minimum of a GitHub owner (user or org), optionally a repository name, and you can also specify a filter to limit access to e.g. a branch.
  */
-export function ghaOidc(stack: Stack, repo: { owner: string, name: string; filter?: string; }) {
-  const ghProvider = new OpenIdConnectProvider(stack, `gha-oidc-${stack.stackName}`, {
+export function ghaOidc(stack: Stack, repo: { owner: string, name?: string; filter?: string; }) {
+  const ghProvider = new OpenIdConnectProvider(stack, `gha-oidc-${stack.account}`, {
     url: 'https://token.actions.githubusercontent.com',
     clientIds: ['sts.amazonaws.com'],
   });
 
-  // grant only requests coming from the specific GitHub repository.
-  const condition = `repo:${repo.owner}/${repo.name}:${repo.filter || '*'}`;
+  // grant only requests coming from the specific owner/repository/filter.
+  let condition = `repo:${repo.owner}/*`;
+  if (repo.name) {
+    condition = `repo:${repo.owner}/${repo.name}:${repo.filter || '*'}`;
+  }
   const conditions: Conditions = {
     StringLike: {
       'token.actions.githubusercontent.com:sub': [condition],
     },
   };
 
-  const role = new Role(stack, `gha-oidc-role-${stack.stackName}`, {
+  const role = new Role(stack, `gha-oidc-role-${stack.account}`, {
     assumedBy: new WebIdentityPrincipal(
       ghProvider.openIdConnectProviderArn,
       conditions,
@@ -207,6 +212,20 @@ export function ghaOidc(stack: Stack, repo: { owner: string, name: string; filte
     roleName: `gha-oidc-${stack.stackName}`,
     description: `Role for GitHub Actions (${stack.stackName}) to assume when deploying to AWS`,
   });
+  addGhaVariable(stack, 'ghaOidc', 'Role', role.roleName);
+
+  saveGhaValues(stack);
+}
+
+/**
+ * Add permissions to the GitHub OIDC role that allow workflows to access the AWS resources in this stack that need to be updated at build time.
+ * See: https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services
+ * @param repo The repository to grant access to (owner and name). You can also specify a filter to limit access e.g. to a branch.
+ */
+export function ghaOidcRole(stack: Stack) {
+  const role = Role.fromRoleName(stack, 'gha-oidc-role', `gha-oidc-${stack.stackName}`);
+  const policy = ghaPolicy(stack);
+  role.addManagedPolicy(policy);
   addGhaVariable(stack, 'ghaOidc', 'Role', role.roleName);
 
   saveGhaValues(stack);
