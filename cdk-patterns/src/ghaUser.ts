@@ -215,7 +215,7 @@ export function ghaOidcRole(stack: Stack, repo: { owner: string, name?: string; 
     roleName: `gha-oidc-${stack.stackName}`,
     description: `Role for GitHub Actions (${stack.stackName}) to assume when deploying to AWS`,
   });
-  addGhaVariable(stack, 'ghaOidc', 'Role', role.roleName);
+  addGhaVariable(stack, 'ghaOidc', 'Role', role.roleArn);
 
   saveGhaValues(stack);
   return role;
