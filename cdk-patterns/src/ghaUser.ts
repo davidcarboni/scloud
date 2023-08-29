@@ -138,6 +138,7 @@ export function ghaPolicy(stack: Stack, name: string = `gha-${stack.stackName}-p
   ]);
   const objectArns = bucketArns.map((arn) => `${arn}/*`);
   addToPolicy(stack, 'bucketObjects', policy, objectArns, [
+    's3:GetObject',
     's3:PutObject',
     's3:DeleteObject',
   ]);
