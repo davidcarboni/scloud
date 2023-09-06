@@ -185,7 +185,7 @@ export function ghaPolicy(stack: Stack, name: string = `gha-${stack.stackName}-p
  * See: https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services
  * @param repo What to grant access to. This is a minimum of a GitHub owner (user or org), optionally a repository name, and you can also specify a filter to limit access to e.g. a branch.
  */
-export function ghaIdentityProvider(stack: Stack) {
+export function ghaOidcProvider(stack: Stack) {
   new OpenIdConnectProvider(stack, 'oidc-provider', {
     url: 'https://token.actions.githubusercontent.com',
     clientIds: ['sts.amazonaws.com'],
