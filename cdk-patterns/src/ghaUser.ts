@@ -185,8 +185,8 @@ export function ghaPolicy(stack: Stack, name: string = `gha-${stack.stackName}-p
  * See: https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services
  * @param repo What to grant access to. This is a minimum of a GitHub owner (user or org), optionally a repository name, and you can also specify a filter to limit access to e.g. a branch.
  */
-export function ghaOidcProvider(stack: Stack) {
-  new OpenIdConnectProvider(stack, 'oidc-provider', {
+export function ghaOidcProvider(stack: Stack): OpenIdConnectProvider {
+  return new OpenIdConnectProvider(stack, 'oidc-provider', {
     url: 'https://token.actions.githubusercontent.com',
     clientIds: ['sts.amazonaws.com'],
   });
@@ -197,8 +197,8 @@ export function ghaOidcProvider(stack: Stack) {
  * See: https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services
  * @param repo The repository to grant access to (owner and name). You can also specify a filter to limit access e.g. to a branch.
  */
-export function ghaOidcRole(stack: Stack, repo: { owner: string, repo?: string; filter?: string; }): Role {
-  const provider = OpenIdConnectProvider.fromOpenIdConnectProviderArn(stack, `gha-oidc-${stack.account}`, `arn:aws:iam::${stack.account}:oidc-provider/token.actions.githubusercontent.com`);
+export function ghaOidcRole(stack: Stack, repo: { owner: string, repo?: string; filter?: string; }, openIdConnectProvider?: OpenIdConnectProvider): Role {
+  const provider = openIdConnectProvider || OpenIdConnectProvider.fromOpenIdConnectProviderArn(stack, `gha-oidc-${stack.account}`, `arn:aws:iam::${stack.account}:oidc-provider/token.actions.githubusercontent.com`);
 
   // Grant only requests coming from the specific owner/repository/filter to assume this role.
   const role = new Role(stack, `gha-oidc-role-${stack.stackName}`, {
