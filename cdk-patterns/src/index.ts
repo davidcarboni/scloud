@@ -10,3 +10,7 @@ export * from './logGroup';
 export * from './queueLambda';
 export * from './secret';
 export * from './vpcEndpoint';
+export * from './ContainerFunction';
+export * from './ZipFunction';
+export * from './PrivateBucket';
+export * from './KmsBucket';
