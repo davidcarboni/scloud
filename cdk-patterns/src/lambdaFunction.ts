@@ -17,6 +17,7 @@ import { addGhaLambda } from './ghaUser';
  * @param name The name for this function
  * @param environment Environment variables for the Lambda function
  * @returns The lambda, if created, and associated ECR repository
+ * @deprecated Use ContainerFunction instead
  */
 export function containerFunction(
   construct: Construct,
@@ -57,6 +58,7 @@ export function containerFunction(
  * @param environment Environment variables for the Lambda function
  * @param lambdaProps Override properties for the Lambda function. you may want to pass e.g. { runtime: Runtime.PYTHON_3_10 }
  * @returns The lambda, if created, and associated ECR repository
+ * @deprecated Use ZipFunction instead
  */
 export function zipFunction(
   construct: Construct,
