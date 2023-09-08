@@ -2,9 +2,11 @@
 
 _AWS CDK patterns and NPM packages for assembling serverless infrastructures_
 
-If you're not massively interested in infrastructure, but want to do it well, without making it your mission in life then scloud could be what you need.
+This repo contains a set of AWS CDK patterns packaged as functions and constructs so you can put serverless architectures together in fewer lines of code. The aim is to make it easy to clip together typical infrastructure building blocks that can be reused (and tweaked) across your projects.
 
 It's bunch of things done well that you can benefit from. I use it to store chunks of reference code I use each time I build a new service.
+
+If you want to do infrastructure well, without making AWS your life's work, then scloud could be what you need.
 
 ## NPM packages
 
@@ -57,14 +59,6 @@ Scloud makes a few assumptions about what the repository structure looks like:
 
  The aim is to reduce cognitive load and build good expectations about the pieces that make up your system.
 
-## Serverless CDK infrastructure
-
-The folder you're likely looking for is: https://github.com/davidcarboni/scloud/tree/main/cdk-patterns/src or the package `@scloud/cdk-patterns`
-
-This repo contains a set of AWS CDK patterns packaged as functions so you can put serverless architectures together with a few function calls. The aim is to make it easy to put together typical infrastructure building blocks that can be reused (and/or tweaked) across projects.
-
-The name 'scloud' means 'simple cloud', but could equally mean other things. These patterns are designed to be basic and not finely configurable, on the basis that keeping things standad, simple, even a bit stupid (you can decide for yourself what the S in Scloud stands for) is a good way to get things done and get on with life.
-
 ## Github secrets and variables
 
 The other folder you'll want to look in is: https://github.com/davidcarboni/scloud/tree/main/cdk-github/src or the package `@scloud/cdk-github`
@@ -80,3 +74,5 @@ A couple of key files are `dependencies.sh` (changes you may want to make to pac
 ## Why the name 'Scloud'?
 
 What's the 'S' in Scloud? Mainly serverless, definitely simple and, depending on how you're feeling about this library at the time, possibly some other words!
+
+These patterns are designed to be basic and not finely configurable, on the basis that keeping things standad, simple, even a bit 'stupid' is a good way to get things done and get on with life.
