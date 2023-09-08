@@ -1,0 +1,93 @@
+# For accessing a private registry
+
+name: auth
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+    paths:
+    # Build when there are changes in the directory that holds the component,
+    # or when this workflow file is changed
+    - 'auth/**'
+    - '.github/workflows/auth.yml'
+  schedule:
+    # A weekly build to pick up updates to the base container image
+    # A weekday at mid-day - when someone is likely to be working (avoid bank holidays)
+    - cron: "0 12 * * 2"
+  workflow_dispatch:
+  # Build when shared is built - currently not quite working so we rely on a list of components in shared.yml
+  workflow_run:
+    workflows:
+      - shared
+    types:
+      - completed
+    branches: [ main, staging ]
+
+jobs:
+  setenv:
+    name: Determine deployment environment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set environment name based on branch name
+        working-directory: ./${{ env.component }}
+        id: branch_check
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/main" ]
+          then
+            echo "env_name=production" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event.workflow_run.head_branch }}" = "main" ]
+          then
+            echo "env_name=production" >> $GITHUB_OUTPUT
+          else
+            echo "env_name=staging" >> $GITHUB_OUTPUT
+          fi
+    outputs:
+      env_name: ${{ steps.branch_check.outputs.env_name }}
+
+  lambda:
+    name: Deploy Lambda
+    needs: [setenv]
+    environment: ${{ needs.setenv.outputs.env_name }}
+    runs-on: ubuntu-latest
+    env:
+      component: auth
+      lambdaName: ${{ vars.AUTH_LAMBDA }}
+
+    steps:
+
+    - uses: actions/checkout@v3
+
+    - uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: eu-west-2
+
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 'lts/*'
+        registry-url: 'https://npm.pkg.github.com'
+
+    - name: Build
+      working-directory: ./${{ env.component }}
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        yarn
+        yarn lint
+        yarn test
+        yarn compile
+
+    - name: Package
+      working-directory: ./${{ env.component }}
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        yarn package
+
+    - name: Update Lambda
+      working-directory: ./${{ env.component }}
+      run: |
+        aws lambda update-function-code --function-name=${{ env.lambdaName }} --zip-file fileb://dist/function.zip

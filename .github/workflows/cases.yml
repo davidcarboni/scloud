@@ -1,0 +1,104 @@
+name: cases
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+    paths:
+    # Build when there are changes in the directory that holds the component,
+    # or when this workflow file is changed
+    - 'cases/**'
+    - '.github/workflows/cases.yml'
+  schedule:
+    # A weekly build to pick up updates to the base container image
+    # A weekday at mid-day - when someone is likely to be working (avoid bank holidays)
+    - cron: "0 12 * * 2"
+  workflow_dispatch:
+  # Build when shared is built - currently not quite working so we rely on a list of components in shared.yml
+  workflow_run:
+    workflows:
+      - shared
+    types:
+      - completed
+    branches: [ main, staging ]
+
+permissions:
+  # id-token: write allows the workflow to use OIDC
+  id-token: write
+  # Access to Github packages to read the shared package
+  packages: read
+  # Permission to dispatch the integration tests workflow
+  actions: write
+  # Access to repo code to commit the updated shared package version
+  contents: write
+
+env:
+  lambdaBucket: ${{ vars.BUILDS_BUCKET }}
+  lambdaName: ${{ vars.CASES_LAMBDA }}
+
+jobs:
+  setenv:
+    name: Determine deployment environment
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set environment name based on branch name
+        working-directory: ${{ github.workflow }}
+        id: branch_check
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/main" ]
+          then
+            echo "env_name=production" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event.workflow_run.head_branch }}" = "main" ]
+          then
+            echo "env_name=production" >> $GITHUB_OUTPUT
+          else
+            echo "env_name=staging" >> $GITHUB_OUTPUT
+          fi
+    outputs:
+      env_name: ${{ steps.branch_check.outputs.env_name }}
+
+  lambda:
+    name: Deploy Lambda
+    needs: [setenv]
+    environment: ${{ needs.setenv.outputs.env_name }}
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - uses: actions/checkout@v3
+
+    - uses: aws-actions/configure-aws-credentials@v3
+      with:
+        role-to-assume: ${{ vars.GHA_OIDC_ROLE }}
+        aws-region: eu-west-2
+
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 'lts/*'
+        registry-url: 'https://npm.pkg.github.com'
+
+    - name: Build
+      working-directory: ${{ github.workflow }}
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        yarn
+        yarn lint
+        yarn test
+        yarn compile
+
+    - name: Package
+      working-directory: ${{ github.workflow }}
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        yarn package
+
+    - name: Update Lambda
+      working-directory: ${{ github.workflow }}
+      run: |
+        aws s3 cp dist/function.zip s3://${{ env.lambdaBucket }}/${{ github.workflow }}.zip
+        aws lambda update-function-code --function-name=${{ env.lambdaName }} --s3-bucket=${{ env.lambdaBucket }} --s3-key=${{ github.workflow }}.zip
+        # aws lambda update-function-code --function-name=${{ env.lambdaName }} --zip-file fileb://dist/function.zip
