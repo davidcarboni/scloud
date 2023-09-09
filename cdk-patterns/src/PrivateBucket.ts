@@ -17,7 +17,7 @@ import { Construct } from 'constructs';
  * @returns A new Bucket
  */
 export class PrivateBucket extends Bucket {
-  constructor(scope: Construct, id: string, props: Partial<BucketProps>) {
+  constructor(scope: Construct, id: string, props?: Partial<BucketProps>) {
     super(scope, id, {
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
       encryption: BucketEncryption.S3_MANAGED,

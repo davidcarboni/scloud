@@ -23,7 +23,7 @@ import {
 } from 'aws-cdk-lib/aws-apigateway';
 import { Function, FunctionProps } from 'aws-cdk-lib/aws-lambda';
 import { UserPool } from 'aws-cdk-lib/aws-cognito';
-import { zipFunction } from './lambdaFunction';
+import { ZipFunction } from './ZipFunction';
 import { addGhaBucket, addGhaDistribution } from './ghaUser';
 import { privateBucket } from './bucket';
 
@@ -91,7 +91,7 @@ export function webApp(
   bucket.grantRead(originAccessIdentity);
 
   // Web app handler - default values can be overridden using lambdaProps
-  const lambda = zipFunction(stack, name, environment, { memorySize: 3008, timeout: Duration.seconds(10), ...lambdaProps });
+  const lambda = new ZipFunction(stack, name, environment, { memorySize: 3008, timeout: Duration.seconds(10), ...lambdaProps });
 
   const api = new LambdaRestApi(stack, `${name}ApiGateway`, {
     handler: lambda,
@@ -259,7 +259,7 @@ export function webAppRoutes(
   const originMap: { [functionName: string]: RestApiOrigin; } = {};
   Object.keys(routes).forEach((pathPattern) => {
     // Use the provided function, or generate a default one:
-    const lambda = routes[pathPattern] || zipFunction(stack, name, {}, { memorySize: 3008 });
+    const lambda = routes[pathPattern] || new ZipFunction(stack, name, {}, { memorySize: 3008 });
     let origin = originMap[lambda.functionName];
 
     if (!origin) {

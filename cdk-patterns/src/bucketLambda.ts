@@ -2,9 +2,10 @@ import { DockerImageFunctionProps, Function, FunctionProps } from 'aws-cdk-lib/a
 import { Construct } from 'constructs';
 import { S3EventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
 import { Bucket, BucketProps, EventType } from 'aws-cdk-lib/aws-s3';
-import { IRepository } from 'aws-cdk-lib/aws-ecr';
-import { containerFunction, zipFunction } from './lambdaFunction';
-import { privateBucket } from './bucket';
+import { Repository } from 'aws-cdk-lib/aws-ecr';
+import { PrivateBucket } from './PrivateBucket';
+import { ZipFunction } from './ZipFunction';
+import { ContainerFunction } from './ContainerFunction';
 
 /**
  * A Lambda function triggered by s3 bucket events.
@@ -33,9 +34,9 @@ export function bucketLambda(
   events: EventType[] = [EventType.OBJECT_CREATED],
 ): { bucket: Bucket, lambda: Function; } {
   // Triggering bucket
-  const bucket = privateBucket(construct, `${name}Bucket`, bucketProps);
+  const bucket = new PrivateBucket(construct, `${name}Bucket`, bucketProps);
 
-  const lambda = zipFunction(construct, name, environment, { ...lambdaProps });
+  const lambda = new ZipFunction(construct, name, environment, { ...lambdaProps });
   lambda.addEventSource(new S3EventSource(bucket, { events }));
 
   return {
@@ -66,15 +67,15 @@ export function bucketLambdaContainer(
   name: string,
   initialPass: boolean,
   environment?: { [key: string]: string; },
-  ecr?: IRepository,
+  ecr?: Repository,
   lambdaProps?: Partial<DockerImageFunctionProps>,
   bucketProps?: Partial<BucketProps>,
   events: EventType[] = [EventType.OBJECT_CREATED],
-): { repository: IRepository, bucket: Bucket, lambda: Function; } {
+): { repository: Repository, bucket: Bucket, lambda: Function; } {
   // Triggering bucket
-  const bucket = privateBucket(construct, `${name}Bucket`, bucketProps);
+  const bucket = new PrivateBucket(construct, `${name}Bucket`, bucketProps);
 
-  const { repository, lambda } = containerFunction(construct, initialPass, name, environment, { ...lambdaProps }, 'latest', ecr);
+  const { repository, lambda } = new ContainerFunction(construct, name, environment, { ...lambdaProps }, 'latest', ecr, initialPass);
   lambda.addEventSource(new S3EventSource(bucket, { events }));
 
   return {

@@ -15,4 +15,4 @@ export * from './ZipFunction';
 export * from './PrivateBucket';
 export * from './KmsBucket';
 export * from './QueueLambda';
-export * from './c';
+export * from './QueueLambdaContainer';

@@ -1,9 +1,10 @@
 import { DockerImageFunctionProps, Function, FunctionProps } from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
-import { IRepository } from 'aws-cdk-lib/aws-ecr';
+import { Repository } from 'aws-cdk-lib/aws-ecr';
 import { Rule, Schedule } from 'aws-cdk-lib/aws-events';
 import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets';
-import { containerFunction, zipFunction } from './lambdaFunction';
+import { ZipFunction } from './ZipFunction';
+import { ContainerFunction } from './ContainerFunction';
 
 // Based on: https://edwinradtke.com/eventtargets
 
@@ -20,7 +21,7 @@ export function bucketLambda(
   lambdaProps?: Partial<FunctionProps>,
   schedule: Schedule = Schedule.cron({ minute: '11', hour: '1' }),
 ): { rule: Rule, lambda: Function; } {
-  const lambda = zipFunction(construct, name, environment, { ...lambdaProps });
+  const lambda = new ZipFunction(construct, name, environment, { ...lambdaProps });
 
   const rule = new Rule(construct, `${name}Rule`, {
     schedule,
@@ -40,11 +41,11 @@ export function bucketLambdaContainer(
   name: string,
   initialPass: boolean,
   environment?: { [key: string]: string; },
-  ecr?: IRepository,
+  ecr?: Repository,
   lambdaProps?: Partial<DockerImageFunctionProps>,
   schedule: Schedule = Schedule.cron({ minute: '11', hour: '1' }),
-): { repository: IRepository, rule: Rule, lambda: Function; } {
-  const { repository, lambda } = containerFunction(construct, initialPass, name, environment, { ...lambdaProps }, 'latest', ecr);
+): { repository: Repository, rule: Rule, lambda: Function; } {
+  const { repository, lambda } = new ContainerFunction(construct, name, environment, { ...lambdaProps }, 'latest', ecr, initialPass);
 
   const rule = new Rule(construct, `${name}Rule`, {
     schedule,
