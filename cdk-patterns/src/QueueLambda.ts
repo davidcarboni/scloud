@@ -19,7 +19,7 @@ export class QueueLambda extends Construct {
   lambda: ZipFunction;
 
   constructor(scope: Construct, id: string, environment?: { [key: string]: string; }, lambdaProps?: Partial<FunctionProps>, queueProps?: Partial<QueueProps>) {
-    super(scope, id);
+    super(scope, `${id}QueueLambda`);
 
     // NB Message timeout needs to match between the queue and the lambda:
     const timeout: Duration = lambdaProps?.timeout || Duration.seconds(60);
@@ -32,7 +32,7 @@ export class QueueLambda extends Construct {
       ...queueProps,
     });
 
-    this.lambda = new ZipFunction(scope, `${id}Function`, environment, {
+    this.lambda = new ZipFunction(scope, id, environment, {
       ...lambdaProps,
       timeout,
     });

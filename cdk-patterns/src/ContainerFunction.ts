@@ -31,9 +31,7 @@ export class ContainerFunction extends Construct {
     ecr?: Repository,
     initialPass: boolean = false,
   ) {
-    // We set a key alias because this seems to be the only
-    // identifying information shown in the list in the AWS console:
-    super(scope, id);
+    super(scope, `${id}ContainerFunction`);
     // Repository for function container image
     this.repository = ecr || ecrRepository(scope, `${id}Repository`);
 
@@ -42,7 +40,7 @@ export class ContainerFunction extends Construct {
       tagOrDigest: tagOrDigest || 'latest',
     });
 
-    this.lambda = new DockerImageFunction(scope, `${id}Function`, {
+    this.lambda = new DockerImageFunction(scope, id, {
       code,
       logRetention: logs.RetentionDays.THREE_MONTHS,
       environment,

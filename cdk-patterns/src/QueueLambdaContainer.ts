@@ -28,7 +28,7 @@ export class QueueLambdaContainer extends Construct {
     queueProps?: Partial<QueueProps>,
     initialPass?: boolean,
   ) {
-    super(scope, id);
+    super(scope, `${id}QueueLambdaContainer`);
 
     // NB Message timeout needs to match between the queue and the lambda:
     const timeout: Duration = lambdaProps?.timeout || Duration.seconds(60);
@@ -41,7 +41,7 @@ export class QueueLambdaContainer extends Construct {
       ...queueProps,
     });
 
-    this.containerFunction = new ContainerFunction(scope, `${id}Container`, environment, { ...lambdaProps, timeout }, 'latest', ecr, initialPass);
+    this.containerFunction = new ContainerFunction(scope, id, environment, { ...lambdaProps, timeout }, 'latest', ecr, initialPass);
     this.containerFunction.lambda.addEventSource(new SqsEventSource(this.queue, { reportBatchItemFailures: true }));
   }
 }
