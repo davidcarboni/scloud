@@ -27,7 +27,7 @@ export class KmsBucket extends Construct {
     // identifying information shown in the list in the AWS console:
     super(stack, id);
     this.key = new Key(stack, `${id}Key`, { removalPolicy: RemovalPolicy.DESTROY, alias: `${stack.stackName}/${id}`, description: id });
-    this.bucket = new Bucket(stack, id, {
+    this.bucket = new Bucket(stack, `${id}Bucket`, {
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
       encryption: BucketEncryption.KMS,
       bucketKeyEnabled: true,

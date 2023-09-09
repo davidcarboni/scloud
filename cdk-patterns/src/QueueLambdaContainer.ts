@@ -41,7 +41,7 @@ export class QueueLambdaContainer extends Construct {
       ...queueProps,
     });
 
-    this.containerFunction = new ContainerFunction(scope, id, environment, { ...lambdaProps, timeout }, 'latest', ecr, initialPass);
+    this.containerFunction = new ContainerFunction(scope, `${id}Container`, environment, { ...lambdaProps, timeout }, 'latest', ecr, initialPass);
     this.containerFunction.lambda.addEventSource(new SqsEventSource(this.queue, { reportBatchItemFailures: true }));
   }
 }

@@ -32,7 +32,7 @@ export class QueueLambda extends Construct {
       ...queueProps,
     });
 
-    this.lambda = new ZipFunction(scope, id, environment, {
+    this.lambda = new ZipFunction(scope, `${id}Function`, environment, {
       ...lambdaProps,
       timeout,
     });
