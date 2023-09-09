@@ -1,12 +1,15 @@
 import { Duration, RemovalPolicy } from 'aws-cdk-lib';
-import { IRepository } from 'aws-cdk-lib/aws-ecr';
+import { Repository } from 'aws-cdk-lib/aws-ecr';
 import { DockerImageFunctionProps, Function, FunctionProps } from 'aws-cdk-lib/aws-lambda';
 import { Queue, QueueEncryption } from 'aws-cdk-lib/aws-sqs';
 import { Construct } from 'constructs';
 import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
-import { containerFunction, zipFunction } from './lambdaFunction';
+import { ContainerFunction } from './ContainerFunction';
+import { ZipFunction } from './ZipFunction';
 
 /**
+ * @deprecated Use QueueLambda instead
+ *
  * A Lambda function triggered by SQS queue events.
  *
  * Defaults for the queue are:
@@ -30,7 +33,7 @@ export function queueLambda(
     removalPolicy: RemovalPolicy.DESTROY,
   });
 
-  const lambda = zipFunction(construct, name, environment, { ...lambdaProps, timeout });
+  const lambda = new ZipFunction(construct, name, environment, { ...lambdaProps, timeout });
   lambda.addEventSource(new SqsEventSource(queue, { reportBatchItemFailures: true }));
 
   return {
@@ -39,6 +42,8 @@ export function queueLambda(
 }
 
 /**
+ * @deprecated Use QueueLambdaContainer instead
+ *
  * A container Lambda function triggered by SQS queue events.
  *
  * Defaults for the queue are:
@@ -51,9 +56,9 @@ export function queueLambdaContainer(
   name: string,
   initialPass: boolean,
   environment?: { [key: string]: string; },
-  ecr?: IRepository,
+  ecr?: Repository,
   lambdaProps?: Partial<DockerImageFunctionProps>,
-): { repository: IRepository, queue: Queue, lambda: Function; } {
+): { repository: Repository, queue: Queue, lambda: Function; } {
   // NB Message timeout needs to match between the queue and the lambda:
   const timeout: Duration = lambdaProps?.timeout || Duration.seconds(60);
 
@@ -64,7 +69,7 @@ export function queueLambdaContainer(
     removalPolicy: RemovalPolicy.DESTROY,
   });
 
-  const { repository, lambda } = containerFunction(construct, initialPass, name, environment, { ...lambdaProps, timeout }, 'latest', ecr);
+  const { repository, lambda } = new ContainerFunction(construct, name, environment, { ...lambdaProps, timeout }, 'latest', ecr, initialPass);
   lambda.addEventSource(new SqsEventSource(queue, { reportBatchItemFailures: true }));
 
   return {
