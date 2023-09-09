@@ -10,6 +10,8 @@ import { ecrRepository } from './ecrRepository';
 import { addGhaLambda } from './ghaUser';
 
 /**
+ * @deprecated Use ContainerFunction instead
+ *
  * A Lambda function packaged as a container.
  * @param construct Parent CDK construct (typically 'this')
  * @param initialPass If the infrastructure is being built from scratch: true;
@@ -17,7 +19,6 @@ import { addGhaLambda } from './ghaUser';
  * @param name The name for this function
  * @param environment Environment variables for the Lambda function
  * @returns The lambda, if created, and associated ECR repository
- * @deprecated Use ContainerFunction instead
  */
 export function containerFunction(
   construct: Construct,
@@ -48,6 +49,8 @@ export function containerFunction(
 }
 
 /**
+ * @deprecated Use ZipFunction instead
+ *
  * A Lambda function packaged as a zip file.
  * Key defaults are:
  *  - runtime: Runtime.NODEJS_18_X
@@ -58,7 +61,6 @@ export function containerFunction(
  * @param environment Environment variables for the Lambda function
  * @param lambdaProps Override properties for the Lambda function. you may want to pass e.g. { runtime: Runtime.PYTHON_3_10 }
  * @returns The lambda, if created, and associated ECR repository
- * @deprecated Use ZipFunction instead
  */
 export function zipFunction(
   construct: Construct,
