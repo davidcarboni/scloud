@@ -9,6 +9,8 @@ import {
 import { Construct } from 'constructs';
 
 /**
+ * @deprecated Use PrivateBucket instead
+ *
  * A private bucket bucket.
  * @param construct The parent CDK construct.
  * @param name The bucket name - used as the ID for CDK.
@@ -16,7 +18,6 @@ import { Construct } from 'constructs';
  * @param props Any additional properties for the bucket.
  * These can override the defaults provided by this function.
  * @returns A new Bucket
- * @deprecated Use PrivateBucket instead
  */
 export function privateBucket(construct: Construct, name: string, props: BucketProps = {}): Bucket {
   return new Bucket(construct, name, {
@@ -28,6 +29,8 @@ export function privateBucket(construct: Construct, name: string, props: BucketP
 }
 
 /**
+ * @deprecated Use KmsBucket instead
+ *
  * A bucket with a KMS key.
  * @param stack The parent CDK stack.
  * @param name The bucket name - used as the bucket and key IDs for CDK.
@@ -35,7 +38,6 @@ export function privateBucket(construct: Construct, name: string, props: BucketP
  * @param props Any additional properties for the bucket.
  * These can override the defaults provided by this function.
  * @returns An s3.Bucket
- * @deprecated Use KmsBucket instead
  */
 export function kmsBucket(
   stack: Stack,
