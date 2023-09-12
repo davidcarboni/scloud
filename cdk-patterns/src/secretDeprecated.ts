@@ -2,6 +2,8 @@ import { Stack } from 'aws-cdk-lib';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
 
 /**
+ * @deprecated Use SecretValue or SecretObject instead
+ *
  * Generates a secret value.
  * see: https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_secretsmanager-readme.html
  * @param stack The stack is used as the parent Construct and the stack name is used as a prefix in the secret name
