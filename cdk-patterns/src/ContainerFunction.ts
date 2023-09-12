@@ -8,20 +8,20 @@ import { Repository } from 'aws-cdk-lib/aws-ecr';
 import { ecrRepository } from './ecrRepository';
 import { addGhaLambda } from './ghaUser';
 
+/**
+ * A Lambda function packaged as a container.
+ * @param construct Parent CDK construct (typically 'this')
+ * @param initialPass If the infrastructure is being built from scratch: true;
+ * for incremental deployments: false.
+ * @param name The name for this function
+ * @param environment Environment variables for the Lambda function
+ * @returns The lambda, if created, and associated ECR repository
+ */
 export class ContainerFunction extends Construct {
   repository: Repository;
 
   lambda: DockerImageFunction;
 
-  /**
-   * A Lambda function packaged as a container.
-   * @param construct Parent CDK construct (typically 'this')
-   * @param initialPass If the infrastructure is being built from scratch: true;
-   * for incremental deployments: false.
-   * @param name The name for this function
-   * @param environment Environment variables for the Lambda function
-   * @returns The lambda, if created, and associated ECR repository
-   */
   constructor(
     scope: Construct,
     id: string,
