@@ -12,7 +12,7 @@ export * from './ghaUser';
 export * from './lambdaFunctionDeprecated';
 export * from './logGroup';
 export * from './queueLambdaDeprecated';
-export * from './secret';
+export * from './secretDeprecated';
 export * from './SecretJson';
 export * from './SecretValue';
 export * from './vpcEndpoint';
