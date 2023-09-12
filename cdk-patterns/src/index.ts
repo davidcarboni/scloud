@@ -13,6 +13,8 @@ export * from './lambdaFunctionDeprecated';
 export * from './logGroup';
 export * from './queueLambdaDeprecated';
 export * from './secret';
+export * from './SecretJson';
+export * from './SecretValue';
 export * from './vpcEndpoint';
 export * from './ContainerFunction';
 export * from './ZipFunction';
