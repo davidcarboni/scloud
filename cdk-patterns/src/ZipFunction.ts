@@ -5,23 +5,23 @@ import {
 } from 'aws-cdk-lib/aws-lambda';
 import { addGhaLambda } from './ghaUser';
 
+/**
+ * A Lambda function packaged as a zip file.
+ *
+ * Pythion and Node runtinmes can be configured by calling ZipFunction.python(...) and ZipFunction.node(...)
+ * These are supported by default as these seem to have the lowest cold start times.
+ * If you would like a different runtime this can be set using the props parameter.
+ *
+ * Key settings are:
+ *  - runtime: defaults to Runtime.NODEJS_18_X
+ *  - handler: 'src/lambda.handler' - you'll need to make sure your zip package includes a file 'src/lambda.[js|py]' containing a function named 'handler'
+ *  - logRetention: default is logs.RetentionDays.TWO_YEARS
+ * @param scope Parent CDK construct (typically 'this')
+ * @param id A name for this function
+ * @param environment Environment variables for the Lambda function
+ * @param lambdaProps Override properties for the Lambda function. you may want to pass e.g. { runtime: Runtime.PYTHON_3_10 }
+ */
 export class ZipFunction extends Function {
-  /**
-   * A Lambda function packaged as a zip file.
-   *
-   * Pythion and Node runtinmes can be configured by calling ZipFunction.python(...) and ZipFunction.node(...)
-   * These are supported by default as these seem to have the lowest cold start times.
-   * If you would like a different runtime this can be set using the props parameter.
-   *
-   * Key settings are:
-   *  - runtime: defaults to Runtime.NODEJS_18_X
-   *  - handler: 'src/lambda.handler' - you'll need to make sure your zip package includes a file 'src/lambda.[js|py]' containing a function named 'handler'
-   *  - logRetention: default is logs.RetentionDays.TWO_YEARS
-   * @param scope Parent CDK construct (typically 'this')
-   * @param id A name for this function
-   * @param environment Environment variables for the Lambda function
-   * @param lambdaProps Override properties for the Lambda function. you may want to pass e.g. { runtime: Runtime.PYTHON_3_10 }
-   */
   constructor(scope: Construct, id: string, environment?: { [key: string]: string; }, props?: Partial<FunctionProps>) {
     super(scope, id, {
       description: id, // Provides something readable in the AWS console view
