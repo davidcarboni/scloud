@@ -1,4 +1,4 @@
-import { DockerImageFunctionProps, Function, FunctionProps } from 'aws-cdk-lib/aws-lambda';
+import { DockerImageFunctionProps } from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
 import { S3EventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
 import { Bucket, BucketProps, EventType } from 'aws-cdk-lib/aws-s3';
