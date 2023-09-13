@@ -11,6 +11,8 @@ import { ZipFunction } from './ZipFunction';
  *
  * The default schedule isSchedule.cron({ minute: '11', hour: '1' })
  * Which sets '11 1 * * ? *' (i.e. 1:11am every day)
+ *
+ * You can also pass an optional description for the rule for readability in the Cloudwatch view in the AWS console.
  */
 export class ScheduledLambda extends Construct {
   zipFunction: ZipFunction;
@@ -23,6 +25,7 @@ export class ScheduledLambda extends Construct {
     environment?: { [key: string]: string; },
     lambdaProps?: Partial<FunctionProps>,
     schedule: Schedule = Schedule.cron({ minute: '11', hour: '1' }),
+    description: string | undefined = undefined,
   ) {
     super(scope, `${id}ScheduledLambda`);
 
@@ -31,6 +34,7 @@ export class ScheduledLambda extends Construct {
     this.rule = new Rule(scope, `${id}Rule`, {
       schedule,
       targets: [new LambdaFunction(this.zipFunction)],
+      description,
     });
   }
 }
