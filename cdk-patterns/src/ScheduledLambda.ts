@@ -31,7 +31,7 @@ export class ScheduledLambda extends Construct {
 
     this.zipFunction = new ZipFunction(scope, id, environment, { ...lambdaProps });
 
-    this.rule = new Rule(scope, `${id}Rule`, {
+    this.rule = new Rule(scope, `${id}Trigger`, {
       schedule,
       targets: [new LambdaFunction(this.zipFunction)],
       description,
