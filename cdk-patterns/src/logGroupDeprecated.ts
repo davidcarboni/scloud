@@ -2,6 +2,8 @@ import { RemovalPolicy, Stack } from 'aws-cdk-lib';
 import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 
 /**
+ * @Deprecated Use LogGroupRetained instead
+ *
  * Builds a LogGroup.
  * @param stack Parent CDK stack
  * @param category Used to build up the logGroupName: /stackName/categpry/name

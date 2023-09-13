@@ -9,7 +9,7 @@ import { Construct } from 'constructs';
  * @param name Name (and base for an ID) for the logGroup
  * @param retention Defaults to RetentionDays.TWO_YEARS
  */
-export class LogGroupTwoYears extends LogGroup {
+export class LogGroupRetention extends LogGroup {
   constructor(scope: Construct, id: string, category: string, retention: RetentionDays = RetentionDays.TWO_YEARS) {
     super(scope, `${id}LogGroup`, {
       // Ensure the log group is deleted when the stack is deleted
