@@ -14,12 +14,14 @@ import {
 import { UserPoolDomainTarget } from 'aws-cdk-lib/aws-route53-targets';
 import { Construct } from 'constructs';
 
+// @deprecated
 export interface SamlProvider {
   FederationMetadataUrl?: string, // SAML XML URL (e.g. Azure)
   FederationMetadataXml?: string, // SAML metadata XML (e.g. Google Workspace)
   SamlProviderName?: string, // Name in the Cognito hosted UI under "Sign in with your corporate ID"
 }
 
+// @deprecated
 export interface IdpConfig {
   enableEmail?: boolean, // Allow email sign-up/in
   googleClientId?: string,
@@ -32,6 +34,7 @@ export interface IdpConfig {
   SamlProviderName?: string, // Name in the Cognito hosted UI under "Sign in with your corporate ID"
 }
 
+// @deprecated
 export interface CognitoConstructs {
   userPool: UserPool,
   domain?: UserPoolDomain,
@@ -40,6 +43,7 @@ export interface CognitoConstructs {
   signInUrl?: string,
 }
 
+// @deprecated
 export function googleIdp(
   construct: Construct,
   name: string,
@@ -66,6 +70,7 @@ export function googleIdp(
   });
 }
 
+// @deprecated
 export function facebookIdp(
   construct: Construct,
   name: string,
@@ -87,6 +92,7 @@ export function facebookIdp(
   });
 }
 
+// @deprecated
 export function samlIdp(
   construct: Construct,
   name: string,
@@ -119,6 +125,8 @@ export function samlIdp(
 }
 
 /**
+ * @deprecated
+ *
  * Create a Cognito User Pool Client.
  * @param callbackUrl Authentication callback URL.
  * @returns cognito.UserPoolClient
@@ -174,6 +182,8 @@ export function userPoolClient(
 }
 
 /**
+ * @deprecated
+ *
  * Authentication setup with Cognito.
  *
  * NB: IF you want to use a custom domain, the CDK deployment
