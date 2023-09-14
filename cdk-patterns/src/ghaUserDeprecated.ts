@@ -24,6 +24,7 @@ const ghaInfo = {
   variables: <string[]>[],
 };
 
+// @deprecated - Use GithubActions instead
 export function addGhaSecret(
   construct: Construct,
   name: string,
@@ -33,6 +34,7 @@ export function addGhaSecret(
   ghaInfo.secrets.push(cfnOutput.node.id);
 }
 
+// @deprecated - Use GithubActions instead
 export function addGhaVariable(
   construct: Construct,
   name: string,
@@ -44,6 +46,7 @@ export function addGhaVariable(
   ghaInfo.variables.push(cfnOutput.node.id);
 }
 
+// @deprecated - Use GithubActions instead
 export function addGhaLambda(
   construct: Construct,
   name: string,
@@ -53,6 +56,7 @@ export function addGhaLambda(
   addGhaVariable(construct, name, 'lambda', lambda.functionName);
 }
 
+// @deprecated - Use GithubActions instead
 export function addGhaBucket(
   construct: Construct,
   name: string,
@@ -62,6 +66,7 @@ export function addGhaBucket(
   addGhaVariable(construct, name, 'bucket', bucket.bucketName);
 }
 
+// @deprecated - Use GithubActions instead
 export function addGhaDistribution(
   construct: Construct,
   name: string,
@@ -71,6 +76,7 @@ export function addGhaDistribution(
   addGhaVariable(construct, name, 'distributionId', distribution.distributionId);
 }
 
+// @deprecated - Use GithubActions instead
 export function addGhaRepository(
   construct: Construct,
   name: string,
@@ -80,6 +86,7 @@ export function addGhaRepository(
   addGhaVariable(construct, name, 'repository', repository.repositoryName);
 }
 
+// @deprecated - Use GithubActions instead
 export function saveGhaValues(stack: Stack) {
   if (fs.existsSync('secrets')) {
     // Write out the list of secret and variable names:
@@ -97,6 +104,7 @@ export function saveGhaValues(stack: Stack) {
   ghaInfo.variables = [];
 }
 
+// @deprecated - Use GithubActions instead
 function addToPolicy(stack: Stack, name: string, policy: ManagedPolicy, resources: string[], actions: string[]) {
   if (resources.length > 0) {
     policy.addStatements(new PolicyStatement({
@@ -107,6 +115,7 @@ function addToPolicy(stack: Stack, name: string, policy: ManagedPolicy, resource
   }
 }
 
+// @deprecated - Use GithubActions instead
 export function ghaPolicy(stack: Stack, name: string = `gha-${stack.stackName}-policy`) {
   const policy = new ManagedPolicy(stack, name, {
     managedPolicyName: name,
@@ -179,6 +188,8 @@ export function ghaPolicy(stack: Stack, name: string = `gha-${stack.stackName}-p
 }
 
 /**
+ * @deprecated - Use GithubActions instead
+ *
  * Create an account-wide OIDC connection fo Guthub Actions.
  * NB only one OIDC provider for GitHub can be created per AWS account (because the provider URL must be unique).
  * To provide access to resources, you can create multiple roles that trust the provider so you'll probably want to call ghaOidcRole() instead.
@@ -193,6 +204,8 @@ export function ghaOidcProvider(stack: Stack): OpenIdConnectProvider {
 }
 
 /**
+ * @deprecated - Use GithubActions instead
+ *
  * Add permissions to the GitHub OIDC role that allow workflows to access the AWS resources in this stack that need to be updated at build time.
  * See: https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services
  * @param repo The repository to grant access to (owner and name). You can also specify a filter to limit access e.g. to a branch.
@@ -223,6 +236,8 @@ export function ghaOidcRole(stack: Stack, repo: { owner: string, repo?: string; 
 }
 
 /**
+ * @deprecated - Use GithubActions instead
+ *
  * A user for Gihud Actions CI/CD.
  */
 export function ghaUser(stack: Stack, username?: string): { user: User, accessKey: CfnAccessKey | undefined; } {
