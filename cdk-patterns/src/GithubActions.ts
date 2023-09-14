@@ -225,7 +225,7 @@ export class GithubActions extends Construct {
       roleName: `gha-oidc-${this.stackName}`,
       description: `Role for GitHub Actions to assume when deploying to ${this.stackName}`,
     });
-    this.addGhaVariable(this, 'ghaOidc', 'Role', role.roleArn);
+    this.addGhaVariable('ghaOidc', 'Role', role.roleArn);
 
     this.saveGhaValues();
     return role;
