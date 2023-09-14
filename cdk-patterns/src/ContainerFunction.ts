@@ -6,7 +6,7 @@ import {
 } from 'aws-cdk-lib/aws-lambda';
 import { Repository } from 'aws-cdk-lib/aws-ecr';
 import { ecrRepository } from './ecrRepository';
-import { addGhaLambda } from './ghaUser';
+import { addGhaLambda } from './ghaUserDeprecated';
 
 /**
  * A Lambda function packaged as a container.

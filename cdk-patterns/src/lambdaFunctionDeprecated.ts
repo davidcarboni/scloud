@@ -7,7 +7,7 @@ import {
 import { IRepository } from 'aws-cdk-lib/aws-ecr';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import { ecrRepository } from './ecrRepository';
-import { addGhaLambda } from './ghaUser';
+import { addGhaLambda } from './ghaUserDeprecated';
 
 /**
  * @deprecated Use ContainerFunction instead

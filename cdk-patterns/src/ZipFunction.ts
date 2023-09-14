@@ -3,7 +3,7 @@ import { Construct } from 'constructs';
 import {
   Code, Function, FunctionProps, Runtime,
 } from 'aws-cdk-lib/aws-lambda';
-import { addGhaLambda } from './ghaUser';
+import { addGhaLambda } from './ghaUserDeprecated';
 
 /**
  * A Lambda function packaged as a zip file.

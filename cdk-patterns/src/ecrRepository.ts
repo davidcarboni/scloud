@@ -2,7 +2,7 @@ import * as cdk from 'aws-cdk-lib';
 import * as ecr from 'aws-cdk-lib/aws-ecr';
 import { Construct } from 'constructs';
 import { Repository } from 'aws-cdk-lib/aws-ecr';
-import { addGhaRepository } from './ghaUser';
+import { addGhaRepository } from './ghaUserDeprecated';
 
 /**
  * An API gateway backed by a Lambda function.

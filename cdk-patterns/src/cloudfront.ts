@@ -24,7 +24,7 @@ import {
 import { Function, FunctionProps } from 'aws-cdk-lib/aws-lambda';
 import { UserPool } from 'aws-cdk-lib/aws-cognito';
 import { ZipFunction } from './ZipFunction';
-import { addGhaBucket, addGhaDistribution } from './ghaUser';
+import { addGhaBucket, addGhaDistribution } from './ghaUserDeprecated';
 import { privateBucket } from './bucket';
 
 // Disabled for now as routing "*.*" to s3 may handle most of what we need to junk:
