@@ -16,7 +16,7 @@ import _ from 'lodash';
  * Constructs that help integrate GitHub Actions to build and deploy to AWS
  */
 export class GithubActions extends Construct {
-  id: string;
+  scope: Construct;
 
   stackName: string;
 
@@ -39,6 +39,7 @@ export class GithubActions extends Construct {
   ) {
     super(scope, 'GithubActions');
     this.stackName = Stack.of(scope).stackName;
+    this.scope = scope;
   }
 
   static getInstance(scope: Construct): GithubActions {
@@ -58,7 +59,7 @@ export class GithubActions extends Construct {
     name: string,
     value: string,
   ) {
-    const cfnOutput = new CfnOutput(this, name, { value });
+    const cfnOutput = new CfnOutput(this.scope, name, { value });
     this.ghaInfo.secrets.push(cfnOutput.node.id);
   }
 
