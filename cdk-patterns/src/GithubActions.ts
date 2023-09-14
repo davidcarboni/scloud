@@ -16,9 +16,12 @@ import _ from 'lodash';
  * Constructs that help integrate GitHub Actions to build and deploy to AWS
  */
 export class GithubActions extends Construct {
+  // Using 'this.scope' for the parent because using 'this' creates longer names.
   scope: Construct;
 
   stackName: string;
+
+  account: string;
 
   policy: ManagedPolicy;
 
@@ -39,6 +42,7 @@ export class GithubActions extends Construct {
   ) {
     super(scope, 'GithubActions');
     this.stackName = Stack.of(scope).stackName;
+    this.account = Stack.of(scope).account;
     this.scope = scope;
   }
 
@@ -59,7 +63,6 @@ export class GithubActions extends Construct {
     name: string,
     value: string,
   ) {
-    // Using this.scope for the parent because using this creates an output name of GithubActions/<name>
     const cfnOutput = new CfnOutput(this.scope, name, { value });
     this.ghaInfo.secrets.push(cfnOutput.node.id);
   }
@@ -70,7 +73,6 @@ export class GithubActions extends Construct {
     value: string,
   ) {
     const variableName = `${_.lowerFirst(name)}${_.capitalize(type)}`;
-    // Using this.scope for the parent because using this creates an output name of GithubActions/<name>
     const cfnOutput = new CfnOutput(this.scope, variableName, { value });
     this.ghaInfo.variables.push(cfnOutput.node.id);
   }
@@ -109,7 +111,7 @@ export class GithubActions extends Construct {
 
   ghaPolicy() {
     if (!this.policy) {
-      this.policy = new ManagedPolicy(this, `gha-${this.stackName}-policy`, {
+      this.policy = new ManagedPolicy(this.scope, `gha-${this.stackName}-policy`, {
         managedPolicyName: this.stackName,
       });
 
@@ -166,7 +168,7 @@ export class GithubActions extends Construct {
       const distributionArns = this.ghaInfo.resources.distributions
         .filter((distribution) => distribution !== undefined)
         // Not sure where to 'properly' get a distribution ARN from?
-        .map((distribution) => `arn:aws:cloudfront::${Stack.of(this).account}:distribution/${distribution.distributionId}`);
+        .map((distribution) => `arn:aws:cloudfront::${this.account}:distribution/${distribution.distributionId}`);
       this.addToPolicy('distributions', distributionArns, [
         'cloudfront:CreateInvalidation',
       ]);
@@ -195,7 +197,7 @@ export class GithubActions extends Construct {
    * @param repo What to grant access to. This is a minimum of a GitHub owner (user or org), optionally a repository name, and you can also specify a filter to limit access to e.g. a branch.
    */
   ghaOidcProvider(): OpenIdConnectProvider {
-    return new OpenIdConnectProvider(this, 'oidc-provider', {
+    return new OpenIdConnectProvider(this.scope, 'oidc-provider', {
       url: 'https://token.actions.githubusercontent.com',
       clientIds: ['sts.amazonaws.com'],
     });
@@ -207,10 +209,10 @@ export class GithubActions extends Construct {
    * @param repo The repository to grant access to (owner and name). You can also specify a filter to limit access e.g. to a branch.
    */
   ghaOidcRole(repo: { owner: string, repo?: string; filter?: string; }, openIdConnectProvider?: OpenIdConnectProvider): Role {
-    const provider = openIdConnectProvider || OpenIdConnectProvider.fromOpenIdConnectProviderArn(this, `oidc-provider-${Stack.of(this).account}`, `arn:aws:iam::${Stack.of(this).account}}:oidc-provider/token.actions.githubusercontent.com`);
+    const provider = openIdConnectProvider || OpenIdConnectProvider.fromOpenIdConnectProviderArn(this.scope, `oidc-provider-${this.account}`, `arn:aws:iam::${this.account}}:oidc-provider/token.actions.githubusercontent.com`);
 
     // Grant only requests coming from the specific owner/repository/filter to assume this role.
-    const role = new Role(this, `gha-oidc-role-${this.stackName}`, {
+    const role = new Role(this.scope, `gha-oidc-role-${this.stackName}`, {
       assumedBy: new WebIdentityPrincipal(
         provider.openIdConnectProviderArn,
         {
@@ -234,16 +236,16 @@ export class GithubActions extends Construct {
   /**
  * A user for Gihud Actions CI/CD.
  */
-  ghaUser(scope: Construct, username?: string): { user: User, accessKey: CfnAccessKey | undefined; } {
+  ghaUser(username?: string): { user: User, accessKey: CfnAccessKey | undefined; } {
     // A user with the policy attached
-    const user = new User(this, 'ghaUser', { userName: username || `gha-${this.stackName}` });
+    const user = new User(this.scope, 'ghaUser', { userName: username || `gha-${this.stackName}` });
     const policy = this.ghaPolicy();
     user.addManagedPolicy(policy);
 
     // Credentials
     let accessKey: CfnAccessKey | undefined;
     if (!process.env.REKEY) {
-      accessKey = new CfnAccessKey(this, 'ghaUserAccessKey', {
+      accessKey = new CfnAccessKey(this.scope, 'ghaUserAccessKey', {
         userName: user.userName,
       });
 
