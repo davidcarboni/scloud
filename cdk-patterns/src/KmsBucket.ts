@@ -22,12 +22,12 @@ export class KmsBucket extends Construct {
 
   bucket: Bucket;
 
-  constructor(stack: Stack, id: string, props: Partial<BucketProps>) {
+  constructor(scope: Construct, id: string, props: Partial<BucketProps>) {
     // We set a key alias because this seems to be the only
     // identifying information shown in the list in the AWS console:
-    super(stack, `${id}KmsBucket`);
-    this.key = new Key(stack, `${id}Key`, { removalPolicy: RemovalPolicy.DESTROY, alias: `${stack.stackName}/${id}`, description: id });
-    this.bucket = new Bucket(stack, `${id}Bucket`, {
+    super(scope, `${id}KmsBucket`);
+    this.key = new Key(scope, `${id}Key`, { removalPolicy: RemovalPolicy.DESTROY, alias: `${Stack.of(scope).stackName}/${id}`, description: id });
+    this.bucket = new Bucket(scope, `${id}Bucket`, {
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
       encryption: BucketEncryption.KMS,
       bucketKeyEnabled: true,
