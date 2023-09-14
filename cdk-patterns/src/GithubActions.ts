@@ -34,11 +34,24 @@ export class GithubActions extends Construct {
     variables: <string[]>[],
   };
 
-  constructor(
+  private constructor(
     scope: Construct,
   ) {
     super(scope, 'GithubActions');
     this.stackName = Stack.of(scope).stackName;
+  }
+
+  static getInstance(scope: Construct): GithubActions {
+    // Find an existing instance in the stack:
+    const stack = Stack.of(scope);
+    const id = 'GithubActions';
+    const existing = stack.node.tryFindChild(id);
+    if (existing) {
+      return existing as GithubActions;
+    }
+
+    // Or create a new one:
+    return new GithubActions(scope);
   }
 
   addGhaSecret(
