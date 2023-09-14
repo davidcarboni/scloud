@@ -47,6 +47,6 @@ export class ContainerFunction extends Construct {
       description: id,
       ...props,
     });
-    GithubActions.getInstance(scope).addGhaLambda(scope, id, this.lambda);
+    GithubActions.get(scope).addGhaLambda(id, this.lambda);
   }
 }

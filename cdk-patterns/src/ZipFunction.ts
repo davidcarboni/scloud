@@ -32,7 +32,7 @@ export class ZipFunction extends Function {
       environment,
       ...props,
     });
-    GithubActions.getInstance(scope).addGhaLambda(scope, id, this);
+    GithubActions.get(scope).addGhaLambda(id, this);
   }
 
   static node(scope: Construct, id: string, environment?: { [key: string]: string; }, props?: Partial<FunctionProps>): ZipFunction {

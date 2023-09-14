@@ -42,7 +42,7 @@ export class GithubActions extends Construct {
     this.scope = scope;
   }
 
-  static getInstance(scope: Construct): GithubActions {
+  static get(scope: Construct): GithubActions {
     // Find an existing instance in the stack:
     const stack = Stack.of(scope);
     const id = 'GithubActions';
@@ -59,55 +59,52 @@ export class GithubActions extends Construct {
     name: string,
     value: string,
   ) {
+    // Using this.scope for the parent because using this creates an output name of GithubActions/<name>
     const cfnOutput = new CfnOutput(this.scope, name, { value });
     this.ghaInfo.secrets.push(cfnOutput.node.id);
   }
 
   addGhaVariable(
-    construct: Construct,
     name: string,
     type: string,
     value: string,
   ) {
     const variableName = `${_.lowerFirst(name)}${_.capitalize(type)}`;
-    const cfnOutput = new CfnOutput(construct, variableName, { value });
+    // Using this.scope for the parent because using this creates an output name of GithubActions/<name>
+    const cfnOutput = new CfnOutput(this.scope, variableName, { value });
     this.ghaInfo.variables.push(cfnOutput.node.id);
   }
 
   addGhaLambda(
-    construct: Construct,
     name: string,
     lambda: IFunction,
   ) {
     this.ghaInfo.resources.lambdas.push(lambda);
-    this.addGhaVariable(construct, name, 'lambda', lambda.functionName);
+    this.addGhaVariable(name, 'lambda', lambda.functionName);
   }
 
   addGhaBucket(
-    construct: Construct,
     name: string,
     bucket: IBucket,
   ) {
     this.ghaInfo.resources.buckets.push(bucket);
-    this.addGhaVariable(construct, name, 'bucket', bucket.bucketName);
+    this.addGhaVariable(name, 'bucket', bucket.bucketName);
   }
 
   addGhaDistribution(
-    construct: Construct,
     name: string,
     distribution: IDistribution,
   ) {
     this.ghaInfo.resources.distributions.push(distribution);
-    this.addGhaVariable(construct, name, 'distributionId', distribution.distributionId);
+    this.addGhaVariable(name, 'distributionId', distribution.distributionId);
   }
 
   addGhaRepository(
-    construct: Construct,
     name: string,
     repository: IRepository,
   ) {
     this.ghaInfo.resources.repositories.push(repository);
-    this.addGhaVariable(construct, name, 'repository', repository.repositoryName);
+    this.addGhaVariable(name, 'repository', repository.repositoryName);
   }
 
   ghaPolicy() {
