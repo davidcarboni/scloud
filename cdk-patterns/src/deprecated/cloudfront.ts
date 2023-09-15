@@ -23,7 +23,7 @@ import {
 } from 'aws-cdk-lib/aws-apigateway';
 import { Function, FunctionProps } from 'aws-cdk-lib/aws-lambda';
 import { UserPool } from 'aws-cdk-lib/aws-cognito';
-import { ZipFunction } from './ZipFunction';
+import { ZipFunction } from '../ZipFunction';
 import { addGhaBucket, addGhaDistribution } from './ghaUserDeprecated';
 import { privateBucket } from './bucket';
 
