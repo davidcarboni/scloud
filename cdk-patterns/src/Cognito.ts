@@ -17,13 +17,17 @@ import { Construct } from 'constructs';
 /**
  * Authentication setup with Cognito.
  *
- * To use this construct, you'll need to call methods in the following oprder:
+ * This construct offers a couple convenience static methods for typical use cases:
+ *  - Cognito.withSSO()
+ *  - Cognito.withSocialLogins()
+ *
+ * To customise this construct, you'll need to call these methods in the following oprder:
  * - new Cognito()
  * - addGoogleIdp() (optional)
  * - addFacebookIdp() (optional)
  * - addSamlIdp() (optional, can be called more than once)
  * - createUserPoolClient()
- * - addCustomDomain() or addDomainPrefix()
+ * - addCustomDomain() / addDomainPrefix()
  *
  * Once set up, you can call signInUrl() to get a URL for the hosted UI sign-in page.
  *
@@ -71,6 +75,63 @@ export class Cognito extends Construct {
       signInAliases: { username: false, email: true },
       removalPolicy: RemovalPolicy.DESTROY,
     });
+  }
+
+  /**
+   * Creates a Cognito instance configured for SAML sso (e.g. Azure or Google Workspace).
+   *
+   * You'll need to pass either a federationMetadataUrl or a federationMetadataXml.
+   *
+   * You'll need to pass either a zone and domainName, or a domainPrefix.
+   */
+  static withSSO(
+    scope: Construct,
+    id: string,
+    callbackUrl: string,
+    samlProviderName: string,
+    federationMetadataUrl?: string | undefined,
+    federationMetadataXml?: string | undefined,
+    alternativeCallbackUrl?: string,
+    zone?: IHostedZone,
+    domainName?: string,
+    domainPrefix?: string,
+  ): Cognito {
+    const sso = new Cognito(scope, id);
+    sso.addSamlIdp(samlProviderName, federationMetadataUrl, federationMetadataXml);
+    sso.createUserPoolClient(callbackUrl, false, alternativeCallbackUrl);
+    if (zone && domainName) sso.addCustomDomain(zone, domainName);
+    else if (domainPrefix) sso.addDomainPrefix(domainPrefix);
+    return sso;
+  }
+
+  /**
+   * Creates a Cognito instance configured for Social logins (Google and Facebook) and optionally email.
+   *
+   * You'll need to pass either a federationMetadataUrl or a federationMetadataXml.
+   *
+   * You'll need to pass either a zone and domainName, or a domainPrefix.
+   */
+  static withSocialLogins(
+    scope: Construct,
+    id: string,
+    callbackUrl: string,
+    googleClientId: string,
+    googleClientSecret: string,
+    facebookAppId: string,
+    facebookAppSecret: string,
+    enableEmail?: boolean,
+    alternativeCallbackUrl?: string,
+    zone?: IHostedZone,
+    domainName?: string,
+    domainPrefix?: string,
+  ): Cognito {
+    const social = new Cognito(scope, id);
+    social.addGoogleIdp(googleClientId, googleClientSecret);
+    social.addFacebookIdp(facebookAppId, facebookAppSecret);
+    social.createUserPoolClient(callbackUrl, enableEmail, alternativeCallbackUrl);
+    if (zone && domainName) social.addCustomDomain(zone, domainName);
+    else if (domainPrefix) social.addDomainPrefix(domainPrefix);
+    return social;
   }
 
   addGoogleIdp(
