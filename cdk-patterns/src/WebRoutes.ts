@@ -21,7 +21,9 @@ import { githubActions } from './GithubActions';
 import { RedirectWww } from './RedirectWww';
 
 /**
- * Builds a web application, backed by Lambda functions that serve specific routes.
+ * Builds a web application, backed by Lambda functions that serve specific routes (https://github.com/cdk-patterns/serverless/blob/main/the-lambda-trilogy/README.md)
+ *
+ * This construct can also be used for a Web API.
  *
  * NB us-east-1 is required for Cloudfront certificates:
  * https://docs.aws.amazon.com/cdk/api/v1/docs/aws-cloudfront-readme.html
