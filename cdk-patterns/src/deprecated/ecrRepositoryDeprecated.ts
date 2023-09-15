@@ -5,6 +5,8 @@ import { Repository } from 'aws-cdk-lib/aws-ecr';
 import { addGhaRepository } from './ghaUserDeprecated';
 
 /**
+ * @deprecated Use EcrRepository instead
+ *
  * An API gateway backed by a Lambda function.
  * @param construct Parent CDK construct (typically 'this')
  * @param name The name for this repository
