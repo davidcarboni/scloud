@@ -1,0 +1,30 @@
+import * as route53 from 'aws-cdk-lib/aws-route53';
+import { Construct } from 'constructs';
+import * as route53patterns from 'aws-cdk-lib/aws-route53-patterns';
+import { Certificate, DnsValidatedCertificate } from 'aws-cdk-lib/aws-certificatemanager';
+
+/**
+ * Creates a redirect from a www. subdomain to the non-www domain.
+ * E.g. from www.example.com -> example.com
+ *
+ * @param zone The Route53 hosted zone of the domain
+ * @param certificate (optional) A certificate to use for the www subdomain (you may want to use the domain apex certificate with a subject alternative name of www)
+ * @param domain (optional) the domain name to redirect to, e.g. 'subdomain.example.com' would redirect 'www.subdomain.example.com' to 'subdomain.example.com' (defaults to the zone name)
+ */
+export class RedirectWww extends route53patterns.HttpsRedirect {
+  constructor(scope: Construct, id: string, zone: route53.IHostedZone, certificate?: Certificate, domain?: string) {
+    const domainName = domain || `${zone.zoneName}`;
+    super(scope, `${id}WwwRedirect`, {
+      targetDomain: domainName,
+      recordNames: [`www.${domainName}`],
+      zone,
+      certificate: certificate || new DnsValidatedCertificate(scope, `${id}WwwCertificate`, {
+        domainName: `www.${domainName}`,
+        hostedZone: zone,
+        // this is required for Cloudfront certificates:
+        // https://docs.aws.amazon.com/cdk/api/v1/docs/aws-cloudfront-readme.html
+        region: 'us-east-1',
+      }),
+    });
+  }
+}
