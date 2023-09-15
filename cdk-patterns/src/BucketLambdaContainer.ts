@@ -25,7 +25,7 @@ import { ContainerFunction } from './ContainerFunction';
  * If you want to delete the bucket and all contents, pass { autoDeleteObjects: true } in bucketProps.
  */
 export class BucketLambdaContainer extends Construct {
-  containerFunction: ContainerFunction;
+  function: ContainerFunction;
 
   bucket: Bucket;
 
@@ -45,7 +45,7 @@ export class BucketLambdaContainer extends Construct {
     // Triggering bucket
     this.bucket = new PrivateBucket(scope, `${id}Bucket`, bucketProps);
 
-    this.containerFunction = new ContainerFunction(scope, id, environment, { ...lambdaProps }, tagOrDigest, ecr, initialPass);
-    this.containerFunction.lambda.addEventSource(new S3EventSource(this.bucket, { events }));
+    this.function = new ContainerFunction(scope, id, environment, { ...lambdaProps }, tagOrDigest, ecr, initialPass);
+    this.function.addEventSource(new S3EventSource(this.bucket, { events }));
   }
 }

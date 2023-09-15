@@ -78,7 +78,7 @@ export function apiGatewayContainer(
 ): { lambda: Function, api: LambdaRestApi, repository: IRepository; } {
   const domainName = apiDomainName || `api.${zone.zoneName}`;
 
-  const { lambda, repository } = new ContainerFunction(construct, name, environment, undefined, undefined, undefined, initialPass);
+  const lambda = new ContainerFunction(construct, name, environment, undefined, undefined, undefined, initialPass);
 
   const api = new apigateway.LambdaRestApi(construct, `${name}ApiGateway`, {
     handler: lambda,
@@ -101,5 +101,5 @@ export function apiGatewayContainer(
     comment: `A record for API gateway ${name} API gateway`,
   });
 
-  return { lambda, api, repository };
+  return { lambda, api, repository: lambda.repository };
 }

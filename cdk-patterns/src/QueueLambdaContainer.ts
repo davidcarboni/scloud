@@ -17,7 +17,7 @@ import { ContainerFunction } from './ContainerFunction';
 export class QueueLambdaContainer extends Construct {
   queue: Queue;
 
-  containerFunction: ContainerFunction;
+  function: ContainerFunction;
 
   constructor(
     scope: Construct,
@@ -41,7 +41,7 @@ export class QueueLambdaContainer extends Construct {
       ...queueProps,
     });
 
-    this.containerFunction = new ContainerFunction(scope, id, environment, { ...lambdaProps, timeout }, 'latest', ecr, initialPass);
-    this.containerFunction.lambda.addEventSource(new SqsEventSource(this.queue, { reportBatchItemFailures: true }));
+    this.function = new ContainerFunction(scope, id, environment, { ...lambdaProps, timeout }, 'latest', ecr, initialPass);
+    this.function.addEventSource(new SqsEventSource(this.queue, { reportBatchItemFailures: true }));
   }
 }

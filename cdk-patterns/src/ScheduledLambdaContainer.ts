@@ -14,7 +14,7 @@ import { ContainerFunction } from './ContainerFunction';
  * Which sets '11 1 * * ? *' (i.e. 1:11am every day)
  */
 export class ScheduledLambdaContainer extends Construct {
-  containerFunction: ContainerFunction;
+  function: ContainerFunction;
 
   rule: Rule;
 
@@ -30,11 +30,11 @@ export class ScheduledLambdaContainer extends Construct {
   ) {
     super(scope, `${id}ScheduledLambdaContainer`);
 
-    this.containerFunction = new ContainerFunction(scope, id, environment, { ...lambdaProps }, tagOrDigest, ecr, initialPass);
+    this.function = new ContainerFunction(scope, id, environment, { ...lambdaProps }, tagOrDigest, ecr, initialPass);
 
     this.rule = new Rule(scope, `${id}Rule`, {
       schedule,
-      targets: [new LambdaFunction(this.containerFunction.lambda)],
+      targets: [new LambdaFunction(this.function)],
     });
   }
 }
