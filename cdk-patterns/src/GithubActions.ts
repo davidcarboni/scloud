@@ -22,7 +22,7 @@ import _ from 'lodash';
  * - ghaUser If you'd like to use an IAM user with an access key to access AWS resources from GitHub Actions.
  * The access key and secret access key will be output so you can add them GitHub Actions Secrets.
  *
- * Constructs that help integrate GitHub Actions to build and deploy to AWS
+ * A Construct that helps integrate GitHub Actions for deploying to AWS
  */
 class GithubActions extends Construct {
   // Using 'this.scope' for the parent because using 'this' creates longer names.
