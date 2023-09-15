@@ -15,6 +15,13 @@ import _ from 'lodash';
 /**
  * To use this construct, call the githubActions() function to get a singleton instance.
  *
+ * You'l want to call one of these two methods:
+ * - ghaOidcRole: If you'd like to use keyless access to AWS resources from GitHub Actions.
+ * NB you'll need an OIDC provider set up in the accout.
+ * You can create one by calling ghaOidcProvider() or by creating one manually.
+ * - ghaUser If you'd like to use an IAM user with an access key to access AWS resources from GitHub Actions.
+ * The access key and secret access key will be output so you can add them GitHub Actions Secrets.
+ *
  * Constructs that help integrate GitHub Actions to build and deploy to AWS
  */
 class GithubActions extends Construct {
