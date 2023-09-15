@@ -10,6 +10,9 @@ import { githubActions } from './GithubActions';
 
 /**
  * A Lambda function packaged as a container.
+ *
+ * This construct automatically adds itself to the list of resources Github Actions needs to access.
+ *
  * @param construct Parent CDK construct (typically 'this')
  * @param initialPass If the infrastructure is being built from scratch: true;
  * for incremental deployments: false.

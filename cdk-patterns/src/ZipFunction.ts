@@ -8,6 +8,8 @@ import { githubActions } from './GithubActions';
 /**
  * A Lambda function packaged as a zip file.
  *
+ * This construct automatically adds itself to the list of resources Github Actions needs to access.
+ *
  * Pythion and Node runtinmes can be configured by calling ZipFunction.python(...) and ZipFunction.node(...)
  * These are supported by default as these seem to have the lowest cold start times.
  * If you would like a different runtime this can be set using the props parameter.
