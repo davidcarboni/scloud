@@ -107,9 +107,9 @@ class GithubActions extends Construct {
 
   ghaPolicy() {
     if (!this.policy) {
-      const name = `gha-${this.stackName}-policy`;
-      this.policy = new ManagedPolicy(this.scope, name, {
-        managedPolicyName: name,
+      const managedPolicyName = `gha-${this.stackName}-policy`;
+      this.policy = new ManagedPolicy(this.scope, managedPolicyName, {
+        managedPolicyName,
       });
 
       // ECR repositories - push/pull images
