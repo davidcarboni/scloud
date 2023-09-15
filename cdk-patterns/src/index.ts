@@ -1,5 +1,4 @@
 export * from './apigateway';
-export * from './bucket';
 export * from './BucketLambda';
 export * from './BucketLambdaContainer';
 export * from './cloudfront';
@@ -20,6 +19,7 @@ export * from './SecretValue';
 export * from './vpcEndpoint';
 export * from './ZipFunction';
 
+export * from './deprecated/bucket';
 export * from './deprecated/queueLambdaDeprecated';
 export * from './deprecated/secretDeprecated';
 export * from './deprecated/cognitoDeprecated';
