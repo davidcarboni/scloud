@@ -1,9 +1,13 @@
-import { Function, FunctionProps } from 'aws-cdk-lib/aws-lambda';
+import {
+  DockerImageFunctionProps, Function, FunctionProps, Runtime,
+} from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
 import { S3EventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
 import { Bucket, BucketProps, EventType } from 'aws-cdk-lib/aws-s3';
+import { Repository } from 'aws-cdk-lib/aws-ecr';
 import { PrivateBucket } from './PrivateBucket';
 import { ZipFunction } from './ZipFunction';
+import { ContainerFunction } from './ContainerFunction';
 
 /**
  * A Lambda function triggered by s3 bucket events.
@@ -31,16 +35,53 @@ export class BucketLambda extends Construct {
   constructor(
     scope: Construct,
     id: string,
-    environment?: { [key: string]: string; },
-    lambdaProps?: Partial<FunctionProps>,
+    lambda: Function,
     bucketProps?: Partial<BucketProps>,
     events: EventType[] = [EventType.OBJECT_CREATED],
   ) {
     super(scope, `${id}BucketLambda`);
     // Triggering bucket
     this.bucket = new PrivateBucket(scope, `${id}Bucket`, bucketProps);
-
-    this.lambda = new ZipFunction(scope, id, environment, { ...lambdaProps });
+    this.lambda = lambda;
     this.lambda.addEventSource(new S3EventSource(this.bucket, { events }));
+  }
+
+  static typescript(
+    scope: Construct,
+    id: string,
+    environment?: { [key: string]: string; },
+    functionProps?: Partial<FunctionProps>,
+    bucketProps?: Partial<BucketProps>,
+    events: EventType[] = [EventType.OBJECT_CREATED],
+  ): BucketLambda {
+    const lambda = new ZipFunction(scope, id, environment, { runtime: Runtime.NODEJS_18_X, ...functionProps });
+    return new BucketLambda(scope, id, lambda, bucketProps, events);
+  }
+
+  static python(
+    scope: Construct,
+    id: string,
+    environment?: { [key: string]: string; },
+    functionProps?: Partial<FunctionProps>,
+    bucketProps?: Partial<BucketProps>,
+    events: EventType[] = [EventType.OBJECT_CREATED],
+  ): BucketLambda {
+    const lambda = new ZipFunction(scope, id, environment, { runtime: Runtime.PYTHON_3_10, ...functionProps });
+    return new BucketLambda(scope, id, lambda, bucketProps, events);
+  }
+
+  static container(
+    scope: Construct,
+    id: string,
+    environment?: { [key: string]: string; },
+    lambdaProps?: Partial<DockerImageFunctionProps>,
+    bucketProps?: Partial<BucketProps>,
+    tagOrDigest?: string,
+    ecr?: Repository,
+    events: EventType[] = [EventType.OBJECT_CREATED],
+    initialPass: boolean = false,
+  ): BucketLambda {
+    const lambda = new ContainerFunction(scope, id, environment, lambdaProps, tagOrDigest, ecr, initialPass);
+    return new BucketLambda(scope, id, lambda, bucketProps, events);
   }
 }

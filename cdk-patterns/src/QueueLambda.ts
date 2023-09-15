@@ -1,9 +1,13 @@
-import { Duration, RemovalPolicy } from 'aws-cdk-lib';
-import { FunctionProps } from 'aws-cdk-lib/aws-lambda';
+import { RemovalPolicy } from 'aws-cdk-lib';
+import {
+  DockerImageFunctionProps, Function, FunctionProps, Runtime,
+} from 'aws-cdk-lib/aws-lambda';
 import { Queue, QueueEncryption, QueueProps } from 'aws-cdk-lib/aws-sqs';
 import { Construct } from 'constructs';
 import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
+import { Repository } from 'aws-cdk-lib/aws-ecr';
 import { ZipFunction } from './ZipFunction';
+import { ContainerFunction } from './ContainerFunction';
 
 /**
  * A Lambda function triggered by SQS queue events.
@@ -16,26 +20,61 @@ import { ZipFunction } from './ZipFunction';
 export class QueueLambda extends Construct {
   queue: Queue;
 
-  lambda: ZipFunction;
+  lambda: Function;
 
-  constructor(scope: Construct, id: string, environment?: { [key: string]: string; }, lambdaProps?: Partial<FunctionProps>, queueProps?: Partial<QueueProps>) {
+  constructor(
+    scope: Construct,
+    id: string,
+    lambda: Function,
+    queueProps?: Partial<QueueProps>,
+  ) {
     super(scope, `${id}QueueLambda`);
-
-    // NB Message timeout needs to match between the queue and the lambda:
-    const timeout: Duration = lambdaProps?.timeout || Duration.seconds(60);
 
     // Incoming message queue
     this.queue = new Queue(scope, `${id}Queue`, {
-      visibilityTimeout: timeout,
+      visibilityTimeout: lambda.timeout, // NB Message timeout needs to match between the queue and the lambda
       encryption: QueueEncryption.KMS_MANAGED,
       removalPolicy: RemovalPolicy.DESTROY,
       ...queueProps,
     });
 
-    this.lambda = new ZipFunction(scope, id, environment, {
-      ...lambdaProps,
-      timeout,
-    });
+    this.lambda = lambda;
     this.lambda.addEventSource(new SqsEventSource(this.queue, { reportBatchItemFailures: true }));
+  }
+
+  static typescript(
+    scope: Construct,
+    id: string,
+    environment?: { [key: string]: string; },
+    functionProps?: Partial<FunctionProps>,
+    queueProps?: Partial<QueueProps>,
+  ): QueueLambda {
+    const lambda = new ZipFunction(scope, id, environment, { runtime: Runtime.NODEJS_18_X, ...functionProps });
+    return new QueueLambda(scope, id, lambda, queueProps);
+  }
+
+  static python(
+    scope: Construct,
+    id: string,
+    environment?: { [key: string]: string; },
+    functionProps?: Partial<FunctionProps>,
+    queueProps?: Partial<QueueProps>,
+  ): QueueLambda {
+    const lambda = new ZipFunction(scope, id, environment, { runtime: Runtime.PYTHON_3_10, ...functionProps });
+    return new QueueLambda(scope, id, lambda, queueProps);
+  }
+
+  static container(
+    scope: Construct,
+    id: string,
+    environment?: { [key: string]: string; },
+    lambdaProps?: Partial<DockerImageFunctionProps>,
+    queueProps?: Partial<QueueProps>,
+    tagOrDigest?: string,
+    ecr?: Repository,
+    initialPass: boolean = false,
+  ): QueueLambda {
+    const lambda = new ContainerFunction(scope, id, environment, lambdaProps, tagOrDigest, ecr, initialPass);
+    return new QueueLambda(scope, id, lambda, queueProps);
   }
 }
