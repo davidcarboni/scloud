@@ -205,7 +205,7 @@ class GithubActions extends Construct {
    * @param repo The repository to grant access to (owner and name). You can also specify a filter to limit access e.g. to a branch.
    */
   ghaOidcRole(repo: { owner: string, repo?: string; filter?: string; }, openIdConnectProvider?: OpenIdConnectProvider): Role {
-    const provider = openIdConnectProvider || OpenIdConnectProvider.fromOpenIdConnectProviderArn(this.scope, `oidc-provider-${this.account}`, `arn:aws:iam::${this.account}}:oidc-provider/token.actions.githubusercontent.com`);
+    const provider = openIdConnectProvider || OpenIdConnectProvider.fromOpenIdConnectProviderArn(this.scope, `oidc-provider-${this.account}`, `arn:aws:iam::${this.account}:oidc-provider/token.actions.githubusercontent.com`);
 
     // Grant only requests coming from the specific owner/repository/filter to assume this role.
     const role = new Role(this.scope, `gha-oidc-role-${this.stackName}`, {
