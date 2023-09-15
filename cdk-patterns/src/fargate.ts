@@ -7,7 +7,7 @@ import { Repository } from 'aws-cdk-lib/aws-ecr';
 import { IHostedZone } from 'aws-cdk-lib/aws-route53';
 import { CfnService, ContainerImage, LogDrivers } from 'aws-cdk-lib/aws-ecs';
 import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
-import { ecrRepository } from './ecrRepository';
+import { EcrRepository } from './EcrRepository';
 
 interface Deployment {
   repository: Repository,
@@ -40,7 +40,7 @@ export function fargate(
   const result: Deployment = <Deployment>{};
 
   // Container repository
-  result.repository = repository || ecrRepository(stack, name);
+  result.repository = repository || new EcrRepository(stack, name);
   // It seems like NAT gateways are costly, so I've set this up to avoid that - only creating one.
   // At some point we may want to figure out a privte endpoint so that we can retire the NAT.
   // Based on: https://www.binarythinktank.com/blog/truly-serverless-container

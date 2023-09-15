@@ -5,7 +5,7 @@ import {
   DockerImageCode, DockerImageFunction, DockerImageFunctionProps,
 } from 'aws-cdk-lib/aws-lambda';
 import { Repository } from 'aws-cdk-lib/aws-ecr';
-import { ecrRepository } from './ecrRepository';
+import { EcrRepository } from './EcrRepository';
 import { githubActions } from './GithubActions';
 
 /**
@@ -33,7 +33,7 @@ export class ContainerFunction extends Construct {
   ) {
     super(scope, `${id}ContainerFunction`);
     // Repository for function container image
-    this.repository = ecr || ecrRepository(scope, `${id}Repository`);
+    this.repository = ecr || new EcrRepository(scope, `${id}Repository`);
 
     // Container
     const code = initialPass ? DockerImageCode.fromImageAsset(path.join(__dirname, './container')) : DockerImageCode.fromEcr(this.repository, {

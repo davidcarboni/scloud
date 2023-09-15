@@ -6,7 +6,7 @@ import {
 } from 'aws-cdk-lib/aws-lambda';
 import { IRepository } from 'aws-cdk-lib/aws-ecr';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
-import { ecrRepository } from './ecrRepository';
+import { ecrRepository } from './ecrRepositoryDeprecated';
 import { addGhaLambda } from './ghaUserDeprecated';
 
 /**
