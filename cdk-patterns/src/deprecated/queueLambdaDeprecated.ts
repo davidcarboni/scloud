@@ -4,8 +4,8 @@ import { DockerImageFunctionProps, Function, FunctionProps } from 'aws-cdk-lib/a
 import { Queue, QueueEncryption } from 'aws-cdk-lib/aws-sqs';
 import { Construct } from 'constructs';
 import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
-import { ContainerFunction } from './ContainerFunction';
-import { ZipFunction } from './ZipFunction';
+import { ContainerFunction } from '../ContainerFunction';
+import { ZipFunction } from '../ZipFunction';
 
 /**
  * @deprecated Use QueueLambda instead
@@ -69,10 +69,10 @@ export function queueLambdaContainer(
     removalPolicy: RemovalPolicy.DESTROY,
   });
 
-  const { repository, lambda } = new ContainerFunction(construct, name, environment, { ...lambdaProps, timeout }, 'latest', ecr, initialPass);
+  const lambda = new ContainerFunction(construct, name, environment, { ...lambdaProps, timeout }, 'latest', ecr, initialPass);
   lambda.addEventSource(new SqsEventSource(queue, { reportBatchItemFailures: true }));
 
   return {
-    repository, queue, lambda,
+    repository: lambda.repository, queue, lambda,
   };
 }

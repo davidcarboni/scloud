@@ -8,7 +8,7 @@ import { IFunction } from 'aws-cdk-lib/aws-lambda';
 import { IBucket } from 'aws-cdk-lib/aws-s3';
 import { IDistribution } from 'aws-cdk-lib/aws-cloudfront';
 import { Construct } from 'constructs';
-import { githubActions } from './GithubActions';
+import { githubActions } from '../GithubActions';
 
 // const ghaInfo = {
 //   resources: {

@@ -2,7 +2,7 @@ import * as path from 'path';
 import * as logs from 'aws-cdk-lib/aws-logs';
 import { Construct } from 'constructs';
 import {
-  DockerImageCode, DockerImageFunction, DockerImageFunctionProps, Function,
+  DockerImageCode, DockerImageFunction, DockerImageFunctionProps,
 } from 'aws-cdk-lib/aws-lambda';
 import { Repository } from 'aws-cdk-lib/aws-ecr';
 import { EcrRepository } from './EcrRepository';
