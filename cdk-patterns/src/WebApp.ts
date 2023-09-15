@@ -1,5 +1,3 @@
-import * as route53 from 'aws-cdk-lib/aws-route53';
-import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import {
   Stack,
 } from 'aws-cdk-lib';
@@ -9,6 +7,7 @@ import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { RestApiOrigin, S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
 import {
   AllowedMethods, CachePolicy, Distribution,
+  OriginAccessIdentity,
   OriginRequestCookieBehavior,
   OriginRequestHeaderBehavior,
   OriginRequestPolicy,
@@ -20,6 +19,7 @@ import {
 } from 'aws-cdk-lib/aws-apigateway';
 import { Function, FunctionProps, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
+import { ARecord, IHostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { RedirectWww } from './RedirectWww';
 import { githubActions } from './GithubActions';
 import { PrivateBucket } from './PrivateBucket';
@@ -53,7 +53,7 @@ export class WebApp extends Construct {
     scope: Construct,
     id: string,
     lambda: Function,
-    zone: route53.IHostedZone,
+    zone: IHostedZone,
     domain?: string,
     headers?: string[],
     defaultIndex: boolean = false,
@@ -69,7 +69,7 @@ export class WebApp extends Construct {
     githubActions(scope).addGhaBucket(id, bucket);
 
     // Permissions to access the bucket from Cloudfront
-    const originAccessIdentity = new cloudfront.OriginAccessIdentity(scope, `${id}OAI`, {
+    const originAccessIdentity = new OriginAccessIdentity(scope, `${id}OAI`, {
       comment: 'Access to static bucket',
     });
     bucket.grantRead(originAccessIdentity);
@@ -129,9 +129,9 @@ export class WebApp extends Construct {
     githubActions(scope).addGhaDistribution(id, this.distribution);
 
     // DNS record for the Cloudfront distribution
-    new route53.ARecord(scope, `${id}ARecord`, {
+    new ARecord(scope, `${id}ARecord`, {
       recordName: domainName,
-      target: route53.RecordTarget.fromAlias(new CloudFrontTarget(this.distribution)),
+      target: RecordTarget.fromAlias(new CloudFrontTarget(this.distribution)),
       zone,
     });
 
@@ -141,7 +141,7 @@ export class WebApp extends Construct {
   static typescript(
     scope: Construct,
     id: string,
-    zone: route53.IHostedZone,
+    zone: IHostedZone,
     domain?: string,
     environment?: { [key: string]: string; },
     lambdaProps?: Partial<FunctionProps>,
@@ -157,7 +157,7 @@ export class WebApp extends Construct {
   static python(
     scope: Construct,
     id: string,
-    zone: route53.IHostedZone,
+    zone: IHostedZone,
     domain?: string,
     environment?: { [key: string]: string; },
     lambdaProps?: Partial<FunctionProps>,
