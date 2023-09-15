@@ -13,9 +13,11 @@ import { Construct } from 'constructs';
 import _ from 'lodash';
 
 /**
+ * To use this construct, call the githubActions() function to get a singleton instance.
+ *
  * Constructs that help integrate GitHub Actions to build and deploy to AWS
  */
-export class GithubActions extends Construct {
+class GithubActions extends Construct {
   // Using 'this.scope' for the parent because using 'this' creates longer names.
   scope: Construct;
 
@@ -37,26 +39,13 @@ export class GithubActions extends Construct {
     variables: <string[]>[],
   };
 
-  private constructor(
+  constructor(
     scope: Construct,
   ) {
     super(scope, 'GithubActions');
     this.stackName = Stack.of(scope).stackName;
     this.account = Stack.of(scope).account;
     this.scope = scope;
-  }
-
-  static get(scope: Construct): GithubActions {
-    // Find an existing instance in the stack:
-    const stack = Stack.of(scope);
-    const id = 'GithubActions';
-    const existing = stack.node.tryFindChild(id);
-    if (existing) {
-      return existing as GithubActions;
-    }
-
-    // Or create a new one:
-    return new GithubActions(scope);
   }
 
   addGhaSecret(
@@ -274,4 +263,11 @@ export class GithubActions extends Construct {
     this.ghaInfo.secrets = [];
     this.ghaInfo.variables = [];
   }
+}
+
+export function githubActions(scope: Construct): GithubActions {
+  // Find the existing instance in the stack, if present:
+  const stack = Stack.of(scope);
+  const existing = stack.node.tryFindChild('GithubActions');
+  return existing as GithubActions || new GithubActions(scope);
 }

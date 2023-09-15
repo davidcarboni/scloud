@@ -3,7 +3,7 @@ import { Construct } from 'constructs';
 import {
   Code, Function, FunctionProps, Runtime,
 } from 'aws-cdk-lib/aws-lambda';
-import { GithubActions } from './GithubActions';
+import { githubActions } from './GithubActions';
 
 /**
  * A Lambda function packaged as a zip file.
@@ -32,7 +32,7 @@ export class ZipFunction extends Function {
       environment,
       ...props,
     });
-    GithubActions.get(scope).addGhaLambda(id, this);
+    githubActions(scope).addGhaLambda(id, this);
   }
 
   static node(scope: Construct, id: string, environment?: { [key: string]: string; }, props?: Partial<FunctionProps>): ZipFunction {

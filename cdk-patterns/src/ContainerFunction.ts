@@ -6,7 +6,7 @@ import {
 } from 'aws-cdk-lib/aws-lambda';
 import { Repository } from 'aws-cdk-lib/aws-ecr';
 import { ecrRepository } from './ecrRepository';
-import { GithubActions } from './GithubActions';
+import { githubActions } from './GithubActions';
 
 /**
  * A Lambda function packaged as a container.
@@ -47,6 +47,6 @@ export class ContainerFunction extends Construct {
       description: id,
       ...props,
     });
-    GithubActions.get(scope).addGhaLambda(id, this.lambda);
+    githubActions(scope).addGhaLambda(id, this.lambda);
   }
 }
