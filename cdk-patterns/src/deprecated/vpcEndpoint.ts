@@ -3,6 +3,9 @@ import {
 } from 'aws-cdk-lib/aws-ec2';
 import { Construct } from 'constructs';
 
+/**
+ * @deprecated Use VpcEndpoint instead
+ */
 export function privateEndpoint(
   construct: Construct,
   name: string,
