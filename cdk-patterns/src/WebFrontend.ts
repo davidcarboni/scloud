@@ -19,7 +19,7 @@ import { RedirectWww } from './RedirectWww';
  *
  * @param zone The DNS zone for this web app. By default the domain name is set to the zone name
  * The type IHostedZone enables lookup of the zone (IHostedZone) as well as a zone creatd in the stack (HostedZone)
- * @param domain Optional: by default the zone name will be mapped to the Cloudfront distribution (e.g. 'example.com') but you can specify a subdomain here (e.g. 'subdomain.example.com').
+ * @param domain Optional: by default the zone name will be mapped to the Cloudfront distribution (e.g. 'example.com') but you can specify a different domain here (e.g. 'subdomain.example.com').
  * @param defaultIndex Default: true. Maps a viewer request for '/' to a request for /index.html.
  * @param wwwRedirect Default: true. Redirects www requests to the bare domain name, e.g. www.example.com->example.com, www.sub.example.com->sub.example.com.
  * @param autoDeleteObjects Default: true. If true, the static bucket will be configured to delete all objects when the stack is deleted, on the basis these files are most lifkely produced by a CI build. Pass false to leave the bucket intact.
