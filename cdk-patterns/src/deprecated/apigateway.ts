@@ -7,8 +7,8 @@ import { LambdaRestApi } from 'aws-cdk-lib/aws-apigateway';
 import { DnsValidatedCertificate } from 'aws-cdk-lib/aws-certificatemanager';
 import { RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { ApiGateway } from 'aws-cdk-lib/aws-route53-targets';
-import { ZipFunction } from './ZipFunction';
-import { ContainerFunction } from './ContainerFunction';
+import { ZipFunction } from '../ZipFunction';
+import { ContainerFunction } from '../ContainerFunction';
 
 /**
  * An API gateway backed by a Lambda function.
