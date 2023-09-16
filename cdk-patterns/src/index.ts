@@ -1,9 +1,9 @@
-export * from './apigateway';
+export * from './ApiLambda';
 export * from './BucketLambda';
 export * from './Cognito';
 export * from './ContainerFunction';
 export * from './EcrRepository';
-export * from './fargate';
+export * from './FargateContainer';
 export * from './GithubActions';
 export * from './KmsBucket';
 export * from './LogGroupRetention';
@@ -20,8 +20,10 @@ export * from './WebFrontend';
 export * from './WebRoutes';
 export * from './ZipFunction';
 
+export * from './deprecated/apigateway';
 export * from './deprecated/bucket';
 export * from './deprecated/cloudfront';
+export * from './deprecated/fargate';
 export * from './deprecated/queueLambdaDeprecated';
 export * from './deprecated/secretDeprecated';
 export * from './deprecated/cognitoDeprecated';
