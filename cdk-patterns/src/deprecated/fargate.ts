@@ -7,7 +7,7 @@ import { Repository } from 'aws-cdk-lib/aws-ecr';
 import { IHostedZone } from 'aws-cdk-lib/aws-route53';
 import { CfnService, ContainerImage, LogDrivers } from 'aws-cdk-lib/aws-ecs';
 import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
-import { EcrRepository } from './EcrRepository';
+import { EcrRepository } from '../EcrRepository';
 
 interface Deployment {
   repository: Repository,
@@ -16,6 +16,8 @@ interface Deployment {
  }
 
 /**
+ * @deprecated Use FargateContainer instead
+ *
  * Builds an ApplicationLoadBalancedFargateService
  * @param stack Parent CDK stack
  * @param name Base name for resources / resource IDs
