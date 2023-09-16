@@ -1,4 +1,4 @@
-import { RemovalPolicy } from 'aws-cdk-lib';
+import { Duration, RemovalPolicy } from 'aws-cdk-lib';
 import {
   DockerImageFunctionProps, Function, FunctionProps, Runtime,
 } from 'aws-cdk-lib/aws-lambda';
@@ -49,7 +49,7 @@ export class QueueLambda extends Construct {
     functionProps?: Partial<FunctionProps>,
     queueProps?: Partial<QueueProps>,
   ): QueueLambda {
-    const lambda = new ZipFunction(scope, id, environment, { runtime: Runtime.NODEJS_18_X, ...functionProps });
+    const lambda = new ZipFunction(scope, id, environment, { runtime: Runtime.NODEJS_18_X, timeout: Duration.seconds(60), ...functionProps });
     return new QueueLambda(scope, id, lambda, queueProps);
   }
 
@@ -60,7 +60,7 @@ export class QueueLambda extends Construct {
     functionProps?: Partial<FunctionProps>,
     queueProps?: Partial<QueueProps>,
   ): QueueLambda {
-    const lambda = new ZipFunction(scope, id, environment, { runtime: Runtime.PYTHON_3_10, ...functionProps });
+    const lambda = new ZipFunction(scope, id, environment, { runtime: Runtime.PYTHON_3_10, timeout: Duration.seconds(60), ...functionProps });
     return new QueueLambda(scope, id, lambda, queueProps);
   }
 
@@ -74,7 +74,7 @@ export class QueueLambda extends Construct {
     ecr?: Repository,
     initialPass: boolean = false,
   ): QueueLambda {
-    const lambda = new ContainerFunction(scope, id, environment, lambdaProps, tagOrDigest, ecr, initialPass);
+    const lambda = new ContainerFunction(scope, id, environment, { timeout: Duration.seconds(60), ...lambdaProps }, tagOrDigest, ecr, initialPass);
     return new QueueLambda(scope, id, lambda, queueProps);
   }
 }
