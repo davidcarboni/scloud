@@ -8,10 +8,7 @@ import { RestApiOrigin, S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
 import {
   AllowedMethods, CachePolicy, Distribution,
   OriginAccessIdentity,
-  OriginRequestCookieBehavior,
-  OriginRequestHeaderBehavior,
   OriginRequestPolicy,
-  OriginRequestQueryStringBehavior,
   ViewerProtocolPolicy,
 } from 'aws-cdk-lib/aws-cloudfront';
 import {
@@ -55,7 +52,6 @@ export class WebApp extends Construct {
     lambda: Function,
     zone: IHostedZone,
     domain?: string,
-    headers?: string[],
     defaultIndex: boolean = false,
     redirectWww: boolean = true,
     autoDeleteObjects: boolean = true,
@@ -99,20 +95,8 @@ export class WebApp extends Construct {
         origin: new RestApiOrigin(this.api),
         allowedMethods: AllowedMethods.ALLOW_ALL,
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        compress: true,
         cachePolicy: CachePolicy.CACHING_DISABLED, // Assume dynamic content
-        // https://stackoverflow.com/questions/71367982/cloudfront-gives-403-when-origin-request-policy-include-all-headers-querystri
-        // OriginRequestHeaderBehavior.all() gives an error so just cookie, user-agent, referer
-        originRequestPolicy: new OriginRequestPolicy(scope, `${id}OriginRequestPolicy`, {
-          headerBehavior: OriginRequestHeaderBehavior.allowList(...['user-agent', 'User-Agent', 'Referer', 'referer'].concat(headers || [])),
-          cookieBehavior: OriginRequestCookieBehavior.all(),
-          queryStringBehavior: OriginRequestQueryStringBehavior.all(),
-        }),
-        // originRequestPolicy: OriginRequestPolicy.USER_AGENT_REFERER_HEADERS,
-        // edgeLambdas: [{
-        //   functionVersion: headerFilter.currentVersion,
-        //   eventType: cloudfront.LambdaEdgeEventType.ORIGIN_REQUEST,
-        // }],
+        originRequestPolicy: OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
       },
       // All requests for something with a file extension go to s3 (actually, any path that contains a period).
       // The aim is to route *.css, *.js, *.jpeg, etc)
@@ -145,13 +129,12 @@ export class WebApp extends Construct {
     domain?: string,
     environment?: { [key: string]: string; },
     lambdaProps?: Partial<FunctionProps>,
-    headers?: string[],
     defaultIndex: boolean = false,
     redirectWww: boolean = true,
     autoDeleteObjects: boolean = true,
   ): WebApp {
     const lambda = new ZipFunction(scope, id, environment, { runtime: Runtime.NODEJS_18_X, ...lambdaProps });
-    return new WebApp(scope, id, lambda, zone, domain, headers, defaultIndex, redirectWww, autoDeleteObjects);
+    return new WebApp(scope, id, lambda, zone, domain, defaultIndex, redirectWww, autoDeleteObjects);
   }
 
   static python(
@@ -161,12 +144,11 @@ export class WebApp extends Construct {
     domain?: string,
     environment?: { [key: string]: string; },
     lambdaProps?: Partial<FunctionProps>,
-    headers?: string[],
     defaultIndex: boolean = false,
     redirectWww: boolean = true,
     autoDeleteObjects: boolean = true,
   ): WebApp {
     const lambda = new ZipFunction(scope, id, environment, { runtime: Runtime.PYTHON_3_10, ...lambdaProps });
-    return new WebApp(scope, id, lambda, zone, domain, headers, defaultIndex, redirectWww, autoDeleteObjects);
+    return new WebApp(scope, id, lambda, zone, domain, defaultIndex, redirectWww, autoDeleteObjects);
   }
 }

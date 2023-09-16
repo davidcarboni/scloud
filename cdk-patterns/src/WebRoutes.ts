@@ -176,10 +176,7 @@ export class WebRoutes extends Construct {
       {
         allowedMethods: AllowedMethods.ALLOW_ALL,
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        compress: true,
         cachePolicy: CachePolicy.CACHING_DISABLED, // Assume dynamic content
-        // https://stackoverflow.com/questions/71367982/cloudfront-gives-403-when-origin-request-policy-include-all-headers-querystri
-        // OriginRequestHeaderBehavior.all() gives an error so just cookie, user-agent, referer
         originRequestPolicy: OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
       },
     );
@@ -214,12 +211,11 @@ export class WebRoutes extends Construct {
     domain?: string,
     environment?: { [key: string]: string; },
     lambdaProps?: Partial<FunctionProps>,
-    headers?: string[],
     defaultIndex: boolean = false,
     redirectWww: boolean = true,
     autoDeleteObjects: boolean = true,
   ): WebRoutes {
-    const webRoutes = new WebRoutes(scope, id, zone, domain, { headers }, defaultIndex, redirectWww, autoDeleteObjects);
+    const webRoutes = new WebRoutes(scope, id, zone, domain, defaultIndex, redirectWww, autoDeleteObjects);
     routes.forEach((pathPattern) => {
       const lambda = new ZipFunction(scope, id, environment, { runtime: Runtime.NODEJS_18_X, ...lambdaProps });
       webRoutes.addRoute(pathPattern, lambda);
@@ -235,12 +231,11 @@ export class WebRoutes extends Construct {
     domain?: string,
     environment?: { [key: string]: string; },
     lambdaProps?: Partial<FunctionProps>,
-    headers?: string[],
     defaultIndex: boolean = false,
     redirectWww: boolean = true,
     autoDeleteObjects: boolean = true,
   ): WebRoutes {
-    const webRoutes = new WebRoutes(scope, id, zone, domain, { headers }, defaultIndex, redirectWww, autoDeleteObjects);
+    const webRoutes = new WebRoutes(scope, id, zone, domain, defaultIndex, redirectWww, autoDeleteObjects);
     routes.forEach((pathPattern) => {
       const lambda = new ZipFunction(scope, id, environment, { runtime: Runtime.NODEJS_18_X, ...lambdaProps });
       webRoutes.addRoute(pathPattern, lambda);
