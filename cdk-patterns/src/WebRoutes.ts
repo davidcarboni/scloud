@@ -13,12 +13,13 @@ import {
 import {
   AuthorizationType, CognitoUserPoolsAuthorizer, LambdaRestApi, LambdaRestApiProps,
 } from 'aws-cdk-lib/aws-apigateway';
-import { Function } from 'aws-cdk-lib/aws-lambda';
+import { Function, FunctionProps, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { UserPool } from 'aws-cdk-lib/aws-cognito';
 import { ARecord, IHostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { PrivateBucket } from './PrivateBucket';
 import { githubActions } from './GithubActions';
 import { RedirectWww } from './RedirectWww';
+import { ZipFunction } from './ZipFunction';
 
 /**
  * Builds a web application, backed by Lambda functions that serve specific routes (https://github.com/cdk-patterns/serverless/blob/main/the-lambda-trilogy/README.md)
@@ -30,7 +31,7 @@ import { RedirectWww } from './RedirectWww';
  *
  * @param zone The DNS zone for this web app. By default the domain name is set to the zone name
  * The type IHostedZone enables lookup of the zone (IHostedZone) as well as a zone creatd in the stack (HostedZone)
- * @param domain Optional: by default the zone name will be mapped to the Cloudfront distribution (e.g. 'example.com') but you can specify a subdomain here (e.g. 'subdomain.example.com').
+ * @param domain Optional: by default the zone name will be used as the DNS name for the Cloudfront distribution (e.g. 'example.com') but you can specify a different domain here (e.g. 'subdomain.example.com').
  * @param defaultIndex Default: true. Maps a viewer request for '/' to a request for /index.html.
  * @param wwwRedirect Default: true. Redirects www requests to the bare domain name, e.g. www.example.com->example.com, www.sub.example.com->sub.example.com.
  * @param autoDeleteObjects Default: true. If true, the static bucket will be configured to delete all objects when the stack is deleted, on the basis these files are most lifkely produced by a CI build. Pass false to leave the bucket intact.
@@ -203,5 +204,47 @@ export class WebRoutes extends Construct {
     // };
 
     throw new Error('Not yet implemented');
+  }
+
+  static typescript(
+    scope: Construct,
+    id: string,
+    routes: string[],
+    zone: IHostedZone,
+    domain?: string,
+    environment?: { [key: string]: string; },
+    lambdaProps?: Partial<FunctionProps>,
+    headers?: string[],
+    defaultIndex: boolean = false,
+    redirectWww: boolean = true,
+    autoDeleteObjects: boolean = true,
+  ): WebRoutes {
+    const webRoutes = new WebRoutes(scope, id, zone, domain, { headers }, defaultIndex, redirectWww, autoDeleteObjects);
+    routes.forEach((pathPattern) => {
+      const lambda = new ZipFunction(scope, id, environment, { runtime: Runtime.NODEJS_18_X, ...lambdaProps });
+      webRoutes.addRoute(pathPattern, lambda);
+    });
+    return webRoutes;
+  }
+
+  static python(
+    scope: Construct,
+    id: string,
+    routes: string[],
+    zone: IHostedZone,
+    domain?: string,
+    environment?: { [key: string]: string; },
+    lambdaProps?: Partial<FunctionProps>,
+    headers?: string[],
+    defaultIndex: boolean = false,
+    redirectWww: boolean = true,
+    autoDeleteObjects: boolean = true,
+  ): WebRoutes {
+    const webRoutes = new WebRoutes(scope, id, zone, domain, { headers }, defaultIndex, redirectWww, autoDeleteObjects);
+    routes.forEach((pathPattern) => {
+      const lambda = new ZipFunction(scope, id, environment, { runtime: Runtime.NODEJS_18_X, ...lambdaProps });
+      webRoutes.addRoute(pathPattern, lambda);
+    });
+    return webRoutes;
   }
 }
