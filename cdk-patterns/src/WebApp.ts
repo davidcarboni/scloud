@@ -54,14 +54,13 @@ export class WebApp extends Construct {
     domain?: string,
     defaultIndex: boolean = false,
     redirectWww: boolean = true,
-    autoDeleteObjects: boolean = true,
   ) {
     super(scope, `${id}WebApp`);
 
     const domainName = domain || `${zone.zoneName}`;
 
     // Static content
-    const bucket = new PrivateBucket(scope, `${id}Static`, { autoDeleteObjects });
+    const bucket = PrivateBucket.expendable(scope, `${id}Static`);
     githubActions(scope).addGhaBucket(id, bucket);
 
     // Permissions to access the bucket from Cloudfront

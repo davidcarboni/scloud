@@ -38,15 +38,14 @@ export class WebFrontend extends Construct {
     domain?: string,
     defaultIndex: boolean = true,
     redirectWww: boolean = true,
-    autoDeleteObjects: boolean = true,
   ) {
     super(scope, `${id}WebFrontend`);
 
     const domainName = domain || zone.zoneName;
 
-    // We consider the objects in the bucket ot be expendable because
+    // We consider the objects in the bucket to be expendable because
     // they're most likely static content we generate from source code (rather than user data).
-    this.bucket = new PrivateBucket(scope, `${id}Static`, { autoDeleteObjects });
+    this.bucket = PrivateBucket.expendable(scope, `${id}Static`);
     githubActions(scope).addGhaBucket(id, this.bucket);
 
     // Permissions to access the bucket from Cloudfront

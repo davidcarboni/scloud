@@ -197,7 +197,7 @@ export function webAppRoutes(
 ): { lambdas: {[path:string]:Function}, bucket: Bucket, distribution: Distribution; } {
   const domainName = domain || `${zone.zoneName}`;
 
-  // We consider the objects in the static bucket ot be expendable because
+  // We consider the objects in the static bucket to be expendable because
   // they're static content we generate (rather than user data).
   const bucket = privateBucket(stack, `${name}Static`, { autoDeleteObjects });
   addGhaBucket(stack, name, bucket);
@@ -356,7 +356,7 @@ export function cloudFront(
     behavior = defaultBehavior;
   } else {
     // Default: Cloudfont -> bucket on domain name
-    // We consider the objects in the static bucket ot be expendable because
+    // We consider the objects in the static bucket to be expendable because
     // they're static content we generate (rather than user data).
     bucket = privateBucket(stack, `${name}Static`, { autoDeleteObjects });
     addGhaBucket(stack, name, bucket);

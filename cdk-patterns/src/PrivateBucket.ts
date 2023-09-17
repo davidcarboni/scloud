@@ -32,4 +32,30 @@ export class PrivateBucket extends Bucket {
       ...props,
     });
   }
+
+  /**
+   * Creates a private bucket that will be destroyed, along with all content, when removed from the stack.
+   *
+   * This is useful for content that can be regenerated from source code, e.g. static website files.
+   */
+  static expendable(scope: Construct, id: string, props?: Partial<BucketProps>) {
+    return new PrivateBucket(scope, id, {
+      autoDeleteObjects: true,
+      removalPolicy: RemovalPolicy.DESTROY,
+      ...props,
+    });
+  }
+
+  /**
+   * Creates a private bucket that will be retained, along with all content, when removed from the stack.
+   *
+   * This is useful for content that cannot be regenerated, e.g. user data.
+   */
+  static retained(scope: Construct, id: string, props?: Partial<BucketProps>) {
+    return new PrivateBucket(scope, id, {
+      autoDeleteObjects: false,
+      removalPolicy: RemovalPolicy.RETAIN,
+      ...props,
+    });
+  }
 }
