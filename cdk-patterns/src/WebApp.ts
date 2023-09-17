@@ -130,10 +130,9 @@ export class WebApp extends Construct {
     lambdaProps?: Partial<FunctionProps>,
     defaultIndex: boolean = false,
     redirectWww: boolean = true,
-    autoDeleteObjects: boolean = true,
   ): WebApp {
     const lambda = new ZipFunction(scope, id, environment, { runtime: Runtime.NODEJS_18_X, ...lambdaProps });
-    return new WebApp(scope, id, lambda, zone, domain, defaultIndex, redirectWww, autoDeleteObjects);
+    return new WebApp(scope, id, lambda, zone, domain, defaultIndex, redirectWww);
   }
 
   static python(
@@ -145,9 +144,8 @@ export class WebApp extends Construct {
     lambdaProps?: Partial<FunctionProps>,
     defaultIndex: boolean = false,
     redirectWww: boolean = true,
-    autoDeleteObjects: boolean = true,
   ): WebApp {
     const lambda = new ZipFunction(scope, id, environment, { runtime: Runtime.PYTHON_3_10, ...lambdaProps });
-    return new WebApp(scope, id, lambda, zone, domain, defaultIndex, redirectWww, autoDeleteObjects);
+    return new WebApp(scope, id, lambda, zone, domain, defaultIndex, redirectWww);
   }
 }

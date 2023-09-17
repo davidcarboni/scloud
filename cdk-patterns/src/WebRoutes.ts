@@ -212,9 +212,8 @@ export class WebRoutes extends Construct {
     lambdaProps?: Partial<FunctionProps>,
     defaultIndex: boolean = false,
     redirectWww: boolean = true,
-    autoDeleteObjects: boolean = true,
   ): WebRoutes {
-    const webRoutes = new WebRoutes(scope, id, zone, domain, defaultIndex, redirectWww, autoDeleteObjects);
+    const webRoutes = new WebRoutes(scope, id, zone, domain, defaultIndex, redirectWww);
     routes.forEach((pathPattern) => {
       const lambda = new ZipFunction(scope, id, environment, { runtime: Runtime.NODEJS_18_X, ...lambdaProps });
       webRoutes.addRoute(pathPattern, lambda);
@@ -232,9 +231,8 @@ export class WebRoutes extends Construct {
     lambdaProps?: Partial<FunctionProps>,
     defaultIndex: boolean = false,
     redirectWww: boolean = true,
-    autoDeleteObjects: boolean = true,
   ): WebRoutes {
-    const webRoutes = new WebRoutes(scope, id, zone, domain, defaultIndex, redirectWww, autoDeleteObjects);
+    const webRoutes = new WebRoutes(scope, id, zone, domain, defaultIndex, redirectWww);
     routes.forEach((pathPattern) => {
       const lambda = new ZipFunction(scope, id, environment, { runtime: Runtime.NODEJS_18_X, ...lambdaProps });
       webRoutes.addRoute(pathPattern, lambda);
