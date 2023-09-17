@@ -8,13 +8,20 @@ import {
 import { Construct } from 'constructs';
 
 /**
- * A private bucket bucket.
+ * A private bucket.
+ *
+ * This bucket will not beaccessible from the internet.
+ *
+ * NB removalPolicy is set to DESTROY by default, but autoDeleteObjects is set to false.
+ * This means that, only if the bucket is empty, it'll be destroyed when removed from the stack.
+ * The rationale is that content you don't want to lose will block bucket deletion and, if
+ * content is expendable, you can set autoDeleteObjects to true.
+ *
  * @param construct The parent CDK construct.
  * @param name The bucket name - used as the ID for CDK.
  * The actual bucket name will be randomised by default.
  * @param props Any additional properties for the bucket.
  * These can override the defaults provided by this function.
- * @returns A new Bucket
  */
 export class PrivateBucket extends Bucket {
   constructor(scope: Construct, id: string, props?: Partial<BucketProps>) {
