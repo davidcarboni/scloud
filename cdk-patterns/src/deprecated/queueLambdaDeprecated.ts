@@ -8,7 +8,7 @@ import { ContainerFunction } from '../ContainerFunction';
 import { ZipFunction } from '../ZipFunction';
 
 /**
- * @deprecated Use QueueLambda instead
+ * @deprecated Use QueueFunction instead: QueueFunction.node() QueueFunction.python() QueueFunction.container()
  *
  * A Lambda function triggered by SQS queue events.
  *
@@ -42,7 +42,7 @@ export function queueLambda(
 }
 
 /**
- * @deprecated Use QueueLambdaContainer instead
+ * @deprecated Use QueueFunction.container() instead
  *
  * A container Lambda function triggered by SQS queue events.
  *

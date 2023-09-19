@@ -49,7 +49,7 @@ export function containerFunction(
 }
 
 /**
- * @deprecated Use ZipFunction instead
+ * @deprecated Use ZipFunction.typescript() or ZipFunction.python() instead
  *
  * A Lambda function packaged as a zip file.
  * Key defaults are:
@@ -82,6 +82,11 @@ export function zipFunction(
 }
 
 /**
+ * NB: This pattern is not well developed or maintained at the time of writing.
+ *
+ * A key reason for this is that I haven't worked out how to deal well with lambda function versions in CI/CD
+ * which seemed to be needed when deploying an update to an edge function.
+ *
  * A Lambda@edge function.
  * @param construct Parent CDK construct (typically 'this')
  * @param name The name for this function
