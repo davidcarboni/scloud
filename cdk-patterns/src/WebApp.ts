@@ -121,7 +121,7 @@ export class WebApp extends Construct {
     if (redirectWww) new RedirectWww(scope, id, zone, this.certificate);
   }
 
-  static typescript(
+  static node(
     scope: Construct,
     id: string,
     zone: IHostedZone,

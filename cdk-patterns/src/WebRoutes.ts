@@ -202,7 +202,7 @@ export class WebRoutes extends Construct {
     throw new Error('Not yet implemented');
   }
 
-  static typescript(
+  static node(
     scope: Construct,
     id: string,
     routes: string[],

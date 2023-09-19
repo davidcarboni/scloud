@@ -59,7 +59,7 @@ export class ApiLambda extends Construct {
     });
   }
 
-  static typescript(
+  static node(
     scope: Construct,
     id: string,
     zone: IHostedZone,

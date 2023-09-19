@@ -46,7 +46,7 @@ export class BucketLambda extends Construct {
     this.lambda.addEventSource(new S3EventSource(this.bucket, { events }));
   }
 
-  static typescript(
+  static node(
     scope: Construct,
     id: string,
     environment?: { [key: string]: string; },

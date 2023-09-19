@@ -42,7 +42,7 @@ export class QueueLambda extends Construct {
     this.lambda.addEventSource(new SqsEventSource(this.queue, { reportBatchItemFailures: true }));
   }
 
-  static typescript(
+  static node(
     scope: Construct,
     id: string,
     environment?: { [key: string]: string; },

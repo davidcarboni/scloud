@@ -41,7 +41,7 @@ export class ScheduledLambda extends Construct {
     });
   }
 
-  static typescript(
+  static node(
     scope: Construct,
     id: string,
     environment?: { [key: string]: string; },
