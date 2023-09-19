@@ -1,5 +1,5 @@
 export * from './ApiLambda';
-export * from './BucketLambda';
+export * from './BucketFunction';
 export * from './Cognito';
 export * from './ContainerFunction';
 export * from './EcrRepository';

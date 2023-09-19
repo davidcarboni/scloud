@@ -27,7 +27,7 @@ import { ContainerFunction } from './ContainerFunction';
  *
  * If you want to delete the bucket and all contents, pass { autoDeleteObjects: true } in bucketProps.
  */
-export class BucketLambda extends Construct {
+export class BucketFunction extends Construct {
   bucket: Bucket;
 
   lambda: Function;
@@ -39,7 +39,7 @@ export class BucketLambda extends Construct {
     bucketProps?: Partial<BucketProps>,
     events: EventType[] = [EventType.OBJECT_CREATED],
   ) {
-    super(scope, `${id}BucketLambda`);
+    super(scope, `${id}BucketFunction`);
     // Triggering bucket
     this.bucket = new PrivateBucket(scope, `${id}Bucket`, bucketProps);
     this.lambda = lambda;
@@ -53,9 +53,9 @@ export class BucketLambda extends Construct {
     functionProps?: Partial<FunctionProps>,
     bucketProps?: Partial<BucketProps>,
     events: EventType[] = [EventType.OBJECT_CREATED],
-  ): BucketLambda {
+  ): BucketFunction {
     const lambda = new ZipFunction(scope, id, environment, { runtime: Runtime.NODEJS_18_X, ...functionProps });
-    return new BucketLambda(scope, id, lambda, bucketProps, events);
+    return new BucketFunction(scope, id, lambda, bucketProps, events);
   }
 
   static python(
@@ -65,9 +65,9 @@ export class BucketLambda extends Construct {
     functionProps?: Partial<FunctionProps>,
     bucketProps?: Partial<BucketProps>,
     events: EventType[] = [EventType.OBJECT_CREATED],
-  ): BucketLambda {
+  ): BucketFunction {
     const lambda = new ZipFunction(scope, id, environment, { runtime: Runtime.PYTHON_3_10, ...functionProps });
-    return new BucketLambda(scope, id, lambda, bucketProps, events);
+    return new BucketFunction(scope, id, lambda, bucketProps, events);
   }
 
   static container(
@@ -80,8 +80,8 @@ export class BucketLambda extends Construct {
     ecr?: Repository,
     events: EventType[] = [EventType.OBJECT_CREATED],
     initialPass: boolean = false,
-  ): BucketLambda {
+  ): BucketFunction {
     const lambda = new ContainerFunction(scope, id, environment, lambdaProps, tagOrDigest, ecr, initialPass);
-    return new BucketLambda(scope, id, lambda, bucketProps, events);
+    return new BucketFunction(scope, id, lambda, bucketProps, events);
   }
 }
