@@ -1,4 +1,4 @@
-export * from './ApiLambda';
+export * from './ApiFunction';
 export * from './BucketFunction';
 export * from './Cognito';
 export * from './ContainerFunction';

@@ -18,7 +18,7 @@ import { ContainerFunction } from './ContainerFunction';
  * The type IHostedZone enables lookup of the zone (IHostedZone) as well as a zone creatd in the stack (HostedZone)
  * @param domain Optional: by default the domain name will be 'api.zoneName' (e.g. 'api.example.com') but you can specify a different domain here (e.g. 'subdomain.example.com').
  */
-export class ApiLambda extends Construct {
+export class ApiFunction extends Construct {
   api: LambdaRestApi;
 
   lambda: Function;
@@ -30,7 +30,7 @@ export class ApiLambda extends Construct {
     zone: IHostedZone,
     domain?: string,
   ) {
-    super(scope, `${id}ApiLambda`);
+    super(scope, `${id}ApiFunction`);
 
     // Domain name, default to api.zoneName:
     const domainName = domain || `api.${zone.zoneName}`;
@@ -66,9 +66,9 @@ export class ApiLambda extends Construct {
     domain?: string,
     environment?: { [key: string]: string; },
     functionProps?: Partial<FunctionProps>,
-  ): ApiLambda {
+  ): ApiFunction {
     const lambda = new ZipFunction(scope, id, environment, { runtime: Runtime.NODEJS_18_X, ...functionProps });
-    return new ApiLambda(scope, id, lambda, zone, domain);
+    return new ApiFunction(scope, id, lambda, zone, domain);
   }
 
   static python(
@@ -78,9 +78,9 @@ export class ApiLambda extends Construct {
     domain?: string,
     environment?: { [key: string]: string; },
     functionProps?: Partial<FunctionProps>,
-  ): ApiLambda {
+  ): ApiFunction {
     const lambda = new ZipFunction(scope, id, environment, { runtime: Runtime.PYTHON_3_10, ...functionProps });
-    return new ApiLambda(scope, id, lambda, zone, domain);
+    return new ApiFunction(scope, id, lambda, zone, domain);
   }
 
   static container(
@@ -93,8 +93,8 @@ export class ApiLambda extends Construct {
     tagOrDigest?: string,
     ecr?: Repository,
     initialPass: boolean = false,
-  ): ApiLambda {
+  ): ApiFunction {
     const lambda = new ContainerFunction(scope, id, environment, lambdaProps, tagOrDigest, ecr, initialPass);
-    return new ApiLambda(scope, id, lambda, zone, domain);
+    return new ApiFunction(scope, id, lambda, zone, domain);
   }
 }
