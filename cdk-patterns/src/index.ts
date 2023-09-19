@@ -8,7 +8,7 @@ export * from './GithubActions';
 export * from './KmsBucket';
 export * from './LogGroupRetention';
 export * from './PrivateBucket';
-export * from './QueueLambda';
+export * from './QueueFunction';
 export * from './RedirectDomain';
 export * from './RedirectWww';
 export * from './ScheduledFunction';

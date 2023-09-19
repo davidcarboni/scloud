@@ -17,7 +17,7 @@ import { ContainerFunction } from './ContainerFunction';
  *  - encryption: QueueEncryption.KMS_MANAGED
  *  - removalPolicy: RemovalPolicy.DESTROY
  */
-export class QueueLambda extends Construct {
+export class QueueFunction extends Construct {
   queue: Queue;
 
   lambda: Function;
@@ -28,7 +28,7 @@ export class QueueLambda extends Construct {
     lambda: Function,
     queueProps?: Partial<QueueProps>,
   ) {
-    super(scope, `${id}QueueLambda`);
+    super(scope, `${id}QueueFunction`);
 
     // Incoming message queue
     this.queue = new Queue(scope, `${id}Queue`, {
@@ -48,9 +48,9 @@ export class QueueLambda extends Construct {
     environment?: { [key: string]: string; },
     functionProps?: Partial<FunctionProps>,
     queueProps?: Partial<QueueProps>,
-  ): QueueLambda {
+  ): QueueFunction {
     const lambda = new ZipFunction(scope, id, environment, { runtime: Runtime.NODEJS_18_X, timeout: Duration.seconds(60), ...functionProps });
-    return new QueueLambda(scope, id, lambda, queueProps);
+    return new QueueFunction(scope, id, lambda, queueProps);
   }
 
   static python(
@@ -59,9 +59,9 @@ export class QueueLambda extends Construct {
     environment?: { [key: string]: string; },
     functionProps?: Partial<FunctionProps>,
     queueProps?: Partial<QueueProps>,
-  ): QueueLambda {
+  ): QueueFunction {
     const lambda = new ZipFunction(scope, id, environment, { runtime: Runtime.PYTHON_3_10, timeout: Duration.seconds(60), ...functionProps });
-    return new QueueLambda(scope, id, lambda, queueProps);
+    return new QueueFunction(scope, id, lambda, queueProps);
   }
 
   static container(
@@ -73,8 +73,8 @@ export class QueueLambda extends Construct {
     tagOrDigest?: string,
     ecr?: Repository,
     initialPass: boolean = false,
-  ): QueueLambda {
+  ): QueueFunction {
     const lambda = new ContainerFunction(scope, id, environment, { timeout: Duration.seconds(60), ...lambdaProps }, tagOrDigest, ecr, initialPass);
-    return new QueueLambda(scope, id, lambda, queueProps);
+    return new QueueFunction(scope, id, lambda, queueProps);
   }
 }
