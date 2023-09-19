@@ -11,7 +11,7 @@ export * from './PrivateBucket';
 export * from './QueueLambda';
 export * from './RedirectDomain';
 export * from './RedirectWww';
-export * from './ScheduledLambda';
+export * from './ScheduledFunction';
 export * from './SecretJson';
 export * from './SecretValue';
 export * from './VpcEndpoint';

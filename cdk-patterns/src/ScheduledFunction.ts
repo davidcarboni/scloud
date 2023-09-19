@@ -18,7 +18,7 @@ import { ContainerFunction } from './ContainerFunction';
  *
  * You can also pass an optional description for the rule for readability in the Cloudwatch view in the AWS console.
  */
-export class ScheduledLambda extends Construct {
+export class ScheduledFunction extends Construct {
   lambda: Function;
 
   rule: Rule;
@@ -30,7 +30,7 @@ export class ScheduledLambda extends Construct {
     schedule: Schedule = Schedule.cron({ minute: '11', hour: '1' }),
     description: string | undefined = undefined,
   ) {
-    super(scope, `${id}ScheduledLambda`);
+    super(scope, `${id}ScheduledFunction`);
 
     this.lambda = lambda;
 
@@ -48,9 +48,9 @@ export class ScheduledLambda extends Construct {
     functionProps?: Partial<FunctionProps>,
     schedule: Schedule = Schedule.cron({ minute: '11', hour: '1' }),
     description: string | undefined = undefined,
-  ): ScheduledLambda {
+  ): ScheduledFunction {
     const lambda = new ZipFunction(scope, id, environment, { runtime: Runtime.NODEJS_18_X, ...functionProps });
-    return new ScheduledLambda(scope, id, lambda, schedule, description);
+    return new ScheduledFunction(scope, id, lambda, schedule, description);
   }
 
   static python(
@@ -60,9 +60,9 @@ export class ScheduledLambda extends Construct {
     functionProps?: Partial<FunctionProps>,
     schedule: Schedule = Schedule.cron({ minute: '11', hour: '1' }),
     description: string | undefined = undefined,
-  ): ScheduledLambda {
+  ): ScheduledFunction {
     const lambda = new ZipFunction(scope, id, environment, { runtime: Runtime.PYTHON_3_10, ...functionProps });
-    return new ScheduledLambda(scope, id, lambda, schedule, description);
+    return new ScheduledFunction(scope, id, lambda, schedule, description);
   }
 
   static container(
@@ -75,8 +75,8 @@ export class ScheduledLambda extends Construct {
     initialPass: boolean = false,
     schedule: Schedule = Schedule.cron({ minute: '11', hour: '1' }),
     description: string | undefined = undefined,
-  ): ScheduledLambda {
+  ): ScheduledFunction {
     const lambda = new ContainerFunction(scope, id, environment, lambdaProps, tagOrDigest, ecr, initialPass);
-    return new ScheduledLambda(scope, id, lambda, schedule, description);
+    return new ScheduledFunction(scope, id, lambda, schedule, description);
   }
 }
