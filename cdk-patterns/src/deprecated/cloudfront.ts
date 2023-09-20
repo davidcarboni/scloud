@@ -29,7 +29,9 @@ import { privateBucket } from './bucket';
 
 // Disabled for now as routing "*.*" to s3 may handle most of what we need to junk:
 // export const junkPaths: string[] = ['/wp-includes/*', '/wp-admin*', '*.xml', '*.php', '*.aspx', '*.env', '/.git*', '/.remote*', '/.production*', '/.local*'];
-
+/**
+ * @deprecated Use RedirectWww instead
+ */
 export function redirectWww(
   construct: Construct,
   name: string,
@@ -54,6 +56,8 @@ export function redirectWww(
 }
 
 /**
+ * @deprecated Use WebApp instead
+ *
  * Builds a dynamic web application, backed by a Lambda function.
  * @param stack The CDK stack. The name of the stack will be included in the API Gateway description to aid readability/identification in the AWS console.
  * @param name The name for the web app. This will infulence naming for Cloudfront, API Gateway, Lambda and the static bucket.
@@ -171,6 +175,8 @@ export function webApp(
 }
 
 /**
+ * @deprecated Use WebRoutes instead
+ *
  * Builds a dynamic web application, backed by Lambda functions that serve specific routes.
  * By default a single Lambda is generated that responds to the / route.
  * Alternatively you can pass a mapping of routes to functions
@@ -322,6 +328,8 @@ export function webAppRoutes(
 }
 
 /**
+ * @deprecated Use WebFrontend instead
+ *
  * A Cloudfront distribution backed by an s3 bucket.
  * NB us-east-1 is required for Cloudfront certificates:
  * https://docs.aws.amazon.com/cdk/api/v1/docs/aws-cloudfront-readme.html
