@@ -157,7 +157,7 @@ export class WebRoutes extends Construct {
       }
 
       // Create the API gateway
-      const api = new LambdaRestApi(this, `${handler.node.id}Api`, lambdaRestApiProps);
+      const api = new LambdaRestApi(this, `${handler.node.id}Handler`, lambdaRestApiProps);
       this.apis[handler.node.id] = api;
 
       // Create an origin for the Cloudfront distribution
