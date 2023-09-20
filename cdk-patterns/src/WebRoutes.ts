@@ -142,6 +142,7 @@ export class WebRoutes extends Construct {
     // Create a new origin if we don't have one already
     if (!origin) {
       let lambdaRestApiProps: LambdaRestApiProps = {
+        restApiName: `${Stack.of(this).stackName}-${handler.node.id}`,
         handler,
         proxy: true,
         description: `${Stack.of(this).stackName} ${this.id}-${pathPattern}`,
@@ -159,7 +160,7 @@ export class WebRoutes extends Construct {
       }
 
       // Create the API gateway
-      const api = new LambdaRestApi(this, `${this.id}${pathPattern}`, lambdaRestApiProps);
+      const api = new LambdaRestApi(this, `${this.id}${handler.node.id}`, lambdaRestApiProps);
       this.apis[handler.node.id] = api;
 
       // Create an origin for the Cloudfront distribution
