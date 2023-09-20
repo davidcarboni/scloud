@@ -202,6 +202,30 @@ export class WebRoutes extends Construct {
     throw new Error('Not yet implemented');
   }
 
+  /**
+   * Builds a WebRoutes construct with multiple routes where you want to pass in pre-built Lambda functions.
+   *
+   * This is useful if your routes use different runtimes, environment variables an/or function properties.
+   */
+  static routes(
+    scope: Construct,
+    id: string,
+    routes: { [path: string]: Function; },
+    zone: IHostedZone,
+    domain?: string,
+    defaultIndex: boolean = false,
+    redirectWww: boolean = true,
+  ): WebRoutes {
+    const webRoutes = new WebRoutes(scope, id, zone, domain, defaultIndex, redirectWww);
+    Object.keys(routes).forEach((pathPattern) => {
+      webRoutes.addRoute(pathPattern, routes[pathPattern]);
+    });
+    return webRoutes;
+  }
+
+  /**
+   * Builds a WebRoutes construct with a uniform set of Node Lambdas that will be instantiated for you.
+   */
   static node(
     scope: Construct,
     id: string,
@@ -221,6 +245,9 @@ export class WebRoutes extends Construct {
     return webRoutes;
   }
 
+  /**
+   * Builds a WebRoutes construct with a uniform set of Python Lambdas that will be instantiated for you.
+   */
   static python(
     scope: Construct,
     id: string,
