@@ -65,7 +65,7 @@ export class WebRoutes extends Construct {
     defaultIndex: boolean = true,
     redirectWww: boolean = true,
   ) {
-    super(scope, `${id}WebRoutes`);
+    super(scope, id);
     this.id = id;
 
     const domainName = domain || zone.zoneName;
