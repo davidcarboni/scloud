@@ -37,8 +37,6 @@ import { ZipFunction } from './ZipFunction';
  * @param autoDeleteObjects Default: true. If true, the static bucket will be configured to delete all objects when the stack is deleted, on the basis these files are most lifkely produced by a CI build. Pass false to leave the bucket intact.
  */
 export class WebRoutes extends Construct {
-  private id: string;
-
   lambda: Function;
 
   bucket: Bucket;
@@ -66,7 +64,6 @@ export class WebRoutes extends Construct {
     redirectWww: boolean = true,
   ) {
     super(scope, id);
-    this.id = id;
 
     const domainName = domain || zone.zoneName;
 
@@ -145,7 +142,7 @@ export class WebRoutes extends Construct {
         restApiName: `${Stack.of(this).stackName}-${handler.node.id}`,
         handler,
         proxy: true,
-        description: `${Stack.of(this).stackName} ${this.id}-${pathPattern}`,
+        description: `${Stack.of(this).stackName} ${handler.node.id}-${pathPattern}`,
       };
 
       // Add a Cognito authorizer, if configured
@@ -160,7 +157,7 @@ export class WebRoutes extends Construct {
       }
 
       // Create the API gateway
-      const api = new LambdaRestApi(this, `${this.id}${handler.node.id}`, lambdaRestApiProps);
+      const api = new LambdaRestApi(this, `${handler.node.id}Api`, lambdaRestApiProps);
       this.apis[handler.node.id] = api;
 
       // Create an origin for the Cloudfront distribution
