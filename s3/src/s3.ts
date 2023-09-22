@@ -1,6 +1,8 @@
 import {
   DeleteObjectCommand, GetObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client,
 } from '@aws-sdk/client-s3';
+import { StreamingBlobPayloadOutputTypes } from '@smithy/types';
+import * as fs from 'fs';
 
 // https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/javascript_s3_code_examples.html
 
@@ -40,7 +42,7 @@ export async function putJson(bucket: string, key: string, object: any): Promise
  * @param key
  * @returns Undefined for failure or, in Node SdkStream<IncomingMessage | Readable> or, in a browser SdkStream<ReadableStream | Blob> (see AWS types for more innformation)
  */
-export async function getObject(bucket: string, key: string): Promise<any | undefined> {
+export async function getObject(bucket: string, key: string): Promise<StreamingBlobPayloadOutputTypes | undefined> {
   try {
     const command = new GetObjectCommand({
       Bucket: bucket,
@@ -117,4 +119,25 @@ export async function listObjects(bucket: string, prefix?: string): Promise<stri
 export async function objectExists(bucket: string, key: string): Promise<boolean> {
   const found = await listObjects(bucket, key);
   return found.length === 1;
+}
+
+/**
+ * Downloads a file from s3 to a local temp file (or a path you provide)
+ * @param key Key in s3 of object to download
+ * @param bucket Bucket to download from
+ * @param path Optional: local file path to save to. Defaults to `/tmp/${key}` which is valid fot Lambda (up to 500MB at the time of writing)
+ * @returns The path to the downloaded file (either the provided path or the default of `/tmp/${key}`)
+ */
+export async function downloadTemp(key: string, bucket: string, path?: string): Promise<string> {
+  try {
+    // Download
+    const body = await getObject(bucket, key);
+
+    // Write to a temp file
+    const temppath = path || `/tmp/${key}`;
+    fs.writeFileSync(temppath, await body?.transformToByteArray() || '');
+    return temppath;
+  } catch (err) {
+    throw new Error(`Error downloading ${key} from ${bucket}:\n${(err as Error).stack}`);
+  }
 }
