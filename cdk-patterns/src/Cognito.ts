@@ -77,63 +77,6 @@ export class Cognito extends Construct {
     });
   }
 
-  /**
-   * Creates a Cognito instance configured for SAML sso (e.g. Azure or Google Workspace).
-   *
-   * You'll need to pass either a federationMetadataUrl or a federationMetadataXml.
-   *
-   * You'll need to pass either a zone and domainName, or a domainPrefix.
-   */
-  static withSSO(
-    scope: Construct,
-    id: string,
-    callbackUrl: string,
-    samlProviderName: string,
-    federationMetadataUrl?: string | undefined,
-    federationMetadataXml?: string | undefined,
-    alternativeCallbackUrl?: string,
-    zone?: IHostedZone,
-    domainName?: string,
-    domainPrefix?: string,
-  ): Cognito {
-    const sso = new Cognito(scope, id);
-    sso.addSamlIdp(samlProviderName, federationMetadataUrl, federationMetadataXml);
-    sso.createUserPoolClient(callbackUrl, false, alternativeCallbackUrl);
-    if (zone && domainName) sso.addCustomDomain(zone, domainName);
-    else if (domainPrefix) sso.addDomainPrefix(domainPrefix);
-    return sso;
-  }
-
-  /**
-   * Creates a Cognito instance configured for Social logins (Google and Facebook) and optionally email.
-   *
-   * You'll need to pass either a federationMetadataUrl or a federationMetadataXml.
-   *
-   * You'll need to pass either a zone and domainName, or a domainPrefix.
-   */
-  static withSocialLogins(
-    scope: Construct,
-    id: string,
-    callbackUrl: string,
-    googleClientId: string,
-    googleClientSecret: string,
-    facebookAppId: string,
-    facebookAppSecret: string,
-    enableEmail?: boolean,
-    alternativeCallbackUrl?: string,
-    zone?: IHostedZone,
-    domainName?: string,
-    domainPrefix?: string,
-  ): Cognito {
-    const social = new Cognito(scope, id);
-    social.addGoogleIdp(googleClientId, googleClientSecret);
-    social.addFacebookIdp(facebookAppId, facebookAppSecret);
-    social.createUserPoolClient(callbackUrl, enableEmail, alternativeCallbackUrl);
-    if (zone && domainName) social.addCustomDomain(zone, domainName);
-    else if (domainPrefix) social.addDomainPrefix(domainPrefix);
-    return social;
-  }
-
   addGoogleIdp(
     googleClientId: string,
     googleClientSecret: string,
@@ -360,5 +303,148 @@ export class Cognito extends Construct {
     if (!this.domain) throw new Error(`You must call addCustomDomain() or addDomainPrefix() before calling signInUrl() for ${this.id}`);
     if (!this.userPoolClient) throw new Error(`You must call createUserPoolClient() before calling signInUrl() for ${this.id}`);
     return this.domain?.signInUrl(this.userPoolClient, { redirectUri: callbackUrl || this.callbackUrl });
+  }
+
+  /**
+   * @deprecated Use withSSOMetadataUrl() or withSSOMetadataXml() instead.
+   *
+   * Creates a Cognito instance configured for SAML sso (e.g. Azure or Google Workspace).
+   *
+   * You'll need to pass either a federationMetadataUrl or a federationMetadataXml.
+   *
+   * You'll need to pass either a zone and domainName, or a domainPrefix.
+   */
+  static withSSO(
+    scope: Construct,
+    id: string,
+    callbackUrl: string,
+    samlProviderName: string,
+    federationMetadataUrl?: string | undefined,
+    federationMetadataXml?: string | undefined,
+    alternativeCallbackUrl?: string,
+    zone?: IHostedZone,
+    domainName?: string,
+    domainPrefix?: string,
+  ): Cognito {
+    const sso = new Cognito(scope, id);
+    sso.addSamlIdp(samlProviderName, federationMetadataUrl, federationMetadataXml);
+    sso.createUserPoolClient(callbackUrl, false, alternativeCallbackUrl);
+    if (zone && domainName) sso.addCustomDomain(zone, domainName);
+    else if (domainPrefix) sso.addDomainPrefix(domainPrefix);
+    return sso;
+  }
+
+  /**
+   * Creates a Cognito instance configured for Social logins (Google and Facebook) and optionally email.
+   *
+   * You'll need to pass either a zone and domainName, or a domainPrefix.
+   */
+  static withSocialLogins(
+    scope: Construct,
+    id: string,
+    callbackUrl: string,
+    googleClientId: string,
+    googleClientSecret: string,
+    facebookAppId: string,
+    facebookAppSecret: string,
+    enableEmailLogin?: boolean,
+    alternativeCallbackUrl?: string,
+    zone?: IHostedZone,
+    domainName?: string,
+    domainPrefix?: string,
+  ): Cognito {
+    const social = new Cognito(scope, id);
+    social.addGoogleIdp(googleClientId, googleClientSecret);
+    social.addFacebookIdp(facebookAppId, facebookAppSecret);
+    social.createUserPoolClient(callbackUrl, enableEmailLogin, alternativeCallbackUrl);
+    if (zone && domainName) social.addCustomDomain(zone, domainName);
+    else if (domainPrefix) social.addDomainPrefix(domainPrefix);
+    return social;
+  }
+
+  /**
+   * Creates a Cognito instance configured for SAML sso where you have a metadata URL (e.g. Azure).
+   *
+   * You'll need to pass a federationMetadataUrl (e.g. provided by Azure).
+   *
+   * If configuring an 'Enerprise Application' in Azure, the "Identifier (Entity ID)" will be:
+   *
+   *  urn:amazon:cognito:sp:<user pool id> (e.g. <region>_XyZaBcD1E)
+   *
+   * The "Reply URL (Assertion Consumer Service URL)" will be:
+   *
+   * https://<Your user pool domain>/saml2/idpresponse
+   *
+   * With an Amazon Cognito domain prefix:
+   *  https://<yourDomainPrefix>.auth.<region>.amazoncognito.com/saml2/idpresponse
+   * With a custom domain:
+   *  https://<Your custom domain>/saml2/idpresponse
+   *
+   * see: https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools-saml-idp.html
+   *
+   * You'll need to pass either a zone and domainName, or a domainPrefix.
+   */
+  static withSSOMetadataUrl(
+    scope: Construct,
+    id: string,
+    callbackUrl: string,
+    samlProviderName: string,
+    federationMetadataUrl?: string | undefined,
+    alternativeCallbackUrl?: string,
+    zone?: IHostedZone,
+    domainName?: string,
+    domainPrefix?: string,
+  ): Cognito {
+    const sso = new Cognito(scope, id);
+    sso.addSamlIdp(samlProviderName, federationMetadataUrl, undefined);
+    sso.createUserPoolClient(callbackUrl, false, alternativeCallbackUrl);
+    if (zone && domainName) sso.addCustomDomain(zone, domainName);
+    else if (domainPrefix) sso.addDomainPrefix(domainPrefix);
+    return sso;
+  }
+
+  /**
+   * Creates a Cognito instance configured for SAML sso where you have a metadata XML file (e.g. Google Workspace).
+   *
+   * You'll need to pass federationMetadataXml data as a string (e.g. downloaded from your Google Workspace).
+   *
+   * If configuring an 'App' in Google Workspace (under "Apps/Web and mobile apps" in the admin console) the "ACS URL" will be:
+   *
+   * https://<Your user pool domain>/saml2/idpresponse
+   *
+   * With an Amazon Cognito domain prefix:
+   *  https://<yourDomainPrefix>.auth.<region>.amazoncognito.com/saml2/idpresponse
+   * With a custom domain:
+   *  https://<Your custom domain>/saml2/idpresponse
+   *
+   * The "Enitiy ID" will be:
+   *
+   *  urn:amazon:cognito:sp:<user pool id> (e.g. <region>_XyZaBcD1E)
+   *
+   * see: https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools-saml-idp.html
+   *
+   * In Google Workspace you'll need to set "Use access" to e.g. "ON for everyone" (oe select an organisational unit).
+   * NB it's usually best to test Google Worspace sso in incognito mode as if you're already signed in you may get a 403 error.
+   * This is possibly because your local cached credentials haven't yet updated with access to the App.
+   *
+   * You'll need to pass either a zone and domainName, or a domainPrefix.
+   */
+  static withSSOMetadataXml(
+    scope: Construct,
+    id: string,
+    callbackUrl: string,
+    samlProviderName: string,
+    federationMetadataXml?: string | undefined,
+    alternativeCallbackUrl?: string,
+    zone?: IHostedZone,
+    domainName?: string,
+    domainPrefix?: string,
+  ): Cognito {
+    const sso = new Cognito(scope, id);
+    sso.addSamlIdp(samlProviderName, undefined, federationMetadataXml);
+    sso.createUserPoolClient(callbackUrl, false, alternativeCallbackUrl);
+    if (zone && domainName) sso.addCustomDomain(zone, domainName);
+    else if (domainPrefix) sso.addDomainPrefix(domainPrefix);
+    return sso;
   }
 }
