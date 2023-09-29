@@ -123,6 +123,11 @@ export class WebApp extends Construct {
     if (props.redirectWww !== false) new RedirectWww(scope, id, props.zone, this.certificate);
   }
 
+  /**
+   * Creates a WebApp backed by a Node.js Lambda function.
+   *
+   * Memory defaults to 4096MB because this has the effest of assigning more compute resource and therefore reduces latency.
+   */
   static node(
     scope: Construct,
     id: string,
@@ -132,12 +137,17 @@ export class WebApp extends Construct {
     redirectWww?: boolean,
     functionProps?: ZipFunctionProps,
   ): WebApp {
-    const lambda = ZipFunction.node(scope, id, functionProps);
+    const lambda = ZipFunction.node(scope, id, { memorySize: 4096, ...functionProps });
     return new WebApp(scope, id, {
       lambda, zone, domain, defaultIndex, redirectWww,
     });
   }
 
+  /**
+   * Creates a WebApp backed by a Python Lambda function.
+   *
+   * Memory defaults to 4096MB because this has the effest of assigning more compute resource and therefore reduces latency.
+   */
   static python(
     scope: Construct,
     id: string,
@@ -147,7 +157,7 @@ export class WebApp extends Construct {
     redirectWww?: boolean,
     functionProps?: ZipFunctionProps,
   ): WebApp {
-    const lambda = ZipFunction.python(scope, id, functionProps);
+    const lambda = ZipFunction.python(scope, id, { memorySize: 4096, ...functionProps });
     return new WebApp(scope, id, {
       lambda, zone, domain, defaultIndex, redirectWww,
     });
