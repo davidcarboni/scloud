@@ -335,18 +335,39 @@ export class Cognito extends Construct {
   }
 
   /**
+   * Creates a Cognito instance configured for email login.
+   *
+   * You'll need to pass either a zone (and optionally domainName - defaults to auth.<zoneName>), or a domainPrefix.
+   */
+  static withEmailLogin(
+    scope: Construct,
+    id: string,
+    callbackUrl: string,
+    alternativeCallbackUrl?: string,
+    zone?: IHostedZone,
+    domainName?: string,
+    domainPrefix?: string,
+  ): Cognito {
+    const email = new Cognito(scope, id);
+    email.createUserPoolClient(callbackUrl, true, alternativeCallbackUrl);
+    if (zone) email.addCustomDomain(zone, domainName);
+    else if (domainPrefix) email.addDomainPrefix(domainPrefix);
+    return email;
+  }
+
+  /**
    * Creates a Cognito instance configured for Social logins (Google and Facebook) and optionally email.
    *
-   * You'll need to pass either a zone and domainName, or a domainPrefix.
+   * You'll need to pass either a zone (and optionally domainName - defaults to auth.<zoneName>), or a domainPrefix.
    */
   static withSocialLogins(
     scope: Construct,
     id: string,
     callbackUrl: string,
-    googleClientId: string,
-    googleClientSecret: string,
-    facebookAppId: string,
-    facebookAppSecret: string,
+    googleClientId?: string,
+    googleClientSecret?: string,
+    facebookAppId?: string,
+    facebookAppSecret?: string,
     enableEmailLogin?: boolean,
     alternativeCallbackUrl?: string,
     zone?: IHostedZone,
@@ -354,8 +375,8 @@ export class Cognito extends Construct {
     domainPrefix?: string,
   ): Cognito {
     const social = new Cognito(scope, id);
-    social.addGoogleIdp(googleClientId, googleClientSecret);
-    social.addFacebookIdp(facebookAppId, facebookAppSecret);
+    if (googleClientId && googleClientSecret) social.addGoogleIdp(googleClientId, googleClientSecret);
+    if (facebookAppId && facebookAppSecret) social.addFacebookIdp(facebookAppId, facebookAppSecret);
     social.createUserPoolClient(callbackUrl, enableEmailLogin, alternativeCallbackUrl);
     if (zone && domainName) social.addCustomDomain(zone, domainName);
     else if (domainPrefix) social.addDomainPrefix(domainPrefix);
@@ -382,7 +403,7 @@ export class Cognito extends Construct {
    *
    * see: https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools-saml-idp.html
    *
-   * You'll need to pass either a zone and domainName, or a domainPrefix.
+   * You'll need to pass either a zone (and optionally domainName - defaults to auth.<zoneName>), or a domainPrefix.
    */
   static withSSOMetadataUrl(
     scope: Construct,
@@ -427,7 +448,7 @@ export class Cognito extends Construct {
    * NB it's usually best to test Google Worspace sso in incognito mode as if you're already signed in you may get a 403 error.
    * This is possibly because your local cached credentials haven't yet updated with access to the App.
    *
-   * You'll need to pass either a zone and domainName, or a domainPrefix.
+   * You'll need to pass either a zone (and optionally domainName - defaults to auth.<zoneName>), or a domainPrefix.
    */
   static withSSOMetadataXml(
     scope: Construct,
