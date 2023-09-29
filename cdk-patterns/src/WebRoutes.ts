@@ -211,8 +211,6 @@ export class WebRoutes extends Construct {
    * Builds a WebRoutes construct with multiple routes, based on a set of pre-built Lambda functions.
    *
    * This is useful if your routes use different runtimes, environment variables an/or function properties.
-   *
-   * Memory defaults to 4096MB because this has the effest of assigning more compute resource and therefore reduces latency.
    */
   static routes(
     scope: Construct,
@@ -237,7 +235,7 @@ export class WebRoutes extends Construct {
    *
    * Lanbda functions will be accessible via WebRoutes.routes
    *
-   * Memory defaults to 4096MB because this has the effest of assigning more compute resource and therefore reduces latency
+   * Memory defaults to 3008 MB because this has the effest of assigning more compute resource and therefore reduces latency
    */
   static node(
     scope: Construct,
@@ -257,7 +255,7 @@ export class WebRoutes extends Construct {
       const lambda = ZipFunction.node(scope, id, {
         ...functionProps,
         functionProps: {
-          code, environment, memorySize: 4096, ...functionProps?.functionProps,
+          code, environment, memorySize: 3008, ...functionProps?.functionProps,
         },
       });
       webRoutes.addRoute(pathPattern, lambda);
@@ -270,7 +268,7 @@ export class WebRoutes extends Construct {
    *
    * Lanbda functions will be accessible via WebRoutes.routes
    *
-   * Memory defaults to 4096MB because this has the effest of assigning more compute resource and therefore reduces latency
+   * Memory defaults to 3008 MB because this has the effest of assigning more compute resource and therefore reduces latency
    */
   static python(
     scope: Construct,
@@ -290,7 +288,7 @@ export class WebRoutes extends Construct {
       const lambda = ZipFunction.node(scope, id, {
         ...functionProps,
         functionProps: {
-          code, environment, memorySize: 4096, ...functionProps?.functionProps,
+          code, environment, memorySize: 3008, ...functionProps?.functionProps,
         },
       });
       webRoutes.addRoute(pathPattern, lambda);
