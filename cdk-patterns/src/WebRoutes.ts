@@ -13,7 +13,7 @@ import {
 import {
   AuthorizationType, CognitoUserPoolsAuthorizer, LambdaRestApi, LambdaRestApiProps,
 } from 'aws-cdk-lib/aws-apigateway';
-import { Function } from 'aws-cdk-lib/aws-lambda';
+import { Code, Function } from 'aws-cdk-lib/aws-lambda';
 import { UserPool } from 'aws-cdk-lib/aws-cognito';
 import { ARecord, IHostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { PrivateBucket } from './PrivateBucket';
@@ -208,9 +208,11 @@ export class WebRoutes extends Construct {
   }
 
   /**
-   * Builds a WebRoutes construct with multiple routes where you want to pass in pre-built Lambda functions.
+   * Builds a WebRoutes construct with multiple routes, based on a set of pre-built Lambda functions.
    *
    * This is useful if your routes use different runtimes, environment variables an/or function properties.
+   *
+   * Memory defaults to 4096MB because this has the effest of assigning more compute resource and therefore reduces latency.
    */
   static routes(
     scope: Construct,
@@ -231,12 +233,16 @@ export class WebRoutes extends Construct {
   }
 
   /**
-   * Builds a WebRoutes construct with a uniform set of Node Lambdas that will be instantiated for you.
+   * Builds a WebRoutes construct with a uniform set of Node Lambdas that will be instantiated for you
+   *
+   * Lanbda functions will be accessible via WebRoutes.routes
+   *
+   * Memory defaults to 4096MB because this has the effest of assigning more compute resource and therefore reduces latency
    */
   static node(
     scope: Construct,
     id: string,
-    routes: string[],
+    routes: { [key: string]: { code?: Code, environment?: { [key: string]: string; }; }; },
     zone: IHostedZone,
     domain?: string,
     defaultIndex?: boolean,
@@ -246,20 +252,30 @@ export class WebRoutes extends Construct {
     const webRoutes = new WebRoutes(scope, id, {
       zone, domain, defaultIndex, redirectWww,
     });
-    routes.forEach((pathPattern) => {
-      const lambda = new ZipFunction(scope, id, functionProps);
+    Object.keys(routes).forEach((pathPattern) => {
+      const { code, environment } = routes[pathPattern];
+      const lambda = ZipFunction.node(scope, id, {
+        ...functionProps,
+        functionProps: {
+          code, environment, memorySize: 4096, ...functionProps?.functionProps,
+        },
+      });
       webRoutes.addRoute(pathPattern, lambda);
     });
     return webRoutes;
   }
 
   /**
-   * Builds a WebRoutes construct with a uniform set of Python Lambdas that will be instantiated for you.
+   * Builds a WebRoutes construct with a uniform set of Python Lambdas that will be instantiated for you
+   *
+   * Lanbda functions will be accessible via WebRoutes.routes
+   *
+   * Memory defaults to 4096MB because this has the effest of assigning more compute resource and therefore reduces latency
    */
   static python(
     scope: Construct,
     id: string,
-    routes: string[],
+    routes: { [key: string]: { code?: Code, environment?: { [key: string]: string; }; }; },
     zone: IHostedZone,
     domain?: string,
     defaultIndex?: boolean,
@@ -269,8 +285,14 @@ export class WebRoutes extends Construct {
     const webRoutes = new WebRoutes(scope, id, {
       zone, domain, defaultIndex, redirectWww,
     });
-    routes.forEach((pathPattern) => {
-      const lambda = ZipFunction.python(scope, id, functionProps);
+    Object.keys(routes).forEach((pathPattern) => {
+      const { code, environment } = routes[pathPattern];
+      const lambda = ZipFunction.node(scope, id, {
+        ...functionProps,
+        functionProps: {
+          code, environment, memorySize: 4096, ...functionProps?.functionProps,
+        },
+      });
       webRoutes.addRoute(pathPattern, lambda);
     });
     return webRoutes;
