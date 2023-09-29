@@ -5,6 +5,7 @@ import {
   DockerImageCode, DockerImageFunction, DockerImageFunctionProps,
 } from 'aws-cdk-lib/aws-lambda';
 import { Repository } from 'aws-cdk-lib/aws-ecr';
+import { Duration } from 'aws-cdk-lib';
 import { EcrRepository } from './EcrRepository';
 import { githubActions } from './GithubActions';
 
@@ -18,10 +19,11 @@ import { githubActions } from './GithubActions';
  */
 export interface ContainerFunctionProps {
   environment?: { [key: string]: string; },
+  memorySize?: number,
+  timeout?: Duration,
   tagOrDigest?: string,
   repository?: Repository,
   initialPass?: boolean,
-  memorySize?: number,
   dockerImageFunctionProps?: Partial<DockerImageFunctionProps>,
 }
 

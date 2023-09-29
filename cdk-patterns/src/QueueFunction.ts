@@ -1,4 +1,4 @@
-import { RemovalPolicy } from 'aws-cdk-lib';
+import { Duration, RemovalPolicy } from 'aws-cdk-lib';
 import { Function } from 'aws-cdk-lib/aws-lambda';
 import { Queue, QueueEncryption, QueueProps } from 'aws-cdk-lib/aws-sqs';
 import { Construct } from 'constructs';
@@ -54,7 +54,7 @@ export class QueueFunction extends Construct {
     functionProps?: ZipFunctionProps,
     queueProps?: Partial<QueueProps>,
   ): QueueFunction {
-    const lambda = ZipFunction.node(scope, id, functionProps);
+    const lambda = ZipFunction.node(scope, id, { ...functionProps, timeout: functionProps?.timeout || Duration.seconds(60) });
     return new QueueFunction(scope, id, { lambda, queueProps });
   }
 
@@ -64,7 +64,7 @@ export class QueueFunction extends Construct {
     functionProps?: ZipFunctionProps,
     queueProps?: Partial<QueueProps>,
   ): QueueFunction {
-    const lambda = ZipFunction.python(scope, id, functionProps);
+    const lambda = ZipFunction.python(scope, id, { ...functionProps, timeout: functionProps?.timeout || Duration.seconds(60) });
     return new QueueFunction(scope, id, { lambda, queueProps });
   }
 
@@ -74,7 +74,7 @@ export class QueueFunction extends Construct {
     functionProps?: ContainerFunctionProps,
     queueProps?: Partial<QueueProps>,
   ): QueueFunction {
-    const lambda = new ContainerFunction(scope, id, functionProps);
+    const lambda = new ContainerFunction(scope, id, { ...functionProps, timeout: functionProps?.timeout || Duration.seconds(60) });
     return new QueueFunction(scope, id, { lambda, queueProps });
   }
 }
