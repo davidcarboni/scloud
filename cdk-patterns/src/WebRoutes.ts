@@ -30,7 +30,7 @@ import { ZipFunction, ZipFunctionProps } from './ZipFunction';
  */
 export interface WebRoutesProps {
   zone: IHostedZone,
-  domain?: string,
+  domainName?: string,
   defaultIndex?: boolean,
   redirectWww?: boolean,
 }
@@ -72,7 +72,7 @@ export class WebRoutes extends Construct {
   ) {
     super(scope, id);
 
-    const domainName = props.domain || props.zone.zoneName;
+    const domainName = props.domainName || props.zone.zoneName;
 
     // We consider the objects in the bucket to be expendable because
     // they're most likely static content we generate from source code (rather than user data).
@@ -89,6 +89,7 @@ export class WebRoutes extends Construct {
       domainName,
       hostedZone: props.zone,
       region: 'us-east-1',
+      subjectAlternativeNames: props.redirectWww === false ? undefined : [`www.${domainName}`],
     });
 
     this.distribution = new Distribution(scope, `${id}Distribution`, {
@@ -115,7 +116,7 @@ export class WebRoutes extends Construct {
 
     if (props.redirectWww !== false) {
       // Redirect www -> zone root
-      new RedirectWww(scope, id, props.zone, this.certificate);
+      new RedirectWww(scope, id, { zone: props.zone, certificate: this.certificate });
     }
   }
 
@@ -217,12 +218,12 @@ export class WebRoutes extends Construct {
     id: string,
     routes: { [pathPattern: string]: Function; },
     zone: IHostedZone,
-    domain?: string,
+    domainName?: string,
     defaultIndex: boolean = false,
     redirectWww: boolean = true,
   ): WebRoutes {
     const webRoutes = new WebRoutes(scope, id, {
-      zone, domain, defaultIndex, redirectWww,
+      zone, domainName, defaultIndex, redirectWww,
     });
     Object.keys(routes).forEach((pathPattern) => {
       webRoutes.addRoute(pathPattern, routes[pathPattern]);
@@ -242,13 +243,13 @@ export class WebRoutes extends Construct {
     id: string,
     routes: { [key: string]: { code?: Code, environment?: { [key: string]: string; }; }; },
     zone: IHostedZone,
-    domain?: string,
+    domainName?: string,
     defaultIndex?: boolean,
     redirectWww?: boolean,
     functionProps?: ZipFunctionProps,
   ): WebRoutes {
     const webRoutes = new WebRoutes(scope, id, {
-      zone, domain, defaultIndex, redirectWww,
+      zone, domainName, defaultIndex, redirectWww,
     });
     Object.keys(routes).forEach((pathPattern) => {
       const { code, environment } = routes[pathPattern];
@@ -275,13 +276,13 @@ export class WebRoutes extends Construct {
     id: string,
     routes: { [key: string]: { code?: Code, environment?: { [key: string]: string; }; }; },
     zone: IHostedZone,
-    domain?: string,
+    domainName?: string,
     defaultIndex?: boolean,
     redirectWww?: boolean,
     functionProps?: ZipFunctionProps,
   ): WebRoutes {
     const webRoutes = new WebRoutes(scope, id, {
-      zone, domain, defaultIndex, redirectWww,
+      zone, domainName, defaultIndex, redirectWww,
     });
     Object.keys(routes).forEach((pathPattern) => {
       const { code, environment } = routes[pathPattern];

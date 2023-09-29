@@ -31,7 +31,7 @@ import { ZipFunction, ZipFunctionProps } from './ZipFunction';
 export interface WebAppProps {
   lambda: Function,
   zone: IHostedZone,
-  domain?: string,
+  domainName?: string,
   defaultIndex?: boolean,
   redirectWww?: boolean,
 }
@@ -59,7 +59,7 @@ export class WebApp extends Construct {
   ) {
     super(scope, `${id}WebApp`);
 
-    const domainName = props.domain || `${props.zone.zoneName}`;
+    const domainName = props.domainName || `${props.zone.zoneName}`;
 
     // Static content
     const bucket = PrivateBucket.expendable(scope, `${id}Static`);
@@ -83,9 +83,9 @@ export class WebApp extends Construct {
 
     this.certificate = new DnsValidatedCertificate(scope, `${id}Certificate`, {
       domainName,
-      subjectAlternativeNames: [`www.${domainName}`],
       hostedZone: props.zone,
       region: 'us-east-1',
+      subjectAlternativeNames: props.redirectWww !== false ? [`www.${domainName}`] : undefined,
     });
 
     this.distribution = new Distribution(scope, `${id}Distribution`, {
@@ -120,7 +120,7 @@ export class WebApp extends Construct {
       zone: props.zone,
     });
 
-    if (props.redirectWww !== false) new RedirectWww(scope, id, props.zone, this.certificate);
+    if (props.redirectWww !== false) new RedirectWww(scope, id, { zone: props.zone, certificate: this.certificate });
   }
 
   /**
@@ -132,14 +132,14 @@ export class WebApp extends Construct {
     scope: Construct,
     id: string,
     zone: IHostedZone,
-    domain?: string,
+    domainName?: string,
     defaultIndex?: boolean,
     redirectWww?: boolean,
     functionProps?: ZipFunctionProps,
   ): WebApp {
     const lambda = ZipFunction.node(scope, id, { memorySize: 3008, ...functionProps });
     return new WebApp(scope, id, {
-      lambda, zone, domain, defaultIndex, redirectWww,
+      lambda, zone, domainName, defaultIndex, redirectWww,
     });
   }
 
@@ -152,14 +152,14 @@ export class WebApp extends Construct {
     scope: Construct,
     id: string,
     zone: IHostedZone,
-    domain?: string,
+    domainName?: string,
     defaultIndex?: boolean,
     redirectWww?: boolean,
     functionProps?: ZipFunctionProps,
   ): WebApp {
     const lambda = ZipFunction.python(scope, id, { memorySize: 3008, ...functionProps });
     return new WebApp(scope, id, {
-      lambda, zone, domain, defaultIndex, redirectWww,
+      lambda, zone, domainName, defaultIndex, redirectWww,
     });
   }
 }
