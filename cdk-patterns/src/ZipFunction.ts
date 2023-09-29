@@ -41,7 +41,7 @@ export class ZipFunction extends Function {
     super(scope, id, {
       environment: props?.environment,
       memorySize: props?.memorySize || 256,
-      timeout: props?.timeout || Duration.seconds(10),
+      timeout: props?.timeout || Duration.seconds(30),
       description: id, // Provides something readable in the AWS console view
       runtime: Runtime.NODEJS_18_X,
       handler: 'src/lambda.handler',

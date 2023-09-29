@@ -59,11 +59,12 @@ export class ContainerFunction extends DockerImageFunction {
     });
 
     super(scope, `${id}ContainerFunction`, {
+      environment: props?.environment,
+      memorySize: props?.memorySize || 1024,
+      timeout: props?.timeout || Duration.seconds(30),
       code,
       logRetention: logs.RetentionDays.TWO_YEARS,
-      environment: props?.environment,
       description: id,
-      memorySize: props?.memorySize || 1024,
       ...props?.dockerImageFunctionProps,
     });
 
