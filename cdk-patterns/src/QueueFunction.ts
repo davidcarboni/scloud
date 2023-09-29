@@ -43,7 +43,7 @@ export class QueueFunction extends Construct {
       ...props.queueProps,
     });
 
-    this.lambda.addEventSource(new SqsEventSource(this.queue, { reportBatchItemFailures: true }));
+    props.lambda.addEventSource(new SqsEventSource(this.queue, { reportBatchItemFailures: true }));
 
     this.lambda = props.lambda;
   }
