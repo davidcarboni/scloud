@@ -95,7 +95,11 @@ export function webApp(
   bucket.grantRead(originAccessIdentity);
 
   // Web app handler - default values can be overridden using lambdaProps
-  const lambda = new ZipFunction(stack, name, environment, { memorySize: 3008, timeout: Duration.seconds(10), ...lambdaProps });
+  const lambda = new ZipFunction(stack, name, {
+    functionProps: {
+      environment, memorySize: 3008, timeout: Duration.seconds(10), ...lambdaProps,
+    },
+  });
 
   const api = new LambdaRestApi(stack, `${name}ApiGateway`, {
     handler: lambda,
@@ -265,7 +269,7 @@ export function webAppRoutes(
   const originMap: { [functionName: string]: RestApiOrigin; } = {};
   Object.keys(routes).forEach((pathPattern) => {
     // Use the provided function, or generate a default one:
-    const lambda = routes[pathPattern] || new ZipFunction(stack, name, {}, { memorySize: 3008 });
+    const lambda = routes[pathPattern] || new ZipFunction(stack, name, { functionProps: { memorySize: 3008 } });
     let origin = originMap[lambda.functionName];
 
     if (!origin) {

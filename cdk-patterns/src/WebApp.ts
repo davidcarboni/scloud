@@ -14,26 +14,32 @@ import {
 import {
   LambdaRestApi,
 } from 'aws-cdk-lib/aws-apigateway';
-import { Function, FunctionProps, Runtime } from 'aws-cdk-lib/aws-lambda';
+import { Function } from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
 import { ARecord, IHostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { RedirectWww } from './RedirectWww';
 import { githubActions } from './GithubActions';
 import { PrivateBucket } from './PrivateBucket';
-import { ZipFunction } from './ZipFunction';
+import { ZipFunction, ZipFunctionProps } from './ZipFunction';
+/**
+ * @param lambda The function which will respond to incoming request events.
+ * @param zone The DNS zone for this web app.
+ * @param domain Optional: by default the zone name will be used (e.g. 'example.com') a different domain here (e.g. 'subdomain.example.com').
+ * @param defaultIndex Default: false. If true, maps a viewer request for '/' to an s3 request for /index.html.
+ * @param redirectWww Default: true. Redirects www requests to the bare domain name, e.g. www.example.com->example.com, www.sub.example.com->sub.example.com.
+ */
+export interface WebAppProps {
+  lambda: Function,
+  zone: IHostedZone,
+  domain?: string,
+  defaultIndex?: boolean,
+  redirectWww?: boolean,
+}
 
 /**
  * Builds a dynamic web application, backed by a single Lambda function, also knowm as a "Lambda-lith" (https://github.com/cdk-patterns/serverless/blob/main/the-lambda-trilogy/README.md)
  *
  * This construct sends requests that don't have a file extension to the Lambda. Static content is handled by routing requests that match *.* (eg *.js. *.css) to an S3 bucket.
- *
- * @param lambda The function which will respond to incoming request events.
- * @param zone The DNS zone for this web app.
- * @param domain Optional: by default the zone name will be used (e.g. 'example.com') a different domain here (e.g. 'subdomain.example.com').
- * @param headers Optional: any headers you want passed through Cloudfront in addition to the defaults of User-Agent and Referer
- * @param defaultIndex Default: false. If true, maps a viewer request for '/' to an s3 request for /index.html.
- * @param redirectWww Default: true. Redirects www requests to the bare domain name, e.g. www.example.com->example.com, www.sub.example.com->sub.example.com.
- * @returns
  */
 export class WebApp extends Construct {
   lambda: Function;
@@ -49,15 +55,11 @@ export class WebApp extends Construct {
   constructor(
     scope: Construct,
     id: string,
-    lambda: Function,
-    zone: IHostedZone,
-    domain?: string,
-    defaultIndex: boolean = false,
-    redirectWww: boolean = true,
+    props: WebAppProps,
   ) {
     super(scope, `${id}WebApp`);
 
-    const domainName = domain || `${zone.zoneName}`;
+    const domainName = props.domain || `${props.zone.zoneName}`;
 
     // Static content
     const bucket = PrivateBucket.expendable(scope, `${id}Static`);
@@ -70,7 +72,7 @@ export class WebApp extends Construct {
     bucket.grantRead(originAccessIdentity);
 
     // Web app handler - default values can be overridden using lambdaProps
-    this.lambda = lambda;
+    this.lambda = props.lambda;
 
     this.api = new LambdaRestApi(scope, `${id}ApiGateway`, {
       handler: this.lambda,
@@ -82,14 +84,14 @@ export class WebApp extends Construct {
     this.certificate = new DnsValidatedCertificate(scope, `${id}Certificate`, {
       domainName,
       subjectAlternativeNames: [`www.${domainName}`],
-      hostedZone: zone,
+      hostedZone: props.zone,
       region: 'us-east-1',
     });
 
     this.distribution = new Distribution(scope, `${id}Distribution`, {
       domainNames: [domainName],
       comment: domainName,
-      defaultRootObject: defaultIndex ? 'index.html' : undefined,
+      defaultRootObject: props.defaultIndex ? 'index.html' : undefined,
       defaultBehavior: {
         origin: new RestApiOrigin(this.api),
         allowedMethods: AllowedMethods.ALLOW_ALL,
@@ -115,10 +117,10 @@ export class WebApp extends Construct {
     new ARecord(scope, `${id}ARecord`, {
       recordName: domainName,
       target: RecordTarget.fromAlias(new CloudFrontTarget(this.distribution)),
-      zone,
+      zone: props.zone,
     });
 
-    if (redirectWww) new RedirectWww(scope, id, zone, this.certificate);
+    if (props.redirectWww !== false) new RedirectWww(scope, id, props.zone, this.certificate);
   }
 
   static node(
@@ -126,13 +128,14 @@ export class WebApp extends Construct {
     id: string,
     zone: IHostedZone,
     domain?: string,
-    environment?: { [key: string]: string; },
-    lambdaProps?: Partial<FunctionProps>,
-    defaultIndex: boolean = false,
-    redirectWww: boolean = true,
+    defaultIndex?: boolean,
+    redirectWww?: boolean,
+    functionProps?: ZipFunctionProps,
   ): WebApp {
-    const lambda = new ZipFunction(scope, id, environment, { runtime: Runtime.NODEJS_18_X, ...lambdaProps });
-    return new WebApp(scope, id, lambda, zone, domain, defaultIndex, redirectWww);
+    const lambda = ZipFunction.node(scope, id, functionProps);
+    return new WebApp(scope, id, {
+      lambda, zone, domain, defaultIndex, redirectWww,
+    });
   }
 
   static python(
@@ -140,12 +143,13 @@ export class WebApp extends Construct {
     id: string,
     zone: IHostedZone,
     domain?: string,
-    environment?: { [key: string]: string; },
-    lambdaProps?: Partial<FunctionProps>,
-    defaultIndex: boolean = false,
-    redirectWww: boolean = true,
+    defaultIndex?: boolean,
+    redirectWww?: boolean,
+    functionProps?: ZipFunctionProps,
   ): WebApp {
-    const lambda = new ZipFunction(scope, id, environment, { runtime: Runtime.PYTHON_3_10, ...lambdaProps });
-    return new WebApp(scope, id, lambda, zone, domain, defaultIndex, redirectWww);
+    const lambda = ZipFunction.python(scope, id, functionProps);
+    return new WebApp(scope, id, {
+      lambda, zone, domain, defaultIndex, redirectWww,
+    });
   }
 }

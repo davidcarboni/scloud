@@ -13,28 +13,38 @@ import {
 import {
   AuthorizationType, CognitoUserPoolsAuthorizer, LambdaRestApi, LambdaRestApiProps,
 } from 'aws-cdk-lib/aws-apigateway';
-import { Function, FunctionProps, Runtime } from 'aws-cdk-lib/aws-lambda';
+import { Function } from 'aws-cdk-lib/aws-lambda';
 import { UserPool } from 'aws-cdk-lib/aws-cognito';
 import { ARecord, IHostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { PrivateBucket } from './PrivateBucket';
 import { githubActions } from './GithubActions';
 import { RedirectWww } from './RedirectWww';
-import { ZipFunction } from './ZipFunction';
+import { ZipFunction, ZipFunctionProps } from './ZipFunction';
+
+/**
+ * @param zone The DNS zone for this web app. By default the domain name is set to the zone name
+ * The type IHostedZone enables lookup of the zone (IHostedZone) as well as a zone creatd in the stack (HostedZone)
+ * @param domain Optional: by default the zone name will be used as the DNS name for the Cloudfront distribution (e.g. 'example.com') but you can specify a different domain here (e.g. 'subdomain.example.com').
+ * @param defaultIndex Default: true. Maps a viewer request for '/' to a request for /index.html.
+ * @param wwwRedirect Default: true. Redirects requests for www. to the bare domain name, e.g. www.example.com->example.com, www.sub.example.com->sub.example.com.
+ */
+export interface WebRoutesProps {
+  zone: IHostedZone,
+  domain?: string,
+  defaultIndex?: boolean,
+  redirectWww?: boolean,
+}
 
 /**
  * Builds a web application, backed by Lambda functions that serve specific routes (https://github.com/cdk-patterns/serverless/blob/main/the-lambda-trilogy/README.md)
+ *
+ * NB This will create an s3 bucket to serve static content and the bucket will be automatically deleted, including all contents, when this construct is deleted, on the basis the contents are assumed to be produced by a CI build.
  *
  * This construct can also be used for a Web API.
  *
  * NB us-east-1 is required for Cloudfront certificates:
  * https://docs.aws.amazon.com/cdk/api/v1/docs/aws-cloudfront-readme.html
  *
- * @param zone The DNS zone for this web app. By default the domain name is set to the zone name
- * The type IHostedZone enables lookup of the zone (IHostedZone) as well as a zone creatd in the stack (HostedZone)
- * @param domain Optional: by default the zone name will be used as the DNS name for the Cloudfront distribution (e.g. 'example.com') but you can specify a different domain here (e.g. 'subdomain.example.com').
- * @param defaultIndex Default: true. Maps a viewer request for '/' to a request for /index.html.
- * @param wwwRedirect Default: true. Redirects www requests to the bare domain name, e.g. www.example.com->example.com, www.sub.example.com->sub.example.com.
- * @param autoDeleteObjects Default: true. If true, the static bucket will be configured to delete all objects when the stack is deleted, on the basis these files are most lifkely produced by a CI build. Pass false to leave the bucket intact.
  */
 export class WebRoutes extends Construct {
   lambda: Function;
@@ -45,7 +55,7 @@ export class WebRoutes extends Construct {
 
   certificate: DnsValidatedCertificate;
 
-  routes: { [path: string]: Function; } = {};
+  routes: { [pathPattern: string]: Function; } = {};
 
   origins: { [id: string]: RestApiOrigin; } = {};
 
@@ -58,14 +68,11 @@ export class WebRoutes extends Construct {
   constructor(
     scope: Construct,
     id: string,
-    zone: IHostedZone,
-    domain?: string,
-    defaultIndex: boolean = true,
-    redirectWww: boolean = true,
+    props: WebRoutesProps,
   ) {
     super(scope, id);
 
-    const domainName = domain || zone.zoneName;
+    const domainName = props.domain || props.zone.zoneName;
 
     // We consider the objects in the bucket to be expendable because
     // they're most likely static content we generate from source code (rather than user data).
@@ -80,14 +87,14 @@ export class WebRoutes extends Construct {
 
     this.certificate = new DnsValidatedCertificate(scope, `${id}Certificate`, {
       domainName,
-      hostedZone: zone,
+      hostedZone: props.zone,
       region: 'us-east-1',
     });
 
     this.distribution = new Distribution(scope, `${id}Distribution`, {
       domainNames: [domainName],
       comment: domainName,
-      defaultRootObject: defaultIndex ? 'index.html' : undefined,
+      defaultRootObject: props.defaultIndex === false ? undefined : 'index.html',
       defaultBehavior: {
         // All requests that aren't known to the API go to s3.
         // This serves static content and also handles spam traffic.
@@ -101,14 +108,14 @@ export class WebRoutes extends Construct {
 
     // DNS record for the distribution
     new ARecord(scope, `${id}ARecord`, {
-      zone,
+      zone: props.zone,
       recordName: domainName,
       target: RecordTarget.fromAlias(new CloudFrontTarget(this.distribution)),
     });
 
-    if (redirectWww) {
+    if (props.redirectWww !== false) {
       // Redirect www -> zone root
-      new RedirectWww(scope, id, zone, this.certificate);
+      new RedirectWww(scope, id, props.zone, this.certificate);
     }
   }
 
@@ -208,13 +215,15 @@ export class WebRoutes extends Construct {
   static routes(
     scope: Construct,
     id: string,
-    routes: { [path: string]: Function; },
+    routes: { [pathPattern: string]: Function; },
     zone: IHostedZone,
     domain?: string,
     defaultIndex: boolean = false,
     redirectWww: boolean = true,
   ): WebRoutes {
-    const webRoutes = new WebRoutes(scope, id, zone, domain, defaultIndex, redirectWww);
+    const webRoutes = new WebRoutes(scope, id, {
+      zone, domain, defaultIndex, redirectWww,
+    });
     Object.keys(routes).forEach((pathPattern) => {
       webRoutes.addRoute(pathPattern, routes[pathPattern]);
     });
@@ -230,14 +239,15 @@ export class WebRoutes extends Construct {
     routes: string[],
     zone: IHostedZone,
     domain?: string,
-    environment?: { [key: string]: string; },
-    lambdaProps?: Partial<FunctionProps>,
-    defaultIndex: boolean = false,
-    redirectWww: boolean = true,
+    defaultIndex?: boolean,
+    redirectWww?: boolean,
+    functionProps?: ZipFunctionProps,
   ): WebRoutes {
-    const webRoutes = new WebRoutes(scope, id, zone, domain, defaultIndex, redirectWww);
+    const webRoutes = new WebRoutes(scope, id, {
+      zone, domain, defaultIndex, redirectWww,
+    });
     routes.forEach((pathPattern) => {
-      const lambda = new ZipFunction(scope, id, environment, { runtime: Runtime.NODEJS_18_X, ...lambdaProps });
+      const lambda = new ZipFunction(scope, id, functionProps);
       webRoutes.addRoute(pathPattern, lambda);
     });
     return webRoutes;
@@ -252,14 +262,15 @@ export class WebRoutes extends Construct {
     routes: string[],
     zone: IHostedZone,
     domain?: string,
-    environment?: { [key: string]: string; },
-    lambdaProps?: Partial<FunctionProps>,
-    defaultIndex: boolean = false,
-    redirectWww: boolean = true,
+    defaultIndex?: boolean,
+    redirectWww?: boolean,
+    functionProps?: ZipFunctionProps,
   ): WebRoutes {
-    const webRoutes = new WebRoutes(scope, id, zone, domain, defaultIndex, redirectWww);
+    const webRoutes = new WebRoutes(scope, id, {
+      zone, domain, defaultIndex, redirectWww,
+    });
     routes.forEach((pathPattern) => {
-      const lambda = new ZipFunction(scope, id, environment, { runtime: Runtime.NODEJS_18_X, ...lambdaProps });
+      const lambda = ZipFunction.python(scope, id, functionProps);
       webRoutes.addRoute(pathPattern, lambda);
     });
     return webRoutes;

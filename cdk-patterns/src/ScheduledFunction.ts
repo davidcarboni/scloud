@@ -1,14 +1,20 @@
-import {
-  DockerImageFunctionProps, Function, FunctionProps, Runtime,
-} from 'aws-cdk-lib/aws-lambda';
+import { Function } from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
 import { Rule, Schedule } from 'aws-cdk-lib/aws-events';
 import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets';
-import { Repository } from 'aws-cdk-lib/aws-ecr';
-import { ZipFunction } from './ZipFunction';
-import { ContainerFunction } from './ContainerFunction';
+import { ZipFunction, ZipFunctionProps } from './ZipFunction';
+import { ContainerFunction, ContainerFunctionProps } from './ContainerFunction';
 
 // Based on: https://edwinradtke.com/eventtargets
+
+/**
+ *
+ */
+export interface ScheduledFunctionProps {
+  lambda: Function,
+  schedule: Schedule,
+  description?: string,
+}
 
 /**
  * A Lambda function triggered by scheduled Cloudwatch events.
@@ -26,57 +32,49 @@ export class ScheduledFunction extends Construct {
   constructor(
     scope: Construct,
     id: string,
-    lambda: Function,
-    schedule: Schedule = Schedule.cron({ minute: '11', hour: '1' }),
-    description: string | undefined = undefined,
+    props: ScheduledFunctionProps,
   ) {
     super(scope, `${id}ScheduledFunction`);
 
-    this.lambda = lambda;
+    this.lambda = props.lambda;
 
     this.rule = new Rule(scope, `${id}Trigger`, {
-      schedule,
-      targets: [new LambdaFunction(this.lambda)],
-      description,
+      schedule: props.schedule || Schedule.cron({ minute: '11', hour: '1' }),
+      targets: [new LambdaFunction(props.lambda)],
+      description: props.description,
     });
   }
 
   static node(
     scope: Construct,
     id: string,
-    environment?: { [key: string]: string; },
-    functionProps?: Partial<FunctionProps>,
+    functionProps?: ZipFunctionProps,
     schedule: Schedule = Schedule.cron({ minute: '11', hour: '1' }),
     description: string | undefined = undefined,
   ): ScheduledFunction {
-    const lambda = new ZipFunction(scope, id, environment, { runtime: Runtime.NODEJS_18_X, ...functionProps });
-    return new ScheduledFunction(scope, id, lambda, schedule, description);
+    const lambda = ZipFunction.node(scope, id, functionProps);
+    return new ScheduledFunction(scope, id, { lambda, schedule, description });
   }
 
   static python(
     scope: Construct,
     id: string,
-    environment?: { [key: string]: string; },
-    functionProps?: Partial<FunctionProps>,
+    functionProps?: ZipFunctionProps,
     schedule: Schedule = Schedule.cron({ minute: '11', hour: '1' }),
     description: string | undefined = undefined,
   ): ScheduledFunction {
-    const lambda = new ZipFunction(scope, id, environment, { runtime: Runtime.PYTHON_3_10, ...functionProps });
-    return new ScheduledFunction(scope, id, lambda, schedule, description);
+    const lambda = ZipFunction.python(scope, id, functionProps);
+    return new ScheduledFunction(scope, id, { lambda, schedule, description });
   }
 
   static container(
     scope: Construct,
     id: string,
-    environment?: { [key: string]: string; },
-    lambdaProps?: Partial<DockerImageFunctionProps>,
-    tagOrDigest?: string,
-    ecr?: Repository,
-    initialPass: boolean = false,
+    functionProps?: ContainerFunctionProps,
     schedule: Schedule = Schedule.cron({ minute: '11', hour: '1' }),
     description: string | undefined = undefined,
   ): ScheduledFunction {
-    const lambda = new ContainerFunction(scope, id, environment, lambdaProps, tagOrDigest, ecr, initialPass);
-    return new ScheduledFunction(scope, id, lambda, schedule, description);
+    const lambda = new ContainerFunction(scope, id, functionProps);
+    return new ScheduledFunction(scope, id, { lambda, schedule, description });
   }
 }

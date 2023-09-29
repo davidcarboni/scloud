@@ -9,19 +9,33 @@ import { EcrRepository } from './EcrRepository';
 import { githubActions } from './GithubActions';
 
 /**
+ * @param environment Environment variables for the Lambda function
+ * @param tagOrDigest Default 'latest': The container image tag or digest
+ * @param repository The ECR repository to use. If not specified a new one will be created
+ * @param initialPass Default false: If the infrastructure is being built from scratch: true, for incremental deployments: false. This is because you'll need an image pushed to the ECR repository before you can reference it
+ * @param memorySize Deafult 1024: the amount of memory to allocate to the Lambda function
+ * @param dockerImageFunctionProps If you need to specify any detailed properties for the Lambda function, you can do so here and they will override any defaults
+ */
+export interface ContainerFunctionProps {
+  environment?: { [key: string]: string; },
+  tagOrDigest?: string,
+  repository?: Repository,
+  initialPass?: boolean,
+  memorySize?: number,
+  dockerImageFunctionProps?: Partial<DockerImageFunctionProps>,
+}
+
+/**
  * A Lambda function packaged as a container.
  *
- * This construct automatically adds itself to the list of resources Github Actions needs to access.
+ * This construct automatically adds itself and the ECR repository (if created) to the list of resources Github Actions needs to access for CI/CD updates.
+ *
+ * Default log retention is 2 years.
  *
  * NB when a ContainerFunction is first built you'll need to set initialPass to true.
- * This is because the ECR repository needs to be created before the container image can be pushed to it.
- * This construct will fail to build if there is no image in the ECR repository.
- *
- * @param construct Parent CDK construct (typically 'this')
- * @param initialPass If the infrastructure is being built from scratch: true, for incremental deployments: false.
- * @param name The name for this function
- * @param environment Environment variables for the Lambda function
- * @returns The lambda, if created, and associated ECR repository
+ * This is because the ECR repository needs to be created before a container image can be pushed to it.
+ * However this construct will fail to build if there is no image in the ECR repository, so it needs to be built in two passes:
+ * initially to create the repository and then to reference an image once one has been pushed to the repository.
  */
 export class ContainerFunction extends DockerImageFunction {
   repository: Repository;
@@ -29,29 +43,26 @@ export class ContainerFunction extends DockerImageFunction {
   constructor(
     scope: Construct,
     id: string,
-    environment?: { [key: string]: string; },
-    props?: Partial<DockerImageFunctionProps>,
-    tagOrDigest?: string,
-    ecr?: Repository,
-    initialPass: boolean = false,
+    props?: ContainerFunctionProps,
   ) {
     // Repository for function container image
     // NB this will be created on the initial pass
     // It then needs to be populated with an image
     // After that the image can be referenced by this construct
-    const repository = ecr || new EcrRepository(scope, `${id}Repository`);
+    const repository = props?.repository || new EcrRepository(scope, `${id}Repository`);
 
     // Container
-    const code = initialPass ? DockerImageCode.fromImageAsset(path.join(__dirname, './container')) : DockerImageCode.fromEcr(repository, {
-      tagOrDigest: tagOrDigest || 'latest',
+    const code = props?.initialPass ? DockerImageCode.fromImageAsset(path.join(__dirname, './container')) : DockerImageCode.fromEcr(repository, {
+      tagOrDigest: props?.tagOrDigest || 'latest',
     });
 
     super(scope, `${id}ContainerFunction`, {
       code,
-      logRetention: logs.RetentionDays.THREE_MONTHS,
-      environment,
+      logRetention: logs.RetentionDays.TWO_YEARS,
+      environment: props?.environment,
       description: id,
-      ...props,
+      memorySize: props?.memorySize || 1024,
+      ...props?.dockerImageFunctionProps,
     });
 
     this.repository = repository;

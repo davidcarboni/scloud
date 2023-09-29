@@ -1,13 +1,21 @@
-import {
-  DockerImageFunctionProps, Function, FunctionProps, Runtime,
-} from 'aws-cdk-lib/aws-lambda';
+import { Function } from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
 import { S3EventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
 import { Bucket, BucketProps, EventType } from 'aws-cdk-lib/aws-s3';
-import { Repository } from 'aws-cdk-lib/aws-ecr';
 import { PrivateBucket } from './PrivateBucket';
-import { ZipFunction } from './ZipFunction';
-import { ContainerFunction } from './ContainerFunction';
+import { ZipFunction, ZipFunctionProps } from './ZipFunction';
+import { ContainerFunction, ContainerFunctionProps } from './ContainerFunction';
+
+/**
+ * @param lambda The Lambda function to be triggered by the bucket. This will be generated for you if you use one of the static methods (node, python, container)
+ * @param events Default [EventType.OBJECT_CREATED]: The bucket events that will trigger the Lambda function
+ * @param bucketProps Optional: If you need to specify any detailed properties for the SQS Queue, you can do so here and they will override any defaults
+ */
+export interface BucketFunctionProps {
+  lambda: Function,
+  events?: EventType[],
+  bucketProps?: Partial<BucketProps>,
+}
 
 /**
  * A Lambda function triggered by s3 bucket events.
@@ -35,53 +43,45 @@ export class BucketFunction extends Construct {
   constructor(
     scope: Construct,
     id: string,
-    lambda: Function,
-    bucketProps?: Partial<BucketProps>,
-    events: EventType[] = [EventType.OBJECT_CREATED],
+    props: BucketFunctionProps,
   ) {
     super(scope, `${id}BucketFunction`);
     // Triggering bucket
-    this.bucket = new PrivateBucket(scope, `${id}Bucket`, bucketProps);
-    this.lambda = lambda;
-    this.lambda.addEventSource(new S3EventSource(this.bucket, { events }));
+    this.bucket = new PrivateBucket(scope, `${id}Bucket`, props.bucketProps);
+    this.lambda = props.lambda;
+    this.lambda.addEventSource(new S3EventSource(this.bucket, { events: props.events || [EventType.OBJECT_CREATED] }));
   }
 
   static node(
     scope: Construct,
     id: string,
-    environment?: { [key: string]: string; },
-    functionProps?: Partial<FunctionProps>,
+    functionProps?: ZipFunctionProps,
+    events?: EventType[],
     bucketProps?: Partial<BucketProps>,
-    events: EventType[] = [EventType.OBJECT_CREATED],
   ): BucketFunction {
-    const lambda = new ZipFunction(scope, id, environment, { runtime: Runtime.NODEJS_18_X, ...functionProps });
-    return new BucketFunction(scope, id, lambda, bucketProps, events);
+    const lambda = ZipFunction.node(scope, id, functionProps);
+    return new BucketFunction(scope, id, { lambda, bucketProps, events });
   }
 
   static python(
     scope: Construct,
     id: string,
-    environment?: { [key: string]: string; },
-    functionProps?: Partial<FunctionProps>,
+    functionProps?: ZipFunctionProps,
+    events?: EventType[],
     bucketProps?: Partial<BucketProps>,
-    events: EventType[] = [EventType.OBJECT_CREATED],
   ): BucketFunction {
-    const lambda = new ZipFunction(scope, id, environment, { runtime: Runtime.PYTHON_3_10, ...functionProps });
-    return new BucketFunction(scope, id, lambda, bucketProps, events);
+    const lambda = ZipFunction.python(scope, id, functionProps);
+    return new BucketFunction(scope, id, { lambda, bucketProps, events });
   }
 
   static container(
     scope: Construct,
     id: string,
-    environment?: { [key: string]: string; },
-    lambdaProps?: Partial<DockerImageFunctionProps>,
+    functionProps?: ContainerFunctionProps,
+    events?: EventType[],
     bucketProps?: Partial<BucketProps>,
-    tagOrDigest?: string,
-    ecr?: Repository,
-    events: EventType[] = [EventType.OBJECT_CREATED],
-    initialPass: boolean = false,
   ): BucketFunction {
-    const lambda = new ContainerFunction(scope, id, environment, lambdaProps, tagOrDigest, ecr, initialPass);
-    return new BucketFunction(scope, id, lambda, bucketProps, events);
+    const lambda = new ContainerFunction(scope, id, functionProps);
+    return new BucketFunction(scope, id, { lambda, bucketProps, events });
   }
 }

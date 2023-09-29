@@ -1,100 +1,105 @@
 import { Construct } from 'constructs';
-import {
-  DockerImageFunctionProps, Function, FunctionProps, Runtime,
-} from 'aws-cdk-lib/aws-lambda';
-import { Repository } from 'aws-cdk-lib/aws-ecr';
+import { Function } from 'aws-cdk-lib/aws-lambda';
 import { LambdaRestApi } from 'aws-cdk-lib/aws-apigateway';
 import { DnsValidatedCertificate } from 'aws-cdk-lib/aws-certificatemanager';
 import { ARecord, IHostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { ApiGateway } from 'aws-cdk-lib/aws-route53-targets';
-import { ZipFunction } from './ZipFunction';
-import { ContainerFunction } from './ContainerFunction';
+import { ZipFunction, ZipFunctionProps } from './ZipFunction';
+import { ContainerFunction, ContainerFunctionProps } from './ContainerFunction';
+
+/**
+ * @param lambda The Lambda function to be triggered by the bucket. This will be generated for you if you use one of the static methods (node, python, container)
+ * @param zone Optional: a DNS zone for this API. By default the domain name is set to 'api.<zoneName>'
+ * @param domain Optional: If you want to specify a domain name that differs from the default 'api.<zoneName>' (e.g. 'subdomain.example.com') you can do so here
+ */
+export interface ApiFunctionProps {
+  lambda: Function,
+  zone?: IHostedZone,
+  domain?: string,
+}
 
 /**
  * An API gateway backed by a Lambda function.
- *
- * @param lambda The function which will respond to incoming API request events.
- * @param zone The DNS zone for this web app. By default the domain name is set to 'api.zoneName'
- * The type IHostedZone enables lookup of the zone (IHostedZone) as well as a zone creatd in the stack (HostedZone)
- * @param domain Optional: by default the domain name will be 'api.zoneName' (e.g. 'api.example.com') but you can specify a different domain here (e.g. 'subdomain.example.com').
  */
 export class ApiFunction extends Construct {
+  lambda: Function;
+
   api: LambdaRestApi;
 
-  lambda: Function;
+  apiGateway: ApiGateway;
 
   constructor(
     scope: Construct,
     id: string,
-    lambda: Function,
-    zone: IHostedZone,
-    domain?: string,
+    props: ApiFunctionProps,
   ) {
     super(scope, `${id}ApiFunction`);
 
-    // Domain name, default to api.zoneName:
-    const domainName = domain || `api.${zone.zoneName}`;
+    // Domain name and SSL certificate (default to api.<zoneName>):
+    const name = props.domain || `api.${props.zone?.zoneName}`;
+    let domainName: any | undefined;
+    if (props.zone) {
+      domainName = props.zone ? {
+        domainName: name,
+        certificate: new DnsValidatedCertificate(scope, `${id}Certificate`, {
+          domainName: name,
+          hostedZone: props.zone,
+        }),
+      } : undefined;
+    }
 
-    this.lambda = lambda;
+    this.lambda = props.lambda;
 
     this.api = new LambdaRestApi(scope, `${id}ApiGateway`, {
-      handler: lambda,
+      handler: props.lambda,
       proxy: true,
       description: id,
-      domainName: {
-        domainName,
-        certificate: new DnsValidatedCertificate(scope, `${id}Certificate`, {
-          domainName,
-          hostedZone: zone,
-        }),
-      },
+      domainName,
     });
 
+    this.apiGateway = new ApiGateway(this.api);
+
     // DNS record
-    new ARecord(scope, `${id}ARecord`, {
-      zone,
-      recordName: domainName,
-      target: RecordTarget.fromAlias(new ApiGateway(this.api)),
-      comment: `${id} API gateway`,
-    });
+    if (props.zone) {
+      new ARecord(scope, `${id}ARecord`, {
+        zone: props.zone,
+        recordName: name,
+        target: RecordTarget.fromAlias(this.apiGateway),
+        comment: `${id} API gateway`,
+      });
+    }
   }
 
   static node(
     scope: Construct,
     id: string,
-    zone: IHostedZone,
+    functionProps?: ZipFunctionProps,
+    zone?: IHostedZone,
     domain?: string,
-    environment?: { [key: string]: string; },
-    functionProps?: Partial<FunctionProps>,
   ): ApiFunction {
-    const lambda = new ZipFunction(scope, id, environment, { runtime: Runtime.NODEJS_18_X, ...functionProps });
-    return new ApiFunction(scope, id, lambda, zone, domain);
+    const lambda = ZipFunction.node(scope, id, functionProps);
+    return new ApiFunction(scope, id, { lambda, zone, domain });
   }
 
   static python(
     scope: Construct,
     id: string,
-    zone: IHostedZone,
+    functionProps?: ZipFunctionProps,
+    zone?: IHostedZone,
     domain?: string,
-    environment?: { [key: string]: string; },
-    functionProps?: Partial<FunctionProps>,
   ): ApiFunction {
-    const lambda = new ZipFunction(scope, id, environment, { runtime: Runtime.PYTHON_3_10, ...functionProps });
-    return new ApiFunction(scope, id, lambda, zone, domain);
+    const lambda = ZipFunction.python(scope, id, functionProps);
+    return new ApiFunction(scope, id, { lambda, zone, domain });
   }
 
   static container(
     scope: Construct,
     id: string,
-    zone: IHostedZone,
+    functionProps?: ContainerFunctionProps,
+    zone?: IHostedZone,
     domain?: string,
-    environment?: { [key: string]: string; },
-    lambdaProps?: Partial<DockerImageFunctionProps>,
-    tagOrDigest?: string,
-    ecr?: Repository,
-    initialPass: boolean = false,
   ): ApiFunction {
-    const lambda = new ContainerFunction(scope, id, environment, lambdaProps, tagOrDigest, ecr, initialPass);
-    return new ApiFunction(scope, id, lambda, zone, domain);
+    const lambda = new ContainerFunction(scope, id, functionProps);
+    return new ApiFunction(scope, id, { lambda, zone, domain });
   }
 }

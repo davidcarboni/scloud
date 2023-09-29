@@ -7,8 +7,7 @@ import { LambdaRestApi } from 'aws-cdk-lib/aws-apigateway';
 import { DnsValidatedCertificate } from 'aws-cdk-lib/aws-certificatemanager';
 import { RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { ApiGateway } from 'aws-cdk-lib/aws-route53-targets';
-import { ZipFunction } from '../ZipFunction';
-import { ContainerFunction } from '../ContainerFunction';
+import { containerFunction, zipFunction } from './lambdaFunctionDeprecated';
 
 /**
  * An API gateway backed by a Lambda function.
@@ -31,7 +30,7 @@ export function apiGateway(
 ): { lambda: Function, api: LambdaRestApi; } {
   const domainName = apiDomainName || `api.${zone.zoneName}`;
 
-  const lambda = new ZipFunction(construct, name, environment, { memorySize: memory });
+  const lambda = zipFunction(construct, name, environment, { memorySize: memory });
 
   const api = new apigateway.LambdaRestApi(construct, `${name}ApiGateway`, {
     handler: lambda,
@@ -78,7 +77,7 @@ export function apiGatewayContainer(
 ): { lambda: Function, api: LambdaRestApi, repository: IRepository; } {
   const domainName = apiDomainName || `api.${zone.zoneName}`;
 
-  const lambda = new ContainerFunction(construct, name, environment, undefined, undefined, undefined, initialPass);
+  const { lambda, repository } = containerFunction(construct, initialPass, name, environment, undefined, undefined, undefined);
 
   const api = new apigateway.LambdaRestApi(construct, `${name}ApiGateway`, {
     handler: lambda,
@@ -101,5 +100,5 @@ export function apiGatewayContainer(
     comment: `A record for API gateway ${name} API gateway`,
   });
 
-  return { lambda, api, repository: lambda.repository };
+  return { lambda, api, repository };
 }
