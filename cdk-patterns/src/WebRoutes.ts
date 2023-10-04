@@ -91,7 +91,6 @@ export class WebRoutes extends Construct {
       region: 'us-east-1',
       subjectAlternativeNames: props.redirectWww !== false ? [`www.${domainName}`] : undefined,
     });
-    console.log(' >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>', `subjectAlternativeNames: ${props.redirectWww !== false ? [`www.${domainName}`] : undefined}`);
 
     this.distribution = new Distribution(scope, `${id}Distribution`, {
       domainNames: [domainName],
