@@ -1,18 +1,45 @@
 import {
+  CopyObjectCommand,
   DeleteObjectCommand, GetObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client,
 } from '@aws-sdk/client-s3';
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { StreamingBlobPayloadOutputTypes } from '@smithy/types';
 import * as fs from 'fs';
+import { Readable } from 'stream';
 
 // https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/javascript_s3_code_examples.html
 
 const client = new S3Client({});
 
 /**
+ * Updates the created date on an s3 object by copying ot to itself and setting the storage class to STANDARD.
+ * See: https://alestic.com/2013/09/s3-lifecycle-extend/
+ *
+ * This is useful if you want to set an expiration on a bucket and want to 'touch' objects to keep them from expiring.
+ * It's useful for allowing unused content to expire, but keeping content that is still actuvely being used.
+ */
+export async function touchObject(bucket: string, key: string): Promise<boolean> {
+  const command = new CopyObjectCommand({
+    Bucket: bucket,
+    Key: key,
+    CopySource: `${bucket}/${key}`,
+    StorageClass: 'STANDARD',
+  });
+
+  try {
+    await client.send(command);
+    return true;
+  } catch (e) {
+    console.error('Error putting', key, (e as Error).stack);
+    return false;
+  }
+}
+
+/**
  * @param object In Node this is string | Uint8Array | Buffer | Readable, in a browser this is string | Uint8Array | ReadableStream | Blob
  * @returns True for success, false for failure
  */
-export async function putObject(bucket: string, key: string, object: any): Promise<boolean> {
+export async function putObject(bucket: string, key: string, object: string | Uint8Array | Buffer | Readable): Promise<boolean> {
   const command = new PutObjectCommand({
     Bucket: bucket,
     Key: key,
