@@ -13,7 +13,7 @@ const client = new S3Client({});
 
 /**
  * Updates the created date on an s3 object by copying ot to itself and setting the storage class to STANDARD.
- * See: https://alestic.com/2013/09/s3-lifecycle-extend/
+ * See: https://stackoverflow.com/a/18730911/723506
  *
  * This is useful if you want to set an expiration on a bucket and want to 'touch' objects to keep them from expiring.
  * It's useful for allowing unused content to expire, but keeping content that is still actuvely being used.
