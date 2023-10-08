@@ -36,7 +36,7 @@ export async function touchObject(bucket: string, key: string): Promise<boolean>
 }
 
 /**
- * Moves an object in s3 by doing a copy, followed by a delete..
+ * Moves an object in s3 by doing a copy, followed by a delete.
  */
 export async function moveObject(fromBucket: string, fromKey: string, toBucket: string, toKey: string): Promise<boolean> {
   const copyCommand = new CopyObjectCommand({
