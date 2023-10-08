@@ -36,6 +36,30 @@ export async function touchObject(bucket: string, key: string): Promise<boolean>
 }
 
 /**
+ * Moves an object in s3 by doing a copy, followed by a delete..
+ */
+export async function moveObject(fromBucket: string, fromKey: string, toBucket: string, toKey: string): Promise<boolean> {
+  const copyCommand = new CopyObjectCommand({
+    Bucket: toBucket,
+    Key: toKey,
+    CopySource: `${fromBucket}/${fromKey}`,
+  });
+  const deleteCommand = new DeleteObjectCommand({
+    Bucket: toBucket,
+    Key: toKey,
+  });
+
+  try {
+    await client.send(copyCommand);
+    await client.send(deleteCommand);
+    return true;
+  } catch (e) {
+    console.error('Error moving', `${fromBucket}/${fromKey}`, 'to', `${toBucket}/${toKey}`, (e as Error).stack);
+    return false;
+  }
+}
+
+/**
  * @param object In Node this is string | Uint8Array | Buffer | Readable, in a browser this is string | Uint8Array | ReadableStream | Blob
  * @returns True for success, false for failure
  */
