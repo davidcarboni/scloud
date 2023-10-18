@@ -212,6 +212,9 @@ export class WebRoutes extends Construct {
    * Builds a WebRoutes construct with multiple routes, based on a set of pre-built Lambda functions.
    *
    * This is useful if your routes use different runtimes, environment variables an/or function properties.
+   *
+   * @param defaultIndex Default: false. Maps a viewer request for '/' to a request for /index.html.
+   * @param redirectWww Default: true. Redirects requests for www. to the bare domain name, e.g. www.example.com->example.com, www.subdomain.example.com->subdomain.example.com.
    */
   static routes(
     scope: Construct,
@@ -237,6 +240,9 @@ export class WebRoutes extends Construct {
    * Lanbda functions will be accessible via WebRoutes.routes
    *
    * Memory defaults to 3008 MB because this has the effest of assigning more compute resource and therefore reduces latency
+   *
+   * @param defaultIndex Default: false. Maps a viewer request for '/' to a request for /index.html.
+   * @param redirectWww Default: true. Redirects requests for www. to the bare domain name, e.g. www.example.com->example.com, www.subdomain.example.com->subdomain.example.com.
    */
   static node(
     scope: Construct,
@@ -244,9 +250,9 @@ export class WebRoutes extends Construct {
     routes: { [key: string]: { code?: Code, environment?: { [key: string]: string; }; }; },
     zone: IHostedZone,
     domainName?: string,
-    defaultIndex?: boolean,
-    redirectWww?: boolean,
-    functionProps?: ZipFunctionProps,
+    defaultIndex: boolean = false,
+    redirectWww: boolean = true,
+    functionProps: ZipFunctionProps = {},
   ): WebRoutes {
     const webRoutes = new WebRoutes(scope, id, {
       zone, domainName, defaultIndex, redirectWww,
@@ -270,6 +276,9 @@ export class WebRoutes extends Construct {
    * Lanbda functions will be accessible via WebRoutes.routes
    *
    * Memory defaults to 3008 MB because this has the effest of assigning more compute resource and therefore reduces latency
+   *
+   * @param defaultIndex Default: false. Maps a viewer request for '/' to a request for /index.html.
+   * @param redirectWww Default: true. Redirects requests for www. to the bare domain name, e.g. www.example.com->example.com, www.subdomain.example.com->subdomain.example.com.
    */
   static python(
     scope: Construct,
@@ -277,9 +286,9 @@ export class WebRoutes extends Construct {
     routes: { [key: string]: { code?: Code, environment?: { [key: string]: string; }; }; },
     zone: IHostedZone,
     domainName?: string,
-    defaultIndex?: boolean,
-    redirectWww?: boolean,
-    functionProps?: ZipFunctionProps,
+    defaultIndex: boolean = false,
+    redirectWww: boolean = true,
+    functionProps: ZipFunctionProps = {},
   ): WebRoutes {
     const webRoutes = new WebRoutes(scope, id, {
       zone, domainName, defaultIndex, redirectWww,
