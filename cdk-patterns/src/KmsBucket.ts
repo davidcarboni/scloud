@@ -27,7 +27,7 @@ export class KmsBucket extends Construct {
     // identifying information shown in the list in the AWS console:
     super(scope, `${id}KmsBucket`);
     this.key = new Key(scope, `${id}Key`, { removalPolicy: RemovalPolicy.DESTROY, alias: `${Stack.of(scope).stackName}/${id}`, description: id });
-    this.bucket = new Bucket(scope, `${id}Bucket`, {
+    this.bucket = new Bucket(scope, id, {
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
       encryption: BucketEncryption.KMS,
       bucketKeyEnabled: true,
