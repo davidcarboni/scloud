@@ -137,7 +137,7 @@ export async function setRepoVariable(
   owner: string,
   repo: string,
 ): Promise<string> {
-  if (!value) throw new Error(`No value for secret ${name}`);
+  if (!value) throw new Error(`No value for variable ${name}`);
   try {
     // Most likely we're updating an existing variable:
     const response = await octokit.rest.actions.updateRepoVariable({
