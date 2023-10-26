@@ -102,7 +102,7 @@ class GithubActions extends Construct {
     repository: IRepository,
   ) {
     this.ghaInfo.resources.repositories.push(repository);
-    this.addGhaVariable(name, 'repository', repository.repositoryName);
+    this.addGhaVariable(name, 'ecr', repository.repositoryName);
   }
 
   ghaPolicy() {
