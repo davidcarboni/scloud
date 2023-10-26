@@ -30,7 +30,7 @@ export class KmsBucket extends Construct {
     this.bucket = new Bucket(scope, id, {
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
       encryption: BucketEncryption.KMS,
-      bucketKeyEnabled: true,
+      bucketKeyEnabled: false,
       removalPolicy: RemovalPolicy.DESTROY,
       ...props,
     });
