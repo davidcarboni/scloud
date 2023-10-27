@@ -4,7 +4,7 @@ import { Construct } from 'constructs';
 import {
   DockerImageCode, DockerImageFunction, DockerImageFunctionProps,
 } from 'aws-cdk-lib/aws-lambda';
-import { Repository } from 'aws-cdk-lib/aws-ecr';
+import { IRepository } from 'aws-cdk-lib/aws-ecr';
 import { Duration } from 'aws-cdk-lib';
 import { EcrRepository } from './EcrRepository';
 import { githubActions } from './GithubActions';
@@ -22,7 +22,7 @@ export interface ContainerFunctionProps {
   memorySize?: number,
   timeout?: Duration,
   tagOrDigest?: string,
-  repository?: Repository,
+  repository?: IRepository,
   initialPass?: boolean,
   dockerImageFunctionProps?: Partial<DockerImageFunctionProps>,
 }
@@ -40,7 +40,7 @@ export interface ContainerFunctionProps {
  * initially to create the repository and then to reference an image once one has been pushed to the repository.
  */
 export class ContainerFunction extends DockerImageFunction {
-  repository: Repository;
+  repository: IRepository;
 
   constructor(
     scope: Construct,
