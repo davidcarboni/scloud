@@ -11,7 +11,7 @@ import {
   ViewerProtocolPolicy,
 } from 'aws-cdk-lib/aws-cloudfront';
 import {
-  AuthorizationType, CognitoUserPoolsAuthorizer, LambdaRestApi, LambdaRestApiProps,
+  AuthorizationType, CognitoUserPoolsAuthorizer, CorsOptions, LambdaRestApi, LambdaRestApiProps,
 } from 'aws-cdk-lib/aws-apigateway';
 import { Code, Function } from 'aws-cdk-lib/aws-lambda';
 import { UserPool } from 'aws-cdk-lib/aws-cognito';
@@ -138,7 +138,7 @@ export class WebRoutes extends Construct {
    * NB AWS has a soft limit of 25 origins per distribution.
    * If you need more than this you'll need to request a quota increate wia the AWS console.
    */
-  addRoute(pathPattern: string, handler: Function) {
+  addRoute(pathPattern: string, handler: Function, corsPreflightOptions: CorsOptions = { allowOrigins: ['*'] }) {
     // Look for an existing origin for this handler.
     // This is useful if you need to map several path patterns to the same lambda, perhaps while refactoring an application.
     // AWS has a limit on the number of origins per distribution so this helps us keep within that limit.
@@ -151,6 +151,7 @@ export class WebRoutes extends Construct {
         handler,
         proxy: true,
         description: `${Stack.of(this).stackName} ${handler.node.id}-${pathPattern}`,
+        defaultCorsPreflightOptions: corsPreflightOptions,
       };
 
       // Add a Cognito authorizer, if configured
