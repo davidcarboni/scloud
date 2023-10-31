@@ -225,12 +225,13 @@ export class WebRoutes extends Construct {
     domainName?: string,
     defaultIndex: boolean = false,
     redirectWww: boolean = true,
+    corsPreflightOptions: CorsOptions = { allowOrigins: ['*'] },
   ): WebRoutes {
     const webRoutes = new WebRoutes(scope, id, {
       zone, domainName, defaultIndex, redirectWww,
     });
     Object.keys(routes).forEach((pathPattern) => {
-      webRoutes.addRoute(pathPattern, routes[pathPattern]);
+      webRoutes.addRoute(pathPattern, routes[pathPattern], corsPreflightOptions);
     });
     return webRoutes;
   }
