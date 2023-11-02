@@ -138,7 +138,7 @@ export class WebRoutes extends Construct {
    * NB AWS has a soft limit of 25 origins per distribution.
    * If you need more than this you'll need to request a quota increate wia the AWS console.
    */
-  addRoute(pathPattern: string, handler: Function, corsPreflightOptions: CorsOptions = { allowOrigins: ['*'] }) {
+  addRoute(pathPattern: string, handler: Function, corsPreflightOptions?: CorsOptions, binaryMediaTypes?: string[]) {
     // Look for an existing origin for this handler.
     // This is useful if you need to map several path patterns to the same lambda, perhaps while refactoring an application.
     // AWS has a limit on the number of origins per distribution so this helps us keep within that limit.
@@ -152,6 +152,7 @@ export class WebRoutes extends Construct {
         proxy: true,
         description: `${Stack.of(this).stackName} ${handler.node.id}-${pathPattern}`,
         defaultCorsPreflightOptions: corsPreflightOptions,
+        binaryMediaTypes,
       };
 
       // Add a Cognito authorizer, if configured
@@ -225,13 +226,14 @@ export class WebRoutes extends Construct {
     domainName?: string,
     defaultIndex: boolean = false,
     redirectWww: boolean = true,
-    corsPreflightOptions: CorsOptions = { allowOrigins: ['*'] },
+    corsPreflightOptions: CorsOptions | undefined = undefined,
+    binaryMediaTypes: string[] | undefined = undefined,
   ): WebRoutes {
     const webRoutes = new WebRoutes(scope, id, {
       zone, domainName, defaultIndex, redirectWww,
     });
     Object.keys(routes).forEach((pathPattern) => {
-      webRoutes.addRoute(pathPattern, routes[pathPattern], corsPreflightOptions);
+      webRoutes.addRoute(pathPattern, routes[pathPattern], corsPreflightOptions, binaryMediaTypes);
     });
     return webRoutes;
   }
