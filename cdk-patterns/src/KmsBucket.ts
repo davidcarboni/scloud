@@ -8,6 +8,14 @@ import {
 } from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
 
+interface KmsBucketProps extends BucketProps {
+  /**
+   * Pass null to indicate you don't want a key alias.
+   * This is useful when importing a bucket and key into a stack.
+   */
+  keyAlias: string | null;
+}
+
 /**
  * A bucket with a KMS key.
  * @param scope The parent CDK Stack (the stack name is used as part of the key alias).
@@ -22,7 +30,7 @@ export class KmsBucket extends Construct {
 
   bucket: Bucket;
 
-  constructor(scope: Construct, id: string, props: Partial<BucketProps>) {
+  constructor(scope: Construct, id: string, props: Partial<KmsBucketProps>) {
     // We set a key alias because this seems to be the only
     // identifying information shown in the list in the AWS console:
     super(scope, `${id}KmsBucket`);
