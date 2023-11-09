@@ -18,11 +18,8 @@ interface KmsBucketProps extends BucketProps {
 
 /**
  * A bucket with a KMS key.
- * @param scope The parent CDK Stack (the stack name is used as part of the key alias).
- * @param name The bucket name - used as the bucket and key IDs for CDK.
- * The actual bucket name will be randomised by default.
- * @param props Any additional properties for the bucket.
- * These can override the defaults provided by this function.
+ * @param props Any additional properties for the bucket. These can override the defaults provided by this function.
+ * NB if you don't want a key alias, pass null for keyAlias. This is useful when importing a bucket and key into a stack.
  * @returns An s3.Bucket
  */
 export class KmsBucket extends Construct {
@@ -32,9 +29,11 @@ export class KmsBucket extends Construct {
 
   constructor(scope: Construct, id: string, props: Partial<KmsBucketProps>) {
     // We set a key alias because this seems to be the only
-    // identifying information shown in the list in the AWS console:
+    // identifying information shown in the list in the AWS console.
+    // If explicitly null, we don't set an alias, otherwise use the value passed in
+    const alias = props.keyAlias === null ? undefined : props.keyAlias || `${Stack.of(scope).stackName}/${id}`;
     super(scope, `${id}KmsBucket`);
-    this.key = new Key(scope, `KmsKey${id}`, { removalPolicy: RemovalPolicy.RETAIN, alias: `${Stack.of(scope).stackName}/${id}`, description: id });
+    this.key = new Key(scope, `KmsKey${id}`, { removalPolicy: RemovalPolicy.RETAIN, alias, description: id });
     this.bucket = new Bucket(scope, id, {
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
       encryption: BucketEncryption.KMS,
