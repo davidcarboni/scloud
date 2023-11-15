@@ -7,8 +7,6 @@ npm i --save-dev \
   @types/aws-lambda \
   @typescript-eslint/eslint-plugin \
   @typescript-eslint/parser \
-  @types/libsodium-wrappers \
-  @types/lodash \
   @types/source-map-support \
   eslint \
   eslint-config-airbnb-base  \
@@ -16,13 +14,8 @@ npm i --save-dev \
   eslint-import-resolver-typescript \
   --
 npm i \
-  @octokit/rest \
-  libsodium-wrappers \
-  aws-lambda \
-  lodash \
-  libsodium-wrappers \
-  scloud/cdk-github \
-  scloud/cdk-patterns
+  @scloud/cdk-github \
+  @scloud/cdk-patterns \
   --
 
 #
