@@ -224,102 +224,23 @@ export class WebRoutes extends Construct {
    *
    * @param defaultIndex Default: false. Maps a viewer request for '/' to a request for /index.html.
    * @param redirectWww Default: true. Redirects requests for www. to the bare domain name, e.g. www.example.com->example.com, www.subdomain.example.com->subdomain.example.com.
-   * @param distributionProps Any properties for the distribution you'd like to add or override
+   * @param webRoutesProps Properties to configure the WebRoutes construct
+   * @param lambdaRestApiProps (optional) Properties to configure the LambdaRestApis that will route to your functions
    */
   static routes(
     scope: Construct,
     id: string,
     routes: { [pathPattern: string]: Function; },
-    zone: IHostedZone,
-    domainName?: string,
-    defaultIndex: boolean = false,
-    redirectWww: boolean = true,
-    distributionProps: Partial<DistributionProps> = {},
+    webRoutesProps: WebRoutesProps,
     lambdaRestApiProps: Partial<LambdaRestApiProps> = {},
   ): WebRoutes {
     const webRoutes = new WebRoutes(scope, id, {
-      zone, domainName, defaultIndex, redirectWww, distributionProps,
+      defaultIndex: false,
+      redirectWww: true,
+      ...webRoutesProps,
     });
     Object.keys(routes).forEach((pathPattern) => {
       webRoutes.addRoute(pathPattern, routes[pathPattern], lambdaRestApiProps);
-    });
-    return webRoutes;
-  }
-
-  /**
-   * Builds a WebRoutes construct with a uniform set of Node Lambdas that will be instantiated for you
-   *
-   * Lanbda functions will be accessible via WebRoutes.routes
-   *
-   * Memory defaults to 3008 MB because this has the effest of assigning more compute resource and therefore reduces latency
-   *
-   * @param defaultIndex Default: false. Maps a viewer request for '/' to a request for /index.html.
-   * @param redirectWww Default: true. Redirects requests for www. to the bare domain name, e.g. www.example.com->example.com, www.subdomain.example.com->subdomain.example.com.
-   * @param distributionProps Any properties for the distribution you'd like to add or override
-   */
-  static node(
-    scope: Construct,
-    id: string,
-    routes: { [key: string]: { code?: Code, environment?: { [key: string]: string; }; }; },
-    zone: IHostedZone,
-    domainName?: string,
-    defaultIndex: boolean = false,
-    redirectWww: boolean = true,
-    zipFunctionProps: ZipFunctionProps = {},
-    distributionProps: Partial<DistributionProps> = {},
-    lambdaRestApiProps: Partial<LambdaRestApiProps> = {},
-  ): WebRoutes {
-    const webRoutes = new WebRoutes(scope, id, {
-      zone, domainName, defaultIndex, redirectWww, distributionProps,
-    });
-    Object.keys(routes).forEach((pathPattern) => {
-      const { code, environment } = routes[pathPattern];
-      const lambda = ZipFunction.node(scope, id, {
-        ...zipFunctionProps,
-        functionProps: {
-          code, environment, memorySize: 3008, ...zipFunctionProps?.functionProps,
-        },
-      });
-      webRoutes.addRoute(pathPattern, lambda, lambdaRestApiProps);
-    });
-    return webRoutes;
-  }
-
-  /**
-   * Builds a WebRoutes construct with a uniform set of Python Lambdas that will be instantiated for you
-   *
-   * Lanbda functions will be accessible via WebRoutes.routes
-   *
-   * Memory defaults to 3008 MB because this has the effest of assigning more compute resource and therefore reduces latency
-   *
-   * @param defaultIndex Default: false. Maps a viewer request for '/' to a request for /index.html.
-   * @param redirectWww Default: true. Redirects requests for www. to the bare domain name, e.g. www.example.com->example.com, www.subdomain.example.com->subdomain.example.com.
-   * @param distributionProps Any properties for the distribution you'd like to add or override
-   */
-  static python(
-    scope: Construct,
-    id: string,
-    routes: { [key: string]: { code?: Code, environment?: { [key: string]: string; }; }; },
-    zone: IHostedZone,
-    domainName?: string,
-    defaultIndex: boolean = false,
-    redirectWww: boolean = true,
-    zipFunctionProps: ZipFunctionProps = {},
-    distributionProps: Partial<DistributionProps> = {},
-    lambdaRestApiProps: Partial<LambdaRestApiProps> = {},
-  ): WebRoutes {
-    const webRoutes = new WebRoutes(scope, id, {
-      zone, domainName, defaultIndex, redirectWww, distributionProps,
-    });
-    Object.keys(routes).forEach((pathPattern) => {
-      const { code, environment } = routes[pathPattern];
-      const lambda = ZipFunction.node(scope, id, {
-        ...zipFunctionProps,
-        functionProps: {
-          code, environment, memorySize: 3008, ...zipFunctionProps?.functionProps,
-        },
-      });
-      webRoutes.addRoute(pathPattern, lambda, lambdaRestApiProps);
     });
     return webRoutes;
   }
