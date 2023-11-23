@@ -15,13 +15,12 @@ import {
 import {
   AuthorizationType, CognitoUserPoolsAuthorizer, LambdaRestApi, LambdaRestApiProps,
 } from 'aws-cdk-lib/aws-apigateway';
-import { Code, Function } from 'aws-cdk-lib/aws-lambda';
+import { Function } from 'aws-cdk-lib/aws-lambda';
 import { UserPool } from 'aws-cdk-lib/aws-cognito';
 import { ARecord, IHostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { PrivateBucket } from './PrivateBucket';
 import { githubActions } from './GithubActions';
 import { RedirectWww } from './RedirectWww';
-import { ZipFunction, ZipFunctionProps } from './ZipFunction';
 
 /**
  * @param zone The DNS zone for this web app. By default the domain name is set to the zone name
