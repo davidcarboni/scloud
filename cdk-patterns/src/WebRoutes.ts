@@ -12,7 +12,7 @@ import {
   ViewerProtocolPolicy,
 } from 'aws-cdk-lib/aws-cloudfront';
 import {
-  AuthorizationType, CognitoUserPoolsAuthorizer, CorsOptions, LambdaRestApi, LambdaRestApiProps,
+  AuthorizationType, CognitoUserPoolsAuthorizer, LambdaRestApi, LambdaRestApiProps,
 } from 'aws-cdk-lib/aws-apigateway';
 import { Code, Function } from 'aws-cdk-lib/aws-lambda';
 import { UserPool } from 'aws-cdk-lib/aws-cognito';
@@ -142,7 +142,7 @@ export class WebRoutes extends Construct {
    * NB AWS has a soft limit of 25 origins per distribution.
    * If you need more than this you'll need to request a quota increate wia the AWS console.
    */
-  addRoute(pathPattern: string, handler: Function, corsPreflightOptions?: CorsOptions, binaryMediaTypes?: string[]) {
+  addRoute(pathPattern: string, handler: Function, lambdaRestApiProps?: Partial<LambdaRestApiProps>) {
     // Look for an existing origin for this handler.
     // This is useful if you need to map several path patterns to the same lambda, perhaps while refactoring an application.
     // AWS has a limit on the number of origins per distribution so this helps us keep within that limit.
@@ -150,19 +150,18 @@ export class WebRoutes extends Construct {
 
     // Create a new origin if we don't have one already
     if (!origin) {
-      let lambdaRestApiProps: LambdaRestApiProps = {
+      let props: LambdaRestApiProps = {
         restApiName: `${Stack.of(this).stackName}-${handler.node.id}`,
         handler,
         proxy: true,
         description: `${Stack.of(this).stackName} ${handler.node.id}-${pathPattern}`,
-        defaultCorsPreflightOptions: corsPreflightOptions,
-        binaryMediaTypes,
+        ...lambdaRestApiProps,
       };
 
       // Add a Cognito authorizer, if configured
       if (this.authorizer) {
-        lambdaRestApiProps = {
-          ...lambdaRestApiProps,
+        props = {
+          ...props,
           defaultMethodOptions: {
             authorizationType: AuthorizationType.COGNITO,
             authorizer: this.authorizer,
@@ -171,7 +170,7 @@ export class WebRoutes extends Construct {
       }
 
       // Create the API gateway
-      const api = new LambdaRestApi(this, `${handler.node.id}Handler`, lambdaRestApiProps);
+      const api = new LambdaRestApi(this, `${handler.node.id}Handler`, props);
       this.apis[handler.node.id] = api;
 
       // Create an origin for the Cloudfront distribution
@@ -231,15 +230,14 @@ export class WebRoutes extends Construct {
     domainName?: string,
     defaultIndex: boolean = false,
     redirectWww: boolean = true,
-    corsPreflightOptions: CorsOptions | undefined = undefined,
-    binaryMediaTypes: string[] | undefined = undefined,
     distributionProps: Partial<DistributionProps> = {},
+    lambdaRestApiProps: Partial<LambdaRestApiProps> = {},
   ): WebRoutes {
     const webRoutes = new WebRoutes(scope, id, {
       zone, domainName, defaultIndex, redirectWww, distributionProps,
     });
     Object.keys(routes).forEach((pathPattern) => {
-      webRoutes.addRoute(pathPattern, routes[pathPattern], corsPreflightOptions, binaryMediaTypes);
+      webRoutes.addRoute(pathPattern, routes[pathPattern], lambdaRestApiProps);
     });
     return webRoutes;
   }
@@ -263,8 +261,9 @@ export class WebRoutes extends Construct {
     domainName?: string,
     defaultIndex: boolean = false,
     redirectWww: boolean = true,
-    functionProps: ZipFunctionProps = {},
+    zipFunctionProps: ZipFunctionProps = {},
     distributionProps: Partial<DistributionProps> = {},
+    lambdaRestApiProps: Partial<LambdaRestApiProps> = {},
   ): WebRoutes {
     const webRoutes = new WebRoutes(scope, id, {
       zone, domainName, defaultIndex, redirectWww, distributionProps,
@@ -272,12 +271,12 @@ export class WebRoutes extends Construct {
     Object.keys(routes).forEach((pathPattern) => {
       const { code, environment } = routes[pathPattern];
       const lambda = ZipFunction.node(scope, id, {
-        ...functionProps,
+        ...zipFunctionProps,
         functionProps: {
-          code, environment, memorySize: 3008, ...functionProps?.functionProps,
+          code, environment, memorySize: 3008, ...zipFunctionProps?.functionProps,
         },
       });
-      webRoutes.addRoute(pathPattern, lambda);
+      webRoutes.addRoute(pathPattern, lambda, lambdaRestApiProps);
     });
     return webRoutes;
   }
@@ -301,8 +300,9 @@ export class WebRoutes extends Construct {
     domainName?: string,
     defaultIndex: boolean = false,
     redirectWww: boolean = true,
-    functionProps: ZipFunctionProps = {},
+    zipFunctionProps: ZipFunctionProps = {},
     distributionProps: Partial<DistributionProps> = {},
+    lambdaRestApiProps: Partial<LambdaRestApiProps> = {},
   ): WebRoutes {
     const webRoutes = new WebRoutes(scope, id, {
       zone, domainName, defaultIndex, redirectWww, distributionProps,
@@ -310,12 +310,12 @@ export class WebRoutes extends Construct {
     Object.keys(routes).forEach((pathPattern) => {
       const { code, environment } = routes[pathPattern];
       const lambda = ZipFunction.node(scope, id, {
-        ...functionProps,
+        ...zipFunctionProps,
         functionProps: {
-          code, environment, memorySize: 3008, ...functionProps?.functionProps,
+          code, environment, memorySize: 3008, ...zipFunctionProps?.functionProps,
         },
       });
-      webRoutes.addRoute(pathPattern, lambda);
+      webRoutes.addRoute(pathPattern, lambda, lambdaRestApiProps);
     });
     return webRoutes;
   }
