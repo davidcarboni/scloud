@@ -7,6 +7,7 @@ import { RestApiOrigin, S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
 import {
   AllowedMethods, CachePolicy, Distribution,
   DistributionProps,
+  FunctionAssociation,
   OriginAccessIdentity,
   OriginRequestPolicy,
   ViewerProtocolPolicy,
@@ -29,6 +30,7 @@ import { ZipFunction, ZipFunctionProps } from './ZipFunction';
  * @param defaultIndex Default: true. Maps a viewer request for '/' to a request for /index.html.
  * @param wwwRedirect Default: true. Redirects requests for www. to the bare domain name, e.g. www.example.com->example.com, www.sub.example.com->sub.example.com.
  * @param distributionProps Any properties for the distribution you'd like to add or override
+ * @param functionAssociation A Cloudfront function to be associated with the default behavior (s3 static content)
  */
 export interface WebRoutesProps {
   zone: IHostedZone,
@@ -36,6 +38,7 @@ export interface WebRoutesProps {
   defaultIndex?: boolean,
   redirectWww?: boolean,
   distributionProps?: Partial<DistributionProps>,
+  functionAssociation?: FunctionAssociation,
 }
 
 /**
@@ -99,16 +102,16 @@ export class WebRoutes extends Construct {
       domainNames: [domainName],
       comment: domainName,
       defaultRootObject: props.defaultIndex === false ? undefined : 'index.html',
-      certificate: this.certificate,
-      ...props.distributionProps,
       defaultBehavior: {
         // All requests that aren't known to the API go to s3.
         // This serves static content and also handles spam traffic.
         // There are lots of probes for Wordpress installations so this largely avoids invoking lambdas in response to those.
         origin: new S3Origin(this.bucket, { originAccessIdentity }),
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        ...props.distributionProps?.defaultBehavior,
+        functionAssociations: props.functionAssociation ? [props.functionAssociation] : undefined,
       },
+      certificate: this.certificate,
+      ...props.distributionProps,
     });
     githubActions(scope).addGhaDistribution(id, this.distribution);
 
