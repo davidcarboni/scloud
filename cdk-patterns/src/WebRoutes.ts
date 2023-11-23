@@ -99,15 +99,16 @@ export class WebRoutes extends Construct {
       domainNames: [domainName],
       comment: domainName,
       defaultRootObject: props.defaultIndex === false ? undefined : 'index.html',
+      certificate: this.certificate,
+      ...props.distributionProps,
       defaultBehavior: {
         // All requests that aren't known to the API go to s3.
         // This serves static content and also handles spam traffic.
         // There are lots of probes for Wordpress installations so this largely avoids invoking lambdas in response to those.
         origin: new S3Origin(this.bucket, { originAccessIdentity }),
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        ...props.distributionProps?.defaultBehavior,
       },
-      certificate: this.certificate,
-      ...props.distributionProps,
     });
     githubActions(scope).addGhaDistribution(id, this.distribution);
 
