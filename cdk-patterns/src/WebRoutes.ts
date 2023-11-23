@@ -6,6 +6,7 @@ import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { RestApiOrigin, S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
 import {
   AllowedMethods, CachePolicy, Distribution,
+  DistributionProps,
   OriginAccessIdentity,
   OriginRequestPolicy,
   ViewerProtocolPolicy,
@@ -27,12 +28,14 @@ import { ZipFunction, ZipFunctionProps } from './ZipFunction';
  * @param domain Optional: by default the zone name will be used as the DNS name for the Cloudfront distribution (e.g. 'example.com') but you can specify a different domain here (e.g. 'subdomain.example.com').
  * @param defaultIndex Default: true. Maps a viewer request for '/' to a request for /index.html.
  * @param wwwRedirect Default: true. Redirects requests for www. to the bare domain name, e.g. www.example.com->example.com, www.sub.example.com->sub.example.com.
+ * @param distributionProps Any properties for the distribution you'd like to add or override
  */
 export interface WebRoutesProps {
   zone: IHostedZone,
   domainName?: string,
   defaultIndex?: boolean,
   redirectWww?: boolean,
+  distributionProps?: Partial<DistributionProps>,
 }
 
 /**
@@ -104,6 +107,7 @@ export class WebRoutes extends Construct {
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
       },
       certificate: this.certificate,
+      ...props.distributionProps,
     });
     githubActions(scope).addGhaDistribution(id, this.distribution);
 
@@ -217,6 +221,7 @@ export class WebRoutes extends Construct {
    *
    * @param defaultIndex Default: false. Maps a viewer request for '/' to a request for /index.html.
    * @param redirectWww Default: true. Redirects requests for www. to the bare domain name, e.g. www.example.com->example.com, www.subdomain.example.com->subdomain.example.com.
+   * @param distributionProps Any properties for the distribution you'd like to add or override
    */
   static routes(
     scope: Construct,
@@ -228,9 +233,10 @@ export class WebRoutes extends Construct {
     redirectWww: boolean = true,
     corsPreflightOptions: CorsOptions | undefined = undefined,
     binaryMediaTypes: string[] | undefined = undefined,
+    distributionProps: Partial<DistributionProps> = {},
   ): WebRoutes {
     const webRoutes = new WebRoutes(scope, id, {
-      zone, domainName, defaultIndex, redirectWww,
+      zone, domainName, defaultIndex, redirectWww, distributionProps,
     });
     Object.keys(routes).forEach((pathPattern) => {
       webRoutes.addRoute(pathPattern, routes[pathPattern], corsPreflightOptions, binaryMediaTypes);
@@ -247,6 +253,7 @@ export class WebRoutes extends Construct {
    *
    * @param defaultIndex Default: false. Maps a viewer request for '/' to a request for /index.html.
    * @param redirectWww Default: true. Redirects requests for www. to the bare domain name, e.g. www.example.com->example.com, www.subdomain.example.com->subdomain.example.com.
+   * @param distributionProps Any properties for the distribution you'd like to add or override
    */
   static node(
     scope: Construct,
@@ -257,9 +264,10 @@ export class WebRoutes extends Construct {
     defaultIndex: boolean = false,
     redirectWww: boolean = true,
     functionProps: ZipFunctionProps = {},
+    distributionProps: Partial<DistributionProps> = {},
   ): WebRoutes {
     const webRoutes = new WebRoutes(scope, id, {
-      zone, domainName, defaultIndex, redirectWww,
+      zone, domainName, defaultIndex, redirectWww, distributionProps,
     });
     Object.keys(routes).forEach((pathPattern) => {
       const { code, environment } = routes[pathPattern];
@@ -283,6 +291,7 @@ export class WebRoutes extends Construct {
    *
    * @param defaultIndex Default: false. Maps a viewer request for '/' to a request for /index.html.
    * @param redirectWww Default: true. Redirects requests for www. to the bare domain name, e.g. www.example.com->example.com, www.subdomain.example.com->subdomain.example.com.
+   * @param distributionProps Any properties for the distribution you'd like to add or override
    */
   static python(
     scope: Construct,
@@ -293,9 +302,10 @@ export class WebRoutes extends Construct {
     defaultIndex: boolean = false,
     redirectWww: boolean = true,
     functionProps: ZipFunctionProps = {},
+    distributionProps: Partial<DistributionProps> = {},
   ): WebRoutes {
     const webRoutes = new WebRoutes(scope, id, {
-      zone, domainName, defaultIndex, redirectWww,
+      zone, domainName, defaultIndex, redirectWww, distributionProps,
     });
     Object.keys(routes).forEach((pathPattern) => {
       const { code, environment } = routes[pathPattern];
