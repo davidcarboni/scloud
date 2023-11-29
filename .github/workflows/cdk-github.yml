@@ -34,6 +34,13 @@ jobs:
           yarn compile
           yarn package
 
+      - name: Publish
+        working-directory: ./${{ github.workflow }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          yarn publish --patch --access public
+
       - name: Push
         working-directory: ./${{ github.workflow }}
         if: always()
@@ -45,4 +52,3 @@ jobs:
           git commit -am "Patch version" || true
           git pull --rebase
           git push
-
