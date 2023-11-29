@@ -112,7 +112,7 @@ export async function setRepoSecret(
   owner: string,
   repo: string,
 ): Promise<string> {
-  if (!secretValue) throw new Error(`No value for secret ${secretName}`);
+  if (!secretValue) throw new Error(`No value for repo secret ${secretName} (${owner}/${repo})`);
   const publicKey = await getRepoPublicKey(owner, repo);
   const encryptedValue = await encrypt(secretValue, publicKey.key);
   const response = await octokit.actions.createOrUpdateRepoSecret({
@@ -137,7 +137,7 @@ export async function setRepoVariable(
   owner: string,
   repo: string,
 ): Promise<string> {
-  if (!value) throw new Error(`No value for variable ${name}`);
+  if (!value) throw new Error(`No value for repo variable ${name} (${owner}/${repo}))`);
   try {
     // Most likely we're updating an existing variable:
     const response = await octokit.rest.actions.updateRepoVariable({

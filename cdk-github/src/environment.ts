@@ -99,7 +99,7 @@ export async function setEnvironmentSecret(
   repo: string,
   environment: string,
 ): Promise<string> {
-  if (!secretValue) throw new Error(`No value for secret ${secretName}`);
+  if (!secretValue) throw new Error(`No value for environment secret ${secretName} (${owner}/${repo} - ${environment})`);
   const environmentPublicKey = await getEnvironmentPublicKey(owner, repo, environment);
   const encryptedValue = await encrypt(secretValue, environmentPublicKey.key);
   const repoId = await getRepoId(owner, repo);
@@ -135,7 +135,7 @@ export async function setEnvironmentVariable(
   repo: string,
   environment: string,
 ): Promise<string> {
-  if (!value) throw new Error(`No value for variable ${name}`);
+  if (!value) throw new Error(`No value for environment variable ${name} (${owner}/${repo} - ${environment}))`);
   try {
     // Most likely we're updating an existing variable:
     const response = await octokit.rest.actions.updateEnvironmentVariable({
