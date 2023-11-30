@@ -34,7 +34,7 @@ import { RedirectWww } from './RedirectWww';
 export interface WebRoutesProps {
   zone: IHostedZone,
   domainName?: string,
-  defaultIndex?: boolean,
+  defaultIndex?: boolean | string,
   redirectWww?: boolean,
   distributionProps?: Partial<DistributionProps>,
   functionAssociation?: FunctionAssociation,
@@ -97,10 +97,11 @@ export class WebRoutes extends Construct {
       subjectAlternativeNames: props.redirectWww !== false ? [`www.${domainName}`] : undefined,
     });
 
+    const rootObject = typeof props.defaultIndex === 'string' ? props.defaultIndex : 'index.html';
     this.distribution = new Distribution(scope, `${id}Distribution`, {
       domainNames: [domainName],
       comment: domainName,
-      defaultRootObject: props.defaultIndex === false ? undefined : 'index.html',
+      defaultRootObject: props.defaultIndex === false ? undefined : rootObject,
       defaultBehavior: {
         // All requests that aren't known to the API go to s3.
         // This serves static content and also handles spam traffic.
@@ -221,8 +222,6 @@ export class WebRoutes extends Construct {
    *
    * This is useful if your routes use different runtimes, environment variables an/or function properties.
    *
-   * @param defaultIndex Default: false. Maps a viewer request for '/' to a request for /index.html.
-   * @param redirectWww Default: true. Redirects requests for www. to the bare domain name, e.g. www.example.com->example.com, www.subdomain.example.com->subdomain.example.com.
    * @param webRoutesProps Properties to configure the WebRoutes construct
    * @param lambdaRestApiProps (optional) Properties to configure the LambdaRestApis that will route to your functions
    */
