@@ -13,7 +13,7 @@ export * from './RedirectDomain';
 export * from './RedirectWww';
 export * from './ScheduledFunction';
 export * from './SecretJson';
-export * from './SecretValue';
+export * from './SecretString';
 export * from './VpcEndpoint';
 export * from './WebApp';
 export * from './WebFrontend';
