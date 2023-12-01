@@ -1,5 +1,5 @@
 import { SecretValue, Stack } from 'aws-cdk-lib';
-import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
+import { Secret, SecretProps } from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 
 /**
@@ -9,10 +9,11 @@ import { Construct } from 'constructs';
  * @returns A simple secret. The value can be accessed as SecretValue.secretValue
  */
 export class SecretString extends Secret {
-  constructor(scope: Construct, id: string, props: { secretValue: string | SecretValue; }) {
+  constructor(scope: Construct, id: string, props: { secretValue: string | SecretValue, secretProps?: Partial<SecretProps>; }) {
     super(scope, id, {
       description: `${Stack.of(scope).stackName}/${id}`,
       secretStringValue: typeof props.secretValue === 'string' ? SecretValue.unsafePlainText(props.secretValue) : props.secretValue,
+      ...props.secretProps,
     });
   }
 }
