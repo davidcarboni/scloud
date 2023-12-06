@@ -61,6 +61,7 @@ export class Cognito extends Construct {
   constructor(
     scope: Construct,
     id: string,
+    props?: Partial<cognito.UserPoolProps>,
   ) {
     super(scope, `${id}Cognito`);
 
@@ -74,6 +75,7 @@ export class Cognito extends Construct {
       accountRecovery: AccountRecovery.EMAIL_ONLY,
       signInAliases: { username: false, email: true },
       removalPolicy: RemovalPolicy.DESTROY,
+      ...props,
     });
   }
 
