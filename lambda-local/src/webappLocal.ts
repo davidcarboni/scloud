@@ -147,7 +147,7 @@ export function webappLocal(
           console.log('Result:');
           Object.keys(result).forEach((key) => {
             const value = `${result[key as keyof APIGatewayProxyResult]}`;
-            console.log(` - ${key}: ${JSON.stringify(value.slice(0, 100))}`);
+            console.log(` - ${key}: ${JSON.stringify(value).slice(0, 100)}`);
           });
         }
       }
