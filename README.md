@@ -2,6 +2,12 @@
 
 _AWS CDK patterns and NPM packages for assembling serverless infrastructures_
 
+Getting started: `npm i @scloud/cdk-patterns @scloud/cdk-github`
+
+ * CDK Patterns: **@scloud/cdk-patterns** https://www.npmjs.com/package/@scloud/cdk-patterns
+ * CDK Gitgub Actions Integration: **@scloud/cdk-github** https://www.npmjs.com/package/@scloud/cdk-github
+ * More useful packages: **@scloud** https://www.npmjs.com/org/scloud
+
 This repo contains a set of AWS CDK patterns packaged as functions and constructs so you can put serverless architectures together in fewer lines of code. The aim is to make it easy to clip together typical infrastructure building blocks that can be reused (and tweaked) across your projects.
 
 It's bunch of things done well that you can benefit from. I use it to store chunks of reference code I use each time I build a new service.
@@ -9,8 +15,6 @@ It's bunch of things done well that you can benefit from. I use it to store chun
 If you want to do infrastructure well, without making AWS your life's work, then scloud could be what you need.
 
 ## NPM packages
-
-Npmjs organization: **@scloud** https://www.npmjs.com/org/scloud
 
 This repo contains a bunch of useful example code. If you'd prefer to install some useful libraries to get going with creating serverless infrastructure and code, I've published a bunch of packages on NPM:
 
