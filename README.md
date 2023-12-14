@@ -73,7 +73,7 @@ If you use Github Actions, chances are you'll want to pass variables and secrets
 
 There are a bunch of example scripts and setup under https://github.com/davidcarboni/scloud/tree/main/infrastructure
 
-A couple of key files are `dependencies.sh` (changes you may want to make to package.json) and `update.sh` (a usedul CDK deployment script). You'll also want to look at the `/secrets` directory - this is where you'll want to create `*.sh` files that can be sourced by `update.sh` to supply values to your infrastructure build.
+A couple of key files are `dependencies.sh` (changes you may want to make to package.json) and `deploy.sh` (a usedul CDK deployment script). You'll also want to look at the `/secrets` directory - this is where you'll want to create `*.sh` files that can be sourced by `deploy.sh` to supply values to your infrastructure build.
 
 ## Why the name 'Scloud'?
 

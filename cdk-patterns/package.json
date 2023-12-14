@@ -7,12 +7,12 @@
     "dist/*"
   ],
   "bin": {
-    "cdk-patterns": "dist/update.sh"
+    "cdk-patterns": "dist/deploy.sh"
   },
   "scripts": {
     "lint": "eslint --fix --ext ts src",
     "compile": "tsc",
-    "package": "mkdir -p dist && cp -r js/* update.sh src/container src/edge src/express src/lambda dist/ "
+    "package": "mkdir -p dist && cp -r js/* deploy.sh src/container src/edge src/express src/lambda dist/ "
   },
   "repository": {
     "type": "git",
