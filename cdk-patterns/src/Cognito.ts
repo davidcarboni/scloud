@@ -314,7 +314,11 @@ export class Cognito extends Construct {
    *
    * You'll need to pass either a federationMetadataUrl or a federationMetadataXml.
    *
-   * You'll need to pass either a zone and domainName, or a domainPrefix.
+   * You'll want to pass either a domain prefix (creates https://<prefix>.auth.<region>.amazoncognito.com) or a
+   * zone (and optionally domainName) if you don't pass a domainName the user pool url will be https://auth.<zoneName>
+   *
+   * NB at the time of writing AWS has a hard limit of 4 custom Cognito domains so if you're running multiple user pools
+   * in a single AWS account you may need to use domain prefixes.
    */
   static withSSO(
     scope: Construct,
@@ -331,15 +335,19 @@ export class Cognito extends Construct {
     const sso = new Cognito(scope, id);
     sso.addSamlIdp(samlProviderName, federationMetadataUrl, federationMetadataXml);
     sso.createUserPoolClient(callbackUrl, false, alternativeCallbackUrl);
-    if (zone && domainName) sso.addCustomDomain(zone, domainName);
-    else if (domainPrefix) sso.addDomainPrefix(domainPrefix);
+    if (domainPrefix) sso.addDomainPrefix(domainPrefix);
+    else if (zone) sso.addCustomDomain(zone, domainName || `auth.${zone.zoneName}`);
     return sso;
   }
 
   /**
    * Creates a Cognito instance configured for email login.
    *
-   * You'll need to pass either a zone (and optionally domainName - defaults to auth.<zoneName>), or a domainPrefix.
+   * You'll want to pass either a domain prefix (creates https://<prefix>.auth.<region>.amazoncognito.com) or a
+   * zone (and optionally domainName) if you don't pass a domainName the user pool url will be https://auth.<zoneName>
+   *
+   * NB at the time of writing AWS has a hard limit of 4 custom Cognito domains so if you're running multiple user pools
+   * in a single AWS account you may need to use domain prefixes.
    */
   static withEmailLogin(
     scope: Construct,
@@ -352,15 +360,19 @@ export class Cognito extends Construct {
   ): Cognito {
     const email = new Cognito(scope, id);
     email.createUserPoolClient(callbackUrl, true, alternativeCallbackUrl);
-    if (zone) email.addCustomDomain(zone, domainName);
-    else if (domainPrefix) email.addDomainPrefix(domainPrefix);
+    if (domainPrefix) email.addDomainPrefix(domainPrefix);
+    else if (zone) email.addCustomDomain(zone, domainName || `auth.${zone.zoneName}`);
     return email;
   }
 
   /**
    * Creates a Cognito instance configured for Social logins (Google and Facebook) and optionally email.
    *
-   * You'll need to pass either a zone (and optionally domainName - defaults to auth.<zoneName>), or a domainPrefix.
+   * You'll want to pass either a domain prefix (creates https://<prefix>.auth.<region>.amazoncognito.com) or a
+   * zone (and optionally domainName) if you don't pass a domainName the user pool url will be https://auth.<zoneName>
+   *
+   * NB at the time of writing AWS has a hard limit of 4 custom Cognito domains so if you're running multiple user pools
+   * in a single AWS account you may need to use domain prefixes.
    */
   static withSocialLogins(
     scope: Construct,
@@ -380,8 +392,8 @@ export class Cognito extends Construct {
     if (googleClientId && googleClientSecret) social.addGoogleIdp(googleClientId, googleClientSecret);
     if (facebookAppId && facebookAppSecret) social.addFacebookIdp(facebookAppId, facebookAppSecret);
     social.createUserPoolClient(callbackUrl, enableEmailLogin, alternativeCallbackUrl);
-    if (zone && domainName) social.addCustomDomain(zone, domainName);
-    else if (domainPrefix) social.addDomainPrefix(domainPrefix);
+    if (domainPrefix) social.addDomainPrefix(domainPrefix);
+    else if (zone) social.addCustomDomain(zone, domainName || `auth.${zone.zoneName}`);
     return social;
   }
 
@@ -405,7 +417,11 @@ export class Cognito extends Construct {
    *
    * see: https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools-saml-idp.html
    *
-   * You'll need to pass either a zone (and optionally domainName - defaults to auth.<zoneName>), or a domainPrefix.
+   * You'll want to pass either a domain prefix (creates https://<prefix>.auth.<region>.amazoncognito.com) or a
+   * zone (and optionally domainName) if you don't pass a domainName the user pool url will be https://auth.<zoneName>
+   *
+   * NB at the time of writing AWS has a hard limit of 4 custom Cognito domains so if you're running multiple user pools
+   * in a single AWS account you may need to use domain prefixes.
    */
   static withSSOMetadataUrl(
     scope: Construct,
@@ -421,8 +437,8 @@ export class Cognito extends Construct {
     const sso = new Cognito(scope, id);
     sso.addSamlIdp(samlProviderName, federationMetadataUrl, undefined);
     sso.createUserPoolClient(callbackUrl, false, alternativeCallbackUrl);
-    if (zone && domainName) sso.addCustomDomain(zone, domainName);
-    else if (domainPrefix) sso.addDomainPrefix(domainPrefix);
+    if (domainPrefix) sso.addDomainPrefix(domainPrefix);
+    else if (zone) sso.addCustomDomain(zone, domainName || `auth.${zone.zoneName}`);
     return sso;
   }
 
@@ -450,7 +466,11 @@ export class Cognito extends Construct {
    * NB it's usually best to test Google Worspace sso in incognito mode as if you're already signed in you may get a 403 error.
    * This is possibly because your local cached credentials haven't yet updated with access to the App.
    *
-   * You'll need to pass either a zone (and optionally domainName - defaults to auth.<zoneName>), or a domainPrefix.
+   * You'll want to pass either a domain prefix (creates https://<prefix>.auth.<region>.amazoncognito.com) or a
+   * zone (and optionally domainName) if you don't pass a domainName the user pool url will be https://auth.<zoneName>
+   *
+   * NB at the time of writing AWS has a hard limit of 4 custom Cognito domains so if you're running multiple user pools
+   * in a single AWS account you may need to use domain prefixes.
    */
   static withSSOMetadataXml(
     scope: Construct,
@@ -466,8 +486,8 @@ export class Cognito extends Construct {
     const sso = new Cognito(scope, id);
     sso.addSamlIdp(samlProviderName, undefined, federationMetadataXml);
     sso.createUserPoolClient(callbackUrl, false, alternativeCallbackUrl);
-    if (zone && domainName) sso.addCustomDomain(zone, domainName);
-    else if (domainPrefix) sso.addDomainPrefix(domainPrefix);
+    if (domainPrefix) sso.addDomainPrefix(domainPrefix);
+    else if (zone) sso.addCustomDomain(zone, domainName || `auth.${zone.zoneName}`);
     return sso;
   }
 }

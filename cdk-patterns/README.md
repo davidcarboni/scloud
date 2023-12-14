@@ -15,6 +15,10 @@ A couple of highlights:
  * `cognitoPool` - creates a Cognito user pool and optionally configures Google, Facebook and SAML (sso) login
  * `ghaUser` - if you use Github Actions, this generates an IAM user access key with permission to deploy to resources defined in your stack (see also `addGha*` functions such as `addGhaSecret`, `addGhaVariable`, `addGhaLambda` etc.)
 
+## Release notes
+
+ * **4.3.36**: Fix genetating hefault https://auth.<zoneName> Cognito URLs if no domain prefix or explicit domain name is passed to the static Cognito creation functions.
+
 ## Philosophy and contribution
 
 I've refined these patterns since 2020 to keep them as clean, simple and useful as possible. My main aim is to build a library that gives you what you usually need, most of the time. That means it makes assumptions and has some opinions.
