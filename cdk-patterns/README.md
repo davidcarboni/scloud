@@ -19,6 +19,7 @@ A couple of highlights:
 
 ## Release notes
 
+ * **0.5.1**: Update WwwRediect prop `domain` to `domainName` in to be clearer and more consistent with related constructs
  * **4.3.37**: Documentation update.
  * **4.3.36**: Fix genetating default https://auth.<zoneName> Cognito URLs if no domain prefix or explicit domain name is passed to the static Cognito creation functions.
 
