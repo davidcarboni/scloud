@@ -120,7 +120,7 @@ export class WebApp extends Construct {
       zone: props.zone,
     });
 
-    if (props.redirectWww !== false) new RedirectWww(scope, id, { zone: props.zone, certificate: this.certificate });
+    if (props.redirectWww !== false) new RedirectWww(scope, id, { zone: props.zone, certificate: this.certificate, domainName });
   }
 
   /**
