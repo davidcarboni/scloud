@@ -11,7 +11,7 @@ import { Certificate, DnsValidatedCertificate } from 'aws-cdk-lib/aws-certificat
 export interface RedirectWwwProps {
   zone: route53.IHostedZone,
   certificate?: Certificate,
-  domain?: string;
+  domainName?: string;
 }
 
 /**
@@ -21,13 +21,13 @@ export interface RedirectWwwProps {
  */
 export class RedirectWww extends route53patterns.HttpsRedirect {
   constructor(scope: Construct, id: string, props: RedirectWwwProps) {
-    const domainName = props.domain || `${props.zone.zoneName}`;
+    const domain = props.domainName || `${props.zone.zoneName}`;
     super(scope, `${id}WwwRedirect`, {
-      targetDomain: domainName,
-      recordNames: [`www.${domainName}`],
+      targetDomain: domain,
+      recordNames: [`www.${domain}`],
       zone: props.zone,
       certificate: props.certificate || new DnsValidatedCertificate(scope, `${id}WwwCertificate`, {
-        domainName: `www.${domainName}`,
+        domainName: `www.${domain}`,
         hostedZone: props.zone,
         // this is required for Cloudfront certificates:
         // https://docs.aws.amazon.com/cdk/api/v1/docs/aws-cloudfront-readme.html
