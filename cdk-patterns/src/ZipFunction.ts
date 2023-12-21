@@ -10,12 +10,14 @@ import { githubActions } from './GithubActions';
  * @param environment Optional: Environment variables for the Lambda function
  * @param memorySize Default 256: the amount of memory to allocate to the Lambda function
  * @param timeout Default 10 seconds: the amount of time the Lambda function has to run before it times out
+ * @param handler Default 'src/lambda.handler': the name of the lambda handler function
  * @param functionProps Optional: If you need to specify any detailed properties for the Lambda function, you can do so here and they will override any defaults e.g. { runtime: Runtime.PYTHON_3_10 }
  */
 export interface ZipFunctionProps {
   environment?: { [key: string]: string; },
   memorySize?: number,
   timeout?: Duration,
+  handler?: string,
   functionProps?: Partial<FunctionProps>;
 }
 
@@ -44,7 +46,7 @@ export class ZipFunction extends Function {
       timeout: props?.timeout || Duration.seconds(30),
       description: id, // Provides something readable in the AWS console view
       runtime: Runtime.NODEJS_18_X,
-      handler: 'src/lambda.handler',
+      handler: props?.handler || 'src/lambda.handler',
       code: Code.fromInline('Placeholder code'), // Asset(path.join(__dirname, './lambda/python')),
       logRetention: logs.RetentionDays.TWO_YEARS,
       ...props?.functionProps,
