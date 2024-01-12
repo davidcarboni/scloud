@@ -77,22 +77,26 @@ describe('helpers.ts', () => {
 
   describe('parseBody', () => {
     it('Should parse body', () => {
-      const query = parseBody(JSON.stringify({ a: '1', b: '2' }));
+      const query = parseBody(JSON.stringify({ a: '1', b: '2' }), false);
+      expect(query).to.deep.equal({ a: '1', b: '2' });
+    });
+    it('Should parse a base-64 encoded body', () => {
+      const query = parseBody(Buffer.from(JSON.stringify({ a: '1', b: '2' })).toString('base64'), true);
       expect(query).to.deep.equal({ a: '1', b: '2' });
     });
 
     it('Should gracefully handle unparseable body', () => {
-      const query = parseBody('Ain\'t nobody here but us chickens');
+      const query = parseBody('Ain\'t nobody here but us chickens', false);
       expect(query).to.deep.equal({});
     });
 
     it('Should handle empty body', () => {
-      const query = parseBody('');
+      const query = parseBody('', false);
       expect(query).to.deep.equal({});
     });
 
     it('Should handle no body', () => {
-      const query = parseBody(null);
+      const query = parseBody(null, false);
       expect(query).to.deep.equal({});
     });
   });
