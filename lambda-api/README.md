@@ -29,3 +29,7 @@ export async function handler(event: APIGatewayProxyEvent, context: Context): Pr
 ```
 
 The `apiHandler` function will call your route functions according to the method and path of the request, catching any errors and returning 404/405 if a path/method isn't defined, or 500 if an error is thrown.
+
+## Release notes
+
+* **0.1.24**: Decode Base-64 encoded event body if needed, before parsing as JSON
