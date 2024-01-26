@@ -19,6 +19,7 @@ A couple of highlights:
 
 ## Release notes
 
+ * **0.5.3**: Add BuildsBucket
  * **0.5.2**: Add an optional handler to `ZipFunctionProps` so that a handler other than `src/lambda.handler` can be specified.
  * **0.5.1**: Update WwwRediect prop `domain` to `domainName` in to be clearer and more consistent with related constructs
  * **4.3.37**: Documentation update.
