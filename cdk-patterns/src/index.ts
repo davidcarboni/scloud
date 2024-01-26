@@ -1,5 +1,6 @@
 export * from './ApiFunction';
 export * from './BucketFunction';
+export * from './BulidsBucket';
 export * from './Cognito';
 export * from './ContainerFunction';
 export * from './EcrRepository';
