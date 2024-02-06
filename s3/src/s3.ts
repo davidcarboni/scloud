@@ -145,18 +145,18 @@ export async function deleteObject(bucket: string, key: string): Promise<boolean
 }
 
 /**
-   * Default maxKeys is 1000
-   */
-export async function listObjects(bucket: string, prefix?: string): Promise<string[]> {
+ * Default maxKeys is 1000
+ */
+export async function listObjects(bucket: string, prefix?: string): Promise<Record<string, { modified?: Date, size?: number; }>> {
   const command = new ListObjectsV2Command({
     Bucket: bucket,
     Prefix: prefix,
   });
 
-  const result: string[] = [];
+  const result: Record<string, { modified?: Date, size?: number; }> = {};
   try {
     const { Contents } = await client.send(command);
-    if (Contents) Contents.forEach((c) => { if (c.Key) result.push(c.Key); });
+    if (Contents) Contents.forEach((c) => { if (c.Key) result[c.Key] = { modified: c.LastModified, size: c.Size }; });
   } catch (e) {
     console.error('Error listing', prefix, (e as Error).stack);
   }
@@ -164,12 +164,12 @@ export async function listObjects(bucket: string, prefix?: string): Promise<stri
 }
 
 /**
-   * List a key to see if it exists in the bucket
-   * @returns true if a single matching key exists
-   */
+ * List a key to see if it exists in the bucket
+ * @returns true if a single matching key exists
+ */
 export async function objectExists(bucket: string, key: string): Promise<boolean> {
   const found = await listObjects(bucket, key);
-  return found.length === 1;
+  return Object.keys(found).length === 1;
 }
 
 /**
