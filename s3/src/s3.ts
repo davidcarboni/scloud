@@ -147,16 +147,16 @@ export async function deleteObject(bucket: string, key: string): Promise<boolean
 /**
  * Default maxKeys is 1000
  */
-export async function listObjects(bucket: string, prefix?: string): Promise<Record<string, { modified?: Date, size?: number; }>> {
+export async function listObjects(bucket: string, prefix?: string): Promise<Record<string, { modified?: Date, size?: number, etag?: string; }>> {
   const command = new ListObjectsV2Command({
     Bucket: bucket,
     Prefix: prefix,
   });
 
-  const result: Record<string, { modified?: Date, size?: number; }> = {};
+  const result: Record<string, { modified?: Date, size?: number, etag?: string; }> = {};
   try {
     const { Contents } = await client.send(command);
-    if (Contents) Contents.forEach((c) => { if (c.Key) result[c.Key] = { modified: c.LastModified, size: c.Size }; });
+    if (Contents) Contents.forEach((c) => { if (c.Key) result[c.Key] = { modified: c.LastModified, size: c.Size, etag: c.ETag }; });
   } catch (e) {
     console.error('Error listing', prefix, (e as Error).stack);
   }
