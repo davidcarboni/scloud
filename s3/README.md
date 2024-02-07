@@ -6,7 +6,8 @@ This is intended to provide you with the operations you'll mostly need most of t
 
 ## Changelog
 
- * **0.0.6**:Return object size and modification date from listObjects. This allows the caller to have more information about an object (example use-case: determine if new content to be put differs from the existing content in the same way `aws s3 sync` does - https://stackoverflow.com/a/43531938/723506).
+ * **0.0.7**: Fix typos in documentation
+ * **0.0.6**: Return object size and modification date from listObjects. This allows the caller to have more information about an object (example use-case: determine if new content to be put differs from the existing content in the same way `aws s3 sync` does - https://stackoverflow.com/a/43531938/723506).
 
 ## Functions
 
