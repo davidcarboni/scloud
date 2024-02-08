@@ -7,6 +7,7 @@ import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { RestApiOrigin, S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
 import {
   AllowedMethods, CachePolicy, Distribution,
+  DistributionProps,
   OriginAccessIdentity,
   OriginRequestPolicy,
   ViewerProtocolPolicy,
@@ -34,6 +35,7 @@ export interface WebAppProps {
   domainName?: string,
   defaultIndex?: boolean,
   redirectWww?: boolean,
+  distributionProps?: Partial<DistributionProps>,
 }
 
 /**
@@ -88,6 +90,9 @@ export class WebApp extends Construct {
       subjectAlternativeNames: props.redirectWww !== false ? [`www.${domainName}`] : undefined,
     });
 
+    // This enables us to separate out the defaultBehavior props (if any) from the distributionProps (if provided)
+    // See https://stackoverflow.com/a/34710102/723506 for an explanation of this destructuring
+    const { defaultBehavior, additionalBehaviors, ...distributionProps } = props.distributionProps || ({} as Partial<DistributionProps>);
     this.distribution = new Distribution(scope, `${id}Distribution`, {
       domainNames: [domainName],
       comment: domainName,
@@ -98,6 +103,7 @@ export class WebApp extends Construct {
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         cachePolicy: CachePolicy.CACHING_DISABLED, // Assume dynamic content
         originRequestPolicy: OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
+        ...defaultBehavior,
       },
       // All requests for something with a file extension go to s3 (actually, any path that contains a period).
       // The aim is to route *.css, *.js, *.jpeg, etc)
@@ -108,8 +114,10 @@ export class WebApp extends Construct {
           viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
           compress: true,
         },
+        ...additionalBehaviors,
       },
       certificate: this.certificate,
+      ...distributionProps,
     });
     githubActions(scope).addGhaDistribution(id, this.distribution);
 
