@@ -10,6 +10,7 @@ import { S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
 import { githubActions } from './GithubActions';
 import { PrivateBucket } from './PrivateBucket';
 import { RedirectWww } from './RedirectWww';
+import { RecursivePartial } from './types';
 
 /**
  * @param zone The DNS zone for this web app. By default the domain name is set to the zone name
@@ -23,7 +24,7 @@ export interface WebFrontendProps {
   domainName?: string,
   defaultIndex?: boolean,
   redirectWww?: boolean,
-  distributionProps?: Partial<DistributionProps>,
+  distributionProps?: RecursivePartial<DistributionProps>,
 }
 
 /**

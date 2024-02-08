@@ -20,6 +20,7 @@ import { ARecord, IHostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { PrivateBucket } from './PrivateBucket';
 import { githubActions } from './GithubActions';
 import { RedirectWww } from './RedirectWww';
+import { RecursivePartial } from './types';
 
 /**
  * @param zone The DNS zone for this web app. By default the domain name is set to the zone name
@@ -35,7 +36,7 @@ export interface WebRoutesProps {
   domainName?: string,
   defaultIndex?: boolean | string,
   redirectWww?: boolean,
-  distributionProps?: Partial<DistributionProps>,
+  distributionProps?: RecursivePartial<DistributionProps>,
 }
 
 /**
