@@ -1,6 +1,6 @@
 import { DnsValidatedCertificate } from 'aws-cdk-lib/aws-certificatemanager';
 import {
-  Distribution, OriginAccessIdentity, ViewerProtocolPolicy,
+  Distribution, DistributionProps, OriginAccessIdentity, ViewerProtocolPolicy,
 } from 'aws-cdk-lib/aws-cloudfront';
 import { ARecord, IHostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
@@ -23,6 +23,7 @@ export interface WebFrontendProps {
   domainName?: string,
   defaultIndex?: boolean,
   redirectWww?: boolean,
+  distributionProps?: Partial<DistributionProps>,
 }
 
 /**
@@ -67,6 +68,9 @@ export class WebFrontend extends Construct {
       subjectAlternativeNames: props.redirectWww !== false ? [`www.${domainName}`] : undefined,
     });
 
+    // This enables us to separate out the defaultBehavior props (if any) from the distributionProps (if provided)
+    // See https://stackoverflow.com/a/34710102/723506 for an explanation of this destructuring
+    const { defaultBehavior, ...distributionProps } = props.distributionProps || ({} as Partial<DistributionProps>);
     this.distribution = new Distribution(scope, `${id}Distribution`, {
       domainNames: [domainName],
       comment: domainName,
@@ -74,8 +78,10 @@ export class WebFrontend extends Construct {
       defaultBehavior: {
         origin: new S3Origin(this.bucket, { originAccessIdentity }),
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        ...defaultBehavior,
       },
       certificate: this.certificate,
+      ...distributionProps,
     });
     githubActions(scope).addGhaDistribution(id, this.distribution);
 
