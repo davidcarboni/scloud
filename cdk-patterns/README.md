@@ -19,6 +19,7 @@ A couple of highlights:
 
 ## Release notes
 
+ * **0.5.4**: Enable customising Cloudfront `defaultBehavior` in `DistributionProps`, which enables us to remove the explicit `WebRoutesProps.functionAssociation?` in favour of optionally passing this as part of `WebRoutesProps.distributionProps`
  * **0.5.3**: Add BuildsBucket
  * **0.5.2**: Add an optional handler to `ZipFunctionProps` so that a handler other than `src/lambda.handler` can be specified.
  * **0.5.1**: Update WwwRediect prop `domain` to `domainName` in to be clearer and more consistent with related constructs
