@@ -22,7 +22,6 @@ import { RedirectWww } from './RedirectWww';
 import { githubActions } from './GithubActions';
 import { PrivateBucket } from './PrivateBucket';
 import { ZipFunction, ZipFunctionProps } from './ZipFunction';
-import { RecursivePartial } from './types';
 /**
  * @param lambda The function which will respond to incoming request events.
  * @param zone The DNS zone for this web app.
@@ -36,7 +35,7 @@ export interface WebAppProps {
   domainName?: string,
   defaultIndex?: boolean,
   redirectWww?: boolean,
-  distributionProps?: RecursivePartial<DistributionProps>,
+  distributionProps?: Partial<DistributionProps>,
 }
 
 /**
