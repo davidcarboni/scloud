@@ -7,7 +7,6 @@ import { RestApiOrigin, S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
 import {
   AllowedMethods, CachePolicy, Distribution,
   DistributionProps,
-  FunctionAssociation,
   OriginAccessIdentity,
   OriginRequestPolicy,
   ViewerProtocolPolicy,
@@ -37,7 +36,6 @@ export interface WebRoutesProps {
   defaultIndex?: boolean | string,
   redirectWww?: boolean,
   distributionProps?: Partial<DistributionProps>,
-  functionAssociation?: FunctionAssociation,
 }
 
 /**
@@ -98,6 +96,9 @@ export class WebRoutes extends Construct {
     });
 
     const rootObject = typeof props.defaultIndex === 'string' ? props.defaultIndex : 'index.html';
+    // This enables us to separate out the defaultBehavior props (if any) from the distributionProps (if provided)
+    // See https://stackoverflow.com/a/34710102/723506 for an explanation of this destructuring
+    const { defaultBehavior, ...distributionProps } = props.distributionProps || ({} as Partial<DistributionProps>);
     this.distribution = new Distribution(scope, `${id}Distribution`, {
       domainNames: [domainName],
       comment: domainName,
@@ -108,10 +109,10 @@ export class WebRoutes extends Construct {
         // There are lots of probes for Wordpress installations so this largely avoids invoking lambdas in response to those.
         origin: new S3Origin(this.bucket, { originAccessIdentity }),
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        functionAssociations: props.functionAssociation ? [props.functionAssociation] : undefined,
+        ...defaultBehavior,
       },
       certificate: this.certificate,
-      ...props.distributionProps,
+      ...distributionProps,
     });
     githubActions(scope).addGhaDistribution(id, this.distribution);
 
