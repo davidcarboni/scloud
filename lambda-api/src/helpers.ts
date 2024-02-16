@@ -35,7 +35,11 @@ export function standardHeaders(headers: { [name: string]: string | undefined; }
   const result: { [name: string]: string; } = {};
   Object.keys(headers).forEach((name) => {
     const value = headers[name];
-    if (value) result[name.toLowerCase()] = value;
+    if (value) {
+      // Provide both original-case and lowercased (standardised) header names for ease of access:
+      result[name] = value;
+      result[name.toLowerCase()] = value;
+    }
   });
   return result;
 }
