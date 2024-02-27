@@ -16,6 +16,7 @@ export * from './ScheduledFunction';
 export * from './SecretJson';
 export * from './SecretString';
 export * from './VpcEndpoint';
+export * from './WebApi';
 export * from './WebApp';
 export * from './WebFrontend';
 export * from './WebRoutes';
