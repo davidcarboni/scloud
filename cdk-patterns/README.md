@@ -18,7 +18,7 @@ A couple of highlights:
  * `ghaUser` - if you use Github Actions, this generates an IAM user access key with permission to deploy to resources defined in your stack (see also `addGha*` functions such as `addGhaSecret`, `addGhaVariable`, `addGhaLambda` etc.)
 
 ## Release notes
-
+ * **0.5.5**: First draft of WebApi pattern (e.g. mobile app backend)
  * **0.5.4**: Enable customising Cloudfront `defaultBehavior` in `DistributionProps`, which enables us to remove the explicit `WebRoutesProps.functionAssociation?` in favour of optionally passing this as part of `WebRoutesProps.distributionProps`
  * **0.5.3**: Add BuildsBucket
  * **0.5.2**: Add an optional handler to `ZipFunctionProps` so that a handler other than `src/lambda.handler` can be specified.
