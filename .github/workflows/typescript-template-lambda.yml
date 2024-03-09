@@ -1,0 +1,73 @@
+name: typescript-template-lambda
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+    # Build when there are changes in the directory that holds the component,
+    # or when this workflow file is changed
+    - 'typescript-template-lambda/**'
+    - '.github/workflows/typescript-template-lambda.yml'
+  schedule:
+    # A weekly build to pick up updates and security patches for libraries
+    # This should fail if there are API changes in new dependency versions
+    - cron: "11 11 * * 5"
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    name: Lambda
+    runs-on: ubuntu-latest
+    env:
+      # These need to be set up in CDK code:
+      buildsBucket: ${{ vars.BUILDS_BUCKET }}
+      lambdaName: ${{ vars.TYPESCRIPT_TEMPLATE_LAMBDA_LAMBDA }}
+
+    steps:
+
+    - uses: actions/checkout@v4
+
+    - uses: aws-actions/configure-aws-credentials@v4
+      with:
+        # This needs to be set up in CDK code:
+        role-to-assume: ${{ vars.GHA_OIDC_ROLE }}
+        aws-region: eu-west-2
+
+    - name: Build
+      working-directory: ${{ github.workflow }}
+      run: |
+        yarn
+        yarn lint
+        yarn test
+        yarn compile
+
+    - name: Package
+      working-directory: ${{ github.workflow }}
+      run: |
+        yarn package
+
+    - name: Update function code
+      working-directory: ${{ github.workflow }}
+      run: |
+        aws s3 cp dist/function.zip s3://${{ env.buildsBucket }}/${{ github.workflow }}.zip
+        aws lambda update-function-code --function-name=${{ env.lambdaName }} --s3-bucket ${{ env.buildsBucket }} --s3-key ${{ github.workflow }}.zip
+
+    - name: Integration test
+      working-directory: ${{ github.workflow }}
+      run: |
+        yarn test:integration
+
+    # Optional: notify Slack on failure
+    - name: Notify Slack
+      if: failure()
+      uses: rtCamp/action-slack-notify@v2
+      env:
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        SLACK_USERNAME: HairTracker build
+        SLACK_COLOR: ${{ job.status }}
+        SLACK_ICON_EMOJI: ":github_octocat:"
+        SLACK_CHANNEL: build

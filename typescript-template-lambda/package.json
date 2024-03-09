@@ -1,0 +1,49 @@
+{
+  "name": "api",
+  "version": "1.0.0",
+  "description": "Typescript backend API",
+  "main": "src/lambda.ts",
+  "scripts": {
+    "local": "nodemon src/lambda.ts --local",
+    "lint": "eslint --fix --ext ts src test",
+    "test": "mocha --import=tsx -r tsconfig-paths/register 'test/unit/**/*.spec.ts' # tsconfig-paths/register helps resolve imports in tests",
+    "test:integration": "mocha --import=tsx --timeout 10000 -r tsconfig-paths/register 'test/integration/**/*.spec.ts'",
+    "compile": "tsc",
+    "package": "mkdir -p dist && cp -r js/src dist && cp package*.json dist && cd dist && yarn --prod && zip -r function.zip ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Scottish-Tech-Army/serverless-volunteer-app"
+  },
+  "author": "David Carboni",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/chai": "*",
+    "@types/mocha": "*",
+    "@types/node": "*",
+    "@typescript-eslint/eslint-plugin": "*",
+    "@typescript-eslint/parser": "*",
+    "chai": "*",
+    "eslint": "*",
+    "eslint-config-airbnb-base": "*",
+    "eslint-import-resolver-typescript": "*",
+    "eslint-plugin-import": "*",
+    "mocha": "*",
+    "nodemon": "*",
+    "ts-node": "*",
+    "tsconfig-paths": "*",
+    "tsx": "*",
+    "typescript": "*"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "*",
+    "@aws-sdk/client-s3": "*",
+    "@aws-sdk/client-sqs": "*",
+    "@aws-sdk/lib-dynamodb": "*",
+    "@scloud/lambda-api": "*",
+    "@scloud/lambda-fileupload": "*",
+    "@scloud/lambda-local": "*",
+    "@scloud/s3": "*",
+    "@types/aws-lambda": "*"
+  }
+}
