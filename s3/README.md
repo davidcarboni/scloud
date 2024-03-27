@@ -26,5 +26,6 @@ This package allows you to work with binary and JSON objects.
 ### List and delete
 
  * `deleteObject(bucket, key)`: deletes an object from s3
+ * `deleteObjects(bucket, keys[])`: deletes multiple objects from s3
  * `listObjects(bucket, prefix)`: lists matching keys from the bucket
  * `objectExists(bucket, key)`: determines whether a single matching key exists in the bucket
