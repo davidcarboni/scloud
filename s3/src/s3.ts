@@ -1,6 +1,6 @@
 import {
   CopyObjectCommand,
-  DeleteObjectCommand, GetObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client,
+  DeleteObjectCommand, DeleteObjectsCommand, GetObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client,
 } from '@aws-sdk/client-s3';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { StreamingBlobPayloadOutputTypes } from '@smithy/types';
@@ -141,6 +141,27 @@ export async function deleteObject(bucket: string, key: string): Promise<boolean
   } catch (e) {
     console.error('Error deleting', key, (e as Error).stack);
     return false;
+  }
+}
+
+/**
+ * Deletes multiple objects from s3.
+ * @returns If the delete command was successful, the number of objects deleted, otherwise undefined
+ */
+export async function deleteObjects(bucket: string, keys: string[]): Promise<number | undefined> {
+  try {
+    const command = new DeleteObjectsCommand({
+      Bucket: bucket,
+      Delete: {
+        Objects: keys.map((key) => ({ Key: key })),
+      },
+    });
+
+    const result = await client.send(command);
+    return result.Deleted?.length;
+  } catch (e) {
+    console.error('Error deleting', keys.slice(0, 10), keys.length > 10 ? `... (${keys.length})` : '', (e as Error).stack);
+    return undefined;
   }
 }
 
