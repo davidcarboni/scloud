@@ -2,7 +2,6 @@ import {
   CopyObjectCommand,
   DeleteObjectCommand, DeleteObjectsCommand, GetObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client,
 } from '@aws-sdk/client-s3';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { StreamingBlobPayloadOutputTypes } from '@smithy/types';
 import * as fs from 'fs';
 import { Readable } from 'stream';
@@ -90,7 +89,7 @@ export async function putObject(bucket: string, key: string, object: string | Ui
  * @param object This will be converted to a string using JSON.stringify
  * @returns True for success, false for failure
  */
-export async function putJson(bucket: string, key: string, object: any): Promise<boolean> {
+export async function putJson<T>(bucket: string, key: string, object: T): Promise<boolean> {
   return putObject(bucket, key, JSON.stringify(object));
 }
 
@@ -119,7 +118,7 @@ export async function getObject(bucket: string, key: string): Promise<StreamingB
  * @param object This will be converted to a string using JSON.stringify
  * @returns Undefined for failure, or an object parsed from JSON
  */
-export async function getJson(bucket: string, key: string): Promise<any | undefined> {
+export async function getJson<T>(bucket: string, key: string): Promise<T | undefined> {
   const result = await getObject(bucket, key);
   if (result) {
     try {
