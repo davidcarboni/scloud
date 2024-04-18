@@ -45,18 +45,25 @@ export async function moveObject(fromBucket: string, fromKey: string, toBucket: 
     CopySource: `${fromBucket}/${fromKey}`,
   });
   const deleteCommand = new DeleteObjectCommand({
-    Bucket: toBucket,
-    Key: toKey,
+    Bucket: fromBucket,
+    Key: fromKey,
   });
 
   try {
     await client.send(copyCommand);
-    await client.send(deleteCommand);
-    return true;
   } catch (e) {
-    console.error('Error moving', `${fromBucket}/${fromKey}`, 'to', `${toBucket}/${toKey}`, (e as Error).stack);
+    console.error('Error moving object: could not copy from', `${fromBucket}/${fromKey}`, 'to', `${toBucket}/${toKey}`, (e as Error).stack);
     return false;
   }
+
+  try {
+    await client.send(deleteCommand);
+  } catch (e) {
+    console.error('Error moving objet: could not delete original from', `${fromBucket}/${fromKey}`, (e as Error).stack);
+    return false;
+  }
+
+  return true;
 }
 
 /**
@@ -139,7 +146,7 @@ export async function deleteObject(bucket: string, key: string): Promise<boolean
     await client.send(command);
     return true;
   } catch (e) {
-    console.error('Error deleting', key, (e as Error).stack);
+    console.error('Error deleting object', key, (e as Error).stack);
     return false;
   }
 }
@@ -149,6 +156,9 @@ export async function deleteObject(bucket: string, key: string): Promise<boolean
  * @returns If the delete command was successful, the number of objects deleted, otherwise undefined
  */
 export async function deleteObjects(bucket: string, keys: string[]): Promise<number | undefined> {
+  // Shortcut return (plus AWS seems to throw an error for an emply delete list)
+  if (keys.length === 0) return 0;
+
   try {
     const command = new DeleteObjectsCommand({
       Bucket: bucket,
@@ -160,7 +170,7 @@ export async function deleteObjects(bucket: string, keys: string[]): Promise<num
     const result = await client.send(command);
     return result.Deleted?.length;
   } catch (e) {
-    console.error('Error deleting', keys.slice(0, 10), keys.length > 10 ? `... (${keys.length})` : '', (e as Error).stack);
+    console.error('Error deleting objects', keys.slice(0, 10), keys.length > 10 ? `... (${keys.length})` : '', (e as Error).stack);
     return undefined;
   }
 }
