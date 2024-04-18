@@ -7,7 +7,7 @@
     "dist/*"
   ],
   "scripts": {
-    "lint": "eslint --fix --ext ts src test",
+    "lint": "eslint --fix src test",
     "test": "mocha --import=tsx -r tsconfig-paths/register 'test/**/*.spec.ts' # tsconfig-paths/register helps resolve imports in tests",
     "compile": "tsc",
     "package": "mkdir -p dist && cp -r js/src/* dist/"
@@ -31,22 +31,19 @@
   },
   "homepage": "https://github.com/davidcarboni/scloud#readme",
   "devDependencies": {
+    "@eslint/js": "*",
     "@smithy/types": "*",
     "@types/chai": "*",
     "@types/mocha": "*",
     "@types/node": "*",
-    "@typescript-eslint/eslint-plugin": "*",
-    "@typescript-eslint/parser": "*",
     "chai": "*",
     "eslint": "*",
-    "eslint-config-airbnb-base": "*",
-    "eslint-import-resolver-typescript": "*",
-    "eslint-plugin-import": "*",
     "mocha": "*",
     "ts-node": "*",
     "tsconfig-paths": "*",
-    "tsx": "^4.7.0",
-    "typescript": "*"
+    "tsx": "*",
+    "typescript": "*",
+    "typescript-eslint": "*"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "*"
