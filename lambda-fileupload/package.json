@@ -41,13 +41,11 @@
     "@typescript-eslint/parser": "*",
     "chai": "*",
     "eslint": "*",
-    "eslint-config-airbnb-base": "*",
-    "eslint-import-resolver-typescript": "*",
-    "eslint-plugin-import": "*",
     "mocha": "*",
     "ts-node": "*",
     "tsconfig-paths": "*",
-    "typescript": "*"
+    "typescript": "*",
+    "typescript-eslint": "*"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "*",
