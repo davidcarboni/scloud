@@ -10,6 +10,10 @@ There's no magic here, these are straightforward wrapper functions that eliminat
 
 This is intended to provide you with the operations you'll mostly need most of the time and, if you have an edge-case, example code you can reuse that helps you get what you need done more easily.
 
+## Release notes
+
+ * `0.0.7`: Fix default validity windows of `getUrl` and `putUrl` to match the documentation.
+
 ## Functions
 
 This package offers 3 functions, `GET`/`PUT` (good for programmatic access) and `POST` (which is good for HTML forms, but a little more involved)
