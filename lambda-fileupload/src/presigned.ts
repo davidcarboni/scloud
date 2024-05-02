@@ -18,7 +18,7 @@ export function tidy(path: string): string {
  * @param expires (optional) The number of seconds until the presigned url expires, defaults to 600 (1 minute) to allow for latency plus clock drift.
  * @returns The signed url as a string
  */
-export async function getUrl(bucket: string, key: string, expiresIn: number = 3600): Promise<string> {
+export async function getUrl(bucket: string, key: string, expiresIn: number = 600): Promise<string> {
   const command = new GetObjectCommand({ Bucket: bucket, Key: tidy(key) });
   return getSignedUrl(client, command, { expiresIn });
 }
@@ -30,7 +30,7 @@ export async function getUrl(bucket: string, key: string, expiresIn: number = 36
  * @param expires (optional) The number of seconds until the presigned url expires, defaults to 600 (1 minute) to allow for latency plus clock drift.
  * @returns The signed url as a string
  */
-export async function putUrl(bucket: string, key: string, expiresIn: number = 3600): Promise<string> {
+export async function putUrl(bucket: string, key: string, expiresIn: number = 600): Promise<string> {
   const command = new PutObjectCommand({ Bucket: bucket, Key: tidy(key) });
   return getSignedUrl(client, command, { expiresIn });
 }
