@@ -45,7 +45,7 @@ export async function putUrl(bucket: string, key: string, expiresIn: number = 60
  * @returns A form action url and (hidden) field values for the upload form. For documentation see: https://www.npmjs.com/package/@aws-sdk/s3-presigned-post#user-content-post-file-using-html-form
  */
 export async function postUrl(bucket: string, key: string, expires: number = 3600, maxSize: number = 1024 * 1024 * 100):
-  Promise<{ url: string, fields: Record<string, any>; }> {
+  Promise<{ url: string, fields: Record<string, string>; }> {
   const { url, fields } = await createPresignedPost(client, {
     Bucket: bucket,
     Key: tidy(key),
