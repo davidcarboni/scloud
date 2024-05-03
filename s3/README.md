@@ -2,7 +2,7 @@
 
 A collection of wrapper functions for the AWS SDKv3 that provide simplified CRUD and list operations.
 
-This is intended to provide you with the operations you'll mostly need most of the time and, if you have an edge-case, example code you can reuse that helps you get what you need done more easily.
+This is intended to provide you with the operations you'll mostly need most of the time and, if you have an edge-case, you can use this as example code to help you get what you need done more easily.
 
 ## Changelog
  * **0.0.10**: Fix `moveObject` and shortcut return from `deleteObjects` if the object list is empty. Also make error messages unique so we can distinguish if an error is coming from `deleteObject` or `deleteObjects`. Also added generic type information to `getJson` and `putJson`.
