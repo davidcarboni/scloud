@@ -7,7 +7,7 @@
     "dist/*"
   ],
   "scripts": {
-    "lint": "eslint --fix src test",
+    "lint": "eslint --fix src/**/*",
     "test": "mocha --import=tsx -r tsconfig-paths/register 'test/**/*.spec.ts' # tsconfig-paths/register helps resolve imports in tests",
     "compile": "tsc",
     "package": "mkdir -p dist && cp -r js/src/* dist/"
@@ -39,14 +39,9 @@
     "@types/mocha": "*",
     "@types/node": "*",
     "@types/nunjucks": "*",
-    "@typescript-eslint/eslint-plugin": "*",
-    "@typescript-eslint/parser": "*",
     "axios": "*",
     "chai": "*",
     "eslint": "*",
-    "eslint-config-airbnb-base": "*",
-    "eslint-import-resolver-typescript": "*",
-    "eslint-plugin-import": "*",
     "mocha": "*",
     "ts-node": "*",
     "tsx": "*",
