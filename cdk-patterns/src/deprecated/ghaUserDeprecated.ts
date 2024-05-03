@@ -1,4 +1,4 @@
-/* eslint-disable no-param-reassign */
+
 import {
   CfnAccessKey, OpenIdConnectProvider, Role, User,
 } from 'aws-cdk-lib/aws-iam';
@@ -83,8 +83,8 @@ export function saveGhaValues(stack: Stack) {
 }
 
 // @deprecated - Use GithubActions instead
-// eslint-disable-next-line no-unused-vars
-export function ghaPolicy(stack: Stack, name: string = `gha-${stack.stackName}-policy`) {
+
+export function ghaPolicy(stack: Stack) {
   return githubActions(stack).ghaPolicy();
 }
 
