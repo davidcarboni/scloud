@@ -1,3 +1,9 @@
+/**
+ * Simplified representation of the HTTP Request.
+ * The implementation guarantees that you'll always have non-null objects for query, headers, cookies, and body.
+ * The method will be the HTTP method from the API Gateway proxt event.
+ * The path will be the path from the API Gateway proxy event, which starts with '/'.
+ */
 export interface Request {
   method: string,
   path: string,
