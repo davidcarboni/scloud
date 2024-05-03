@@ -4,6 +4,9 @@ A Lambda handler that routes API Gateway Proxy messages and returns an API Gatew
 
 This is a piece of useful boilerplate to handle the mechanics of routing, headers and cookies, catching any errors and handling 400, 405 and 500 errors (you can optionally handle 404 and 500 with your own handler functions).
 
+## Releae notes
+
+ * `0.2.1`: Request headers are now made available in lowecase as well as their original case. The response body can now be `string` as well as `object`.
 ## Usage
 
 Create your routes:
