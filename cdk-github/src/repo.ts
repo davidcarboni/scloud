@@ -4,14 +4,6 @@ import {
 } from "@octokit/types";
 import encrypt from './encrypt';
 
-// See: https://github.com/octokit/types.ts
-type Repo = GetResponseDataTypeFromEndpointMethod<
-  typeof octokit.repos.get
->;
-type PublicKey = GetResponseDataTypeFromEndpointMethod<
-  typeof octokit.actions.getRepoPublicKey
->;
-
 const username = process.env.USERNAME;
 const personalAccessToken = process.env.PERSONAL_ACCESS_TOKEN;
 
@@ -19,6 +11,14 @@ const octokit = new Octokit({
   auth: personalAccessToken,
   userAgent: username,
 });
+
+// See: https://github.com/octokit/types.ts
+type Repo = GetResponseDataTypeFromEndpointMethod<
+  typeof octokit.repos.get
+>;
+type PublicKey = GetResponseDataTypeFromEndpointMethod<
+  typeof octokit.actions.getRepoPublicKey
+>;
 
 let repoPublicKey: PublicKey;
 
