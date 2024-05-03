@@ -43,7 +43,7 @@ export async function listEnvironmentSecrets(owner: string, repo: string, enviro
 
   if (response.status !== 200) {
     console.log(response);
-    throw new Error(`Error listing environment ${environment} secrets`);
+    throw new Error(`Error listing environment secrets for ${environment}`);
   }
 
   const { secrets } = response.data;
@@ -51,7 +51,7 @@ export async function listEnvironmentSecrets(owner: string, repo: string, enviro
 
   // Check we've got all the secrets
   if (totalCount > 100) {
-    throw new Error('Too many secrets, need to paginate.');
+    throw new Error('Too many environment secrets, TODO: need to paginate.');
   }
 
   // Collate secret names
@@ -72,7 +72,7 @@ export async function listEnvironmentVariables(owner: string, repo: string, envi
 
   if (response.status !== 200) {
     console.log(response);
-    throw new Error(`Error listing environment ${environment} variables`);
+    throw new Error(`Error listing environment variables for ${environment}`);
   }
 
   const { variables } = response.data;
@@ -80,7 +80,7 @@ export async function listEnvironmentVariables(owner: string, repo: string, envi
 
   // Check we've got all the secrets
   if (totalCount > 100) {
-    throw new Error('Too many variables, need to paginate.');
+    throw new Error('Too many environment variables, TODO: need to paginate.');
   }
 
   // Collate variable names
@@ -116,7 +116,7 @@ export async function setEnvironmentSecret(
   }
   // Looks like that didn't work.
   console.log(response);
-  throw new Error(`Error setting environment ${environment} secret value: ${secretName}: status code ${response.status}`);
+  throw new Error(`Error setting environment secret value: ${secretName}: status code ${response.status} - ${environment}`);
 }
 
 /**
@@ -149,7 +149,7 @@ export async function setEnvironmentVariable(
       return name;
     }
 
-    throw new Error(`Error setting environment ${environment} variable value: ${name}: status code ${response.status}`);
+    throw new Error(`Error setting environment variable value: ${name}: status code ${response.status} - ${environment}`);
   } catch (e) {
     // If not, we might be creating a new variable:
     const response = await octokit.rest.actions.createEnvironmentVariable({
@@ -163,7 +163,7 @@ export async function setEnvironmentVariable(
       return name;
     }
 
-    throw new Error(`Error setting environment ${environment} variable value: ${name}: status code ${response.status}`);
+    throw new Error(`Error setting environment variable value: ${name}: status code ${response.status} - ${environment}`);
   }
 }
 
@@ -184,7 +184,7 @@ export async function deleteEnvironmentSecret(
   }
   // Looks like that didn't work.
   console.log(response);
-  throw new Error(`Error deleting environment ${environment} secret value: ${secretName}: status code ${response.status}`);
+  throw new Error(`Error deleting environment secret: ${secretName}: status code ${response.status} - ${environment}`);
 }
 
 export async function deleteEnvironmentVariable(
@@ -204,5 +204,5 @@ export async function deleteEnvironmentVariable(
   }
   // Looks like that didn't work.
   console.log(response);
-  throw new Error(`Error deleting environment ${environment} variable value: ${variableName}: status code ${response.status}`);
+  throw new Error(`Error deleting environment variable: ${variableName}: status code ${response.status} - ${environment}`);
 }
