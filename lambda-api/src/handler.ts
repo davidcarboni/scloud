@@ -48,9 +48,15 @@ export async function apiHandler(
   }
 
   // API Gateway Proxy result
+  let body: string = '';
+  if (typeof response.body === 'string') {
+    body = response.body;
+  } else if (response.body) {
+    body = JSON.stringify(response.body);
+  }
   const result: APIGatewayProxyResult = {
     statusCode: response.statusCode,
-    body: JSON.stringify(response.body),
+    body,
     headers: response.headers,
   };
 
