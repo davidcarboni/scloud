@@ -4,14 +4,14 @@ export interface Request {
   query: { [name: string]: string; },
   headers: { [name: string]: string; },
   cookies: { [name: string]: string; },
-  body: { [name: string]: any; },
+  body: object,
 }
 
 export interface Response {
   statusCode: number,
   headers?: { [name: string]: string; },
   cookies?: { [name: string]: string; },
-  body?: { [name: string]: any; },
+  body?: object,
 }
 
 export type Handler = (request: Request) => Promise<Response>;
