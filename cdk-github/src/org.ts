@@ -25,7 +25,10 @@ type PublicKey = GetResponseDataTypeFromEndpointMethod<
 export async function getOrgPublicKey(octokit: Octokit, org: string): Promise<PublicKey> {
   console.log('Getting org public key...');
 
-  const response = await octokit.actions.getOrgPublicKey({ org });
+  const parameters: RestEndpointMethodTypes['actions']['getOrgPublicKey']['parameters'] = {
+    org,
+  };
+  const response = await octokit.actions.getOrgPublicKey(parameters);
 
   if (response.status === 200) {
     return response.data;
