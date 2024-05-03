@@ -2,11 +2,6 @@ import { Octokit, RestEndpointMethodTypes } from '@octokit/rest';
 import encrypt from './encrypt';
 import { GetResponseDataTypeFromEndpointMethod } from '@octokit/types';
 
-// See: https://github.com/octokit/types.ts
-type EnvironmentPublicKey = GetResponseDataTypeFromEndpointMethod<
-  typeof octokit.actions.getEnvironmentPublicKey
->;
-
 const username = process.env.USERNAME;
 const personalAccessToken = process.env.PERSONAL_ACCESS_TOKEN;
 
@@ -14,6 +9,11 @@ const octokit = new Octokit({
   auth: personalAccessToken,
   userAgent: username,
 });
+
+// See: https://github.com/octokit/types.ts
+type EnvironmentPublicKey = GetResponseDataTypeFromEndpointMethod<
+  typeof octokit.actions.getEnvironmentPublicKey
+>;
 
 const environmentPublicKeys: Record<string, EnvironmentPublicKey> = {};
 
