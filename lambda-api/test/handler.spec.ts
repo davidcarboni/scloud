@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { APIGatewayProxyEvent, Context } from 'aws-lambda';
@@ -67,7 +68,6 @@ describe('handler.ts', () => {
     it('Should return 200 for a matched route', async () => {
       const result = await apiHandler({ ...event, path: '/ok', httpMethod: 'GET' }, context, {
         '/ok': {
-          // eslint-disable-next-line no-unused-vars
           GET: async (r: Request) => ({ statusCode: 200 }),
         },
       });
@@ -82,7 +82,6 @@ describe('handler.ts', () => {
     it('Should return 405 for an unmatched method', async () => {
       const result = await apiHandler({ ...event, path: '/method', httpMethod: 'GET' }, context, {
         '/method': {
-          // eslint-disable-next-line no-unused-vars
           POST: async (r: Request) => ({ statusCode: 200, body: { method: 'POST' } }),
         },
       });
@@ -92,7 +91,6 @@ describe('handler.ts', () => {
     it('Should return 500 for an error', async () => {
       const result = await apiHandler({ ...event, path: '/boom', httpMethod: 'GET' }, context, {
         '/boom': {
-          // eslint-disable-next-line no-unused-vars
           GET: async (r: Request) => {
             throw new Error('Intended error');
           },

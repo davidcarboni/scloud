@@ -14,7 +14,6 @@ export interface Response {
   body?: { [name: string]: any; },
 }
 
-// eslint-disable-next-line no-unused-vars
 export type Handler = (request: Request) => Promise<Response>;
 export interface Route {
   GET?: Handler,

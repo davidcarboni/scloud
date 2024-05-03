@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import {
   APIGatewayProxyEvent,
   APIGatewayProxyResult,
@@ -18,7 +17,7 @@ export async function apiHandler(
   routes: Routes = {
     '/api/ping': { GET: async (request: Request) => ({ statusCode: 200, body: request }) },
   },
-  // eslint-disable-next-line no-unused-vars
+
   errorHandler: (request: Request, e: Error) => Promise<Response> = async (request: Request) => ({ statusCode: 500, body: { error: `Internal server error: ${request.path}` } }),
   catchAll: Handler = async (request: Request) => ({ statusCode: 404, body: { error: `Not found: ${request.path}` } }),
 ): Promise<APIGatewayProxyResult> {
