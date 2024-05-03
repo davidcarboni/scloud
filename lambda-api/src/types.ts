@@ -17,7 +17,7 @@ export interface Response {
   statusCode: number,
   headers?: { [name: string]: string; },
   cookies?: { [name: string]: string; },
-  body?: object,
+  body?: object | string,
 }
 
 export type Handler = (request: Request) => Promise<Response>;
