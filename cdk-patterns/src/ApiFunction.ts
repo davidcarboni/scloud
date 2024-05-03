@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import { Construct } from 'constructs';
 import { Function } from 'aws-cdk-lib/aws-lambda';
-import { LambdaRestApi } from 'aws-cdk-lib/aws-apigateway';
+import { DomainNameOptions, LambdaRestApi } from 'aws-cdk-lib/aws-apigateway';
 import { DnsValidatedCertificate } from 'aws-cdk-lib/aws-certificatemanager';
 import { ARecord, IHostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { ApiGateway } from 'aws-cdk-lib/aws-route53-targets';
@@ -37,7 +38,7 @@ export class ApiFunction extends Construct {
 
     // Domain name and SSL certificate (default to api.<zoneName>):
     const name = props.domain || `api.${props.zone?.zoneName}`;
-    let domainName: any | undefined;
+    let domainName: DomainNameOptions | undefined;
     if (props.zone) {
       domainName = props.zone ? {
         domainName: name,
