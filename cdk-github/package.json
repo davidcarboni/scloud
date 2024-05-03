@@ -10,7 +10,7 @@
     "dist/*"
   ],
   "scripts": {
-    "lint": "eslint --fix --ext ts src",
+    "lint": "eslint --fix src",
     "compile": "tsc",
     "package": "mkdir -p dist && cp -r js/* dist/"
   },
@@ -33,17 +33,14 @@
   },
   "homepage": "https://github.com/davidcarboni/scloud#readme",
   "devDependencies": {
+    "@eslint/js": "^9.1.1",
     "@types/libsodium-wrappers": "*",
     "@types/node": "*",
-    "@typescript-eslint/eslint-plugin": "*",
-    "@typescript-eslint/parser": "*",
     "eslint": "*",
-    "eslint-config-airbnb-base": "*",
-    "eslint-import-resolver-typescript": "*",
-    "eslint-plugin-import": "*",
     "source-map-support": "*",
     "ts-node": "*",
-    "typescript": "*"
+    "typescript": "*",
+    "typescript-eslint": "^7.8.0"
   },
   "dependencies": {
     "@octokit/rest": "*",
