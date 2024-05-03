@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* eslint-disable no-param-reassign */
+ 
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import {
   deleteEnvironmentSecret, deleteEnvironmentVariable, listEnvironmentSecrets, listEnvironmentVariables, setEnvironmentSecret, setEnvironmentVariable,
