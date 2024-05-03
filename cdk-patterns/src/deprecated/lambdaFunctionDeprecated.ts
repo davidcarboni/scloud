@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import * as path from 'path';
 import * as logs from 'aws-cdk-lib/aws-logs';
 import { Construct } from 'constructs';

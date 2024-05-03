@@ -1,4 +1,4 @@
-/* eslint-disable no-param-reassign */
+ 
 import * as fs from 'fs';
 import {
   CfnAccessKey, ManagedPolicy, OpenIdConnectProvider, PolicyStatement, Role, User, WebIdentityPrincipal,
