@@ -7,7 +7,7 @@
     "dist/*"
   ],
   "scripts": {
-    "lint": "eslint --fix --ext ts src test",
+    "lint": "eslint --fix src test",
     "test": "mocha --import=tsx -r tsconfig-paths/register 'test/**/*.spec.ts' # tsconfig-paths/register helps resolve imports in tests",
     "compile": "tsc",
     "package": "mkdir -p dist && cp -r js/src/* dist/"
@@ -33,6 +33,7 @@
   },
   "homepage": "https://github.com/davidcarboni/scloud#readme",
   "devDependencies": {
+    "@eslint/js": "*",
     "@types/chai": "*",
     "@types/cookie": "*",
     "@types/mocha": "*",
@@ -49,7 +50,8 @@
     "mocha": "*",
     "ts-node": "*",
     "tsx": "*",
-    "typescript": "*"
+    "typescript": "*",
+    "typescript-eslint": "*"
   },
   "dependencies": {
     "@types/aws-lambda": "*",
