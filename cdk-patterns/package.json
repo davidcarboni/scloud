@@ -10,7 +10,7 @@
     "cdk-patterns": "dist/deploy.sh"
   },
   "scripts": {
-    "lint": "eslint --fix --ext ts src",
+    "lint": "eslint --fix src",
     "compile": "tsc",
     "package": "mkdir -p dist && cp -r js/* deploy.sh src/container src/edge src/express src/lambda dist/ "
   },
@@ -34,17 +34,14 @@
   },
   "homepage": "https://github.com/davidcarboni/scloud#readme",
   "devDependencies": {
+    "@eslint/js": "*",
     "@types/lodash": "*",
     "@types/node": "*",
-    "@typescript-eslint/eslint-plugin": "*",
-    "@typescript-eslint/parser": "*",
     "aws-cdk": "*",
     "eslint": "*",
-    "eslint-config-airbnb-base": "*",
-    "eslint-import-resolver-typescript": "*",
-    "eslint-plugin-import": "*",
     "ts-node": "*",
-    "typescript": "*"
+    "typescript": "*",
+    "typescript-eslint": "*"
   },
   "dependencies": {
     "@types/aws-lambda": "*",
