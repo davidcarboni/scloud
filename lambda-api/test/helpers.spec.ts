@@ -64,14 +64,19 @@ describe('helpers.ts', () => {
   });
 
   describe('standardHeaders', () => {
-    it('Should lowercase header names', () => {
-      const query = standardHeaders({ Cookie: '1', 'Content-Type': '2' });
-      expect(query).to.deep.equal({ cookie: '1', 'content-type': '2' });
+    it('Should provide original header names plus lowercased header names', () => {
+      const headers = standardHeaders({ Cookie: '1', 'Content-Type': '2' });
+      expect(headers).to.deep.equal({
+        Cookie: '1',
+        cookie: '1',
+        'Content-Type': '2',
+        'content-type': '2',
+      });
     });
 
     it('Should remove blank values', () => {
-      const query = standardHeaders({ a: '1', b: '', c: undefined });
-      expect(query).to.deep.equal({ a: '1' });
+      const headers = standardHeaders({ a: '1', b: '', c: undefined });
+      expect(headers).to.deep.equal({ a: '1' });
     });
   });
 
