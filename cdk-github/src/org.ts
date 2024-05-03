@@ -1,6 +1,20 @@
 import * as util from 'util';
-import { Octokit } from '@octokit/rest';
+import { Octokit, RestEndpointMethodTypes } from '@octokit/rest';
 import encrypt from './encrypt';
+import { GetResponseDataTypeFromEndpointMethod } from '@octokit/types';
+
+const username = process.env.USERNAME;
+const personalAccessToken = process.env.PERSONAL_ACCESS_TOKEN;
+
+const octokit = new Octokit({
+  auth: personalAccessToken,
+  userAgent: username,
+});
+
+// See: https://github.com/octokit/types.ts
+type PublicKey = GetResponseDataTypeFromEndpointMethod<
+  typeof octokit.actions.getOrgPublicKey
+>;
 
 /**
  * Gets a public ket for an organisation.
@@ -8,7 +22,7 @@ import encrypt from './encrypt';
  * @param org The organisation to query
  * @returns The public key for the organisation
  */
-export async function getOrgPublicKey(octokit: Octokit, org: string): Promise<any> {
+export async function getOrgPublicKey(octokit: Octokit, org: string): Promise<PublicKey> {
   console.log('Getting org public key...');
 
   const response = await octokit.actions.getOrgPublicKey({ org });
@@ -39,19 +53,21 @@ export async function setOrgSecret(
   const orgPublicKey = await getOrgPublicKey(octokit, org);
   const encryptedValue = encrypt(secretValue, orgPublicKey.key);
   try {
-    const response = await octokit.actions.createOrUpdateOrgSecret({
+    const parameters: RestEndpointMethodTypes['actions']['createOrUpdateOrgSecret']['parameters'] = {
       org,
       secret_name: secretName,
       encryptedValue,
       key_id: orgPublicKey.key_id,
       visibility: 'selected',
-    });
+    };
+    const response = await octokit.actions.createOrUpdateOrgSecret(parameters);
     if (repoIDs) {
-      octokit.rest.actions.setSelectedReposForOrgSecret({
+      const parameters: RestEndpointMethodTypes['actions']['setSelectedReposForOrgSecret']['parameters'] = {
         org,
         secret_name: secretName,
         selected_repository_ids: repoIDs,
-      });
+      };
+      octokit.rest.actions.setSelectedReposForOrgSecret(parameters);
     }
 
     if (response.status === 201 || response.status === 204) {
@@ -80,9 +96,10 @@ export async function listRepos(
 ): Promise<string[]> {
   const repos: string[] = [];
   try {
-    const response = await octokit.repos.listForOrg({
+    const parameters: RestEndpointMethodTypes['repos']['listForOrg']['parameters'] = {
       org,
-    });
+    };
+    const response = await octokit.repos.listForOrg(parameters);
 
     if (response.status === 200) {
       response.data.forEach((repo) => repos.push(repo.name));
