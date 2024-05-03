@@ -50,8 +50,13 @@ export async function apiHandler(
   // API Gateway Proxy result
   let body: string = '';
   if (typeof response.body === 'string') {
+    // Use the body as-is
+    // Potentially add a text/plain content type header:
+    response.headers = { 'Content-Type': 'text/plain', ...response.headers };
     body = response.body;
   } else if (response.body) {
+    // Stringify the response object
+    // API Gateway returns applicatipno/json by default
     body = JSON.stringify(response.body);
   }
   const result: APIGatewayProxyResult = {
