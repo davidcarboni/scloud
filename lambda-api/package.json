@@ -44,6 +44,7 @@
     "eslint": "*",
     "mocha": "*",
     "ts-node": "*",
+    "tsconfig-paths": "*",
     "tsx": "*",
     "typescript": "*",
     "typescript-eslint": "*"
