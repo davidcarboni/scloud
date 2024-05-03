@@ -65,7 +65,7 @@ export async function listRepoSecrets(owner: string, repo: string): Promise<stri
 
   // Check we've got all the secrets
   if (totalCount > 100) {
-    throw new Error('Too many secrets, need to paginate.');
+    throw new Error('Too many repo secrets, TODO: need to paginate.');
   }
 
   // Collate secret names
@@ -94,7 +94,7 @@ export async function listRepoVariables(owner: string, repo: string): Promise<st
 
   // Check we've got all the secrets
   if (totalCount > 100) {
-    throw new Error('Too many variables, need to paginate.');
+    throw new Error('Too many repo variables, TODO: need to paginate.');
   }
 
   // Collate variable names
@@ -128,7 +128,7 @@ export async function setRepoSecret(
   }
   // Looks like that didn't work.
   console.log(response);
-  throw new Error(`Error setting secret value: ${secretName}: status code ${response.status}`);
+  throw new Error(`Error setting repo secret value: ${secretName}: status code ${response.status}`);
 }
 
 export async function setRepoVariable(
@@ -186,7 +186,7 @@ export async function deleteRepoSecret(
   }
   // Looks like that didn't work.
   console.log(response);
-  throw new Error(`Error deleting secret value: ${secretName}: status code ${response.status}`);
+  throw new Error(`Error deleting repo secret value: ${secretName}: status code ${response.status}`);
 }
 
 export async function deleteRepoVariable(
@@ -205,5 +205,5 @@ export async function deleteRepoVariable(
   }
   // Looks like that didn't work.
   console.log(response);
-  throw new Error(`Error deleting variable value: ${variableName}: status code ${response.status}`);
+  throw new Error(`Error deleting repo variable value: ${variableName}: status code ${response.status}`);
 }
