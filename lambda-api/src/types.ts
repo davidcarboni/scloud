@@ -10,7 +10,8 @@ export interface Request {
   query: { [name: string]: string; },
   headers: { [name: string]: string; },
   cookies: { [name: string]: string; },
-  body: object,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  body: any,
 }
 
 export interface Response {
