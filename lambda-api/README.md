@@ -6,6 +6,7 @@ This is a piece of useful boilerplate to handle the mechanics of routing, header
 
 ## Releae notes
 
+ * `0.2.4`: Allow Request.body to be `any`. Return simple text responses for handled errors (404, 500, 405)
  * `0.2.1`: Request headers are now made available in lowecase as well as their original case. The response body can now be `string` as well as `object`.
  * `0.2.2`: Add `Content-Type: text/plain` for string responses if not already set.
 
