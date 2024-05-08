@@ -8,6 +8,14 @@ import {
 } from './types';
 import { buildCookie, matchRoute, parseRequest } from './helpers';
 
+function textResponse(statusCode: number, body: string): Response {
+  return {
+    statusCode,
+    headers: { 'Content-Type': 'text/plain' },
+    body
+  };
+}
+
 /**
  * API route handler
  */
@@ -19,7 +27,7 @@ export async function apiHandler(
   },
 
   errorHandler: (request: Request, e: Error) => Promise<Response> = async (request: Request) => ({ statusCode: 500, body: { error: `Internal server error: ${request.path}` } }),
-  catchAll: Handler = async (request: Request) => ({ statusCode: 404, body: { error: `Not found: ${request.path}` } }),
+  catchAll: Handler = async (request: Request) => textResponse(404, `Not found: ${request.path}`),
 ): Promise<APIGatewayProxyResult> {
   console.log(`Executing ${context.functionName} version: ${process.env.COMMIT_HASH}`);
   const request = parseRequest(event);
@@ -32,18 +40,20 @@ export async function apiHandler(
       response = await catchAll(request);
     } else {
       const handlerFunction = route[request.method as keyof Route];
-      if (!handlerFunction) return { statusCode: 405, body: JSON.stringify('Method not allowed') };
 
       // Handle the request:
-      response = await handlerFunction(request);
+      if (handlerFunction) response = await handlerFunction(request);
+      else response = textResponse(405, 'Method not allowed');
     }
   } catch (e) {
+    // Fallback error handling
     console.error(`${(e as Error).message}\n${(e as Error).stack}`);
+    response = textResponse(500, `Internal server error: ${request.path}`);
     try {
       // Error handling
-      response = await errorHandler(request, e as Error);
+      if (errorHandler) response = await errorHandler(request, e as Error);
     } catch (ee) {
-      response = { statusCode: 500, body: { error: `Internal server error: ${request.path} [errorHandler]` } };
+      console.error(`Error in error handler: ${(e as Error).message}\n${(e as Error).stack}`);
     }
   }
 
