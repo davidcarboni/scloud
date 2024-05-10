@@ -29,7 +29,6 @@ export async function touchObject(bucket: string, key: string): Promise<boolean>
     await client.send(command);
     return true;
   } catch (e) {
-    console.error('Error putting', key, (e as Error).stack);
     return false;
   }
 }
@@ -37,28 +36,36 @@ export async function touchObject(bucket: string, key: string): Promise<boolean>
 /**
  * Moves an object in s3 by doing a copy, followed by a delete.
  */
-export async function moveObject(fromBucket: string, fromKey: string, toBucket: string, toKey: string): Promise<boolean> {
+export async function copyObject(fromBucket: string, fromKey: string, toBucket: string, toKey: string): Promise<boolean> {
   const copyCommand = new CopyObjectCommand({
     Bucket: toBucket,
     Key: toKey,
     CopySource: `${fromBucket}/${fromKey}`,
   });
+
+  try {
+    await client.send(copyCommand);
+  } catch (e) {
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Moves an object in s3 by doing a copy, followed by a delete.
+ */
+export async function moveObject(fromBucket: string, fromKey: string, toBucket: string, toKey: string): Promise<boolean> {
+  await copyObject(fromBucket, fromKey, toBucket, toKey);
+
   const deleteCommand = new DeleteObjectCommand({
     Bucket: fromBucket,
     Key: fromKey,
   });
 
   try {
-    await client.send(copyCommand);
-  } catch (e) {
-    console.error('Error moving object: could not copy from', `${fromBucket}/${fromKey}`, 'to', `${toBucket}/${toKey}`, (e as Error).stack);
-    return false;
-  }
-
-  try {
     await client.send(deleteCommand);
   } catch (e) {
-    console.error('Error moving objet: could not delete original from', `${fromBucket}/${fromKey}`, (e as Error).stack);
     return false;
   }
 
@@ -80,7 +87,6 @@ export async function putObject(bucket: string, key: string, object: string | Ui
     await client.send(command);
     return true;
   } catch (e) {
-    console.error('Error putting', key, (e as Error).stack);
     return false;
   }
 }
@@ -109,7 +115,6 @@ export async function getObject(bucket: string, key: string): Promise<StreamingB
     const response = await client.send(command);
     return response.Body;
   } catch (e) {
-    console.error('Error retrieving', key, (e as Error).stack);
     return undefined;
   }
 }
@@ -125,7 +130,7 @@ export async function getJson<T>(bucket: string, key: string): Promise<T | undef
       const body = await result.transformToString();
       return JSON.parse(body);
     } catch (e) {
-      console.error('Error parsing content to JSON', key, (e as Error).stack);
+      // Swallow error and return undefined
     }
   }
   return undefined;
@@ -141,11 +146,9 @@ export async function deleteObject(bucket: string, key: string): Promise<boolean
       Bucket: bucket,
       Key: key,
     });
-
     await client.send(command);
     return true;
   } catch (e) {
-    console.error('Error deleting object', key, (e as Error).stack);
     return false;
   }
 }
@@ -169,7 +172,6 @@ export async function deleteObjects(bucket: string, keys: string[]): Promise<num
     const result = await client.send(command);
     return result.Deleted?.length;
   } catch (e) {
-    console.error('Error deleting objects', keys.slice(0, 10), keys.length > 10 ? `... (${keys.length})` : '', (e as Error).stack);
     return undefined;
   }
 }
@@ -188,7 +190,7 @@ export async function listObjects(bucket: string, prefix?: string): Promise<Reco
     const { Contents } = await client.send(command);
     if (Contents) Contents.forEach((c) => { if (c.Key) result[c.Key] = { modified: c.LastModified, size: c.Size, etag: c.ETag }; });
   } catch (e) {
-    console.error('Error listing', prefix, (e as Error).stack);
+    // Swallow erroro and return empty object
   }
   return result;
 }
