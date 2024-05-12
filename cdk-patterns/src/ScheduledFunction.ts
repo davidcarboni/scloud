@@ -20,7 +20,7 @@ export interface ScheduledFunctionProps {
 /**
  * A Lambda function triggered by scheduled Cloudwatch events.
  *
- * The default schedule isSchedule.cron({ minute: '11', hour: '1' })
+ * The default schedule is Schedule.cron({ minute: '11', hour: '1' })
  * Which sets '11 1 * * ? *' (i.e. 1:11am every day)
  *
  * You can also pass an optional description for the rule for readability in the Cloudwatch view in the AWS console.
