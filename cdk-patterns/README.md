@@ -18,7 +18,7 @@ A couple of highlights:
  * `ghaUser` - if you use Github Actions, this generates an IAM user access key with permission to deploy to resources defined in your stack (see also `addGha*` functions such as `addGhaSecret`, `addGhaVariable`, `addGhaLambda` etc.)
 
 ## Release notes
- * **0.6.1**: Use construct id as-is in `ContainerFunction` (rather than appending `Function` to it).
+ * **0.6.1**: Use `ContainerFunction` construct id as-is in (rather than appending `Function` to it).
  * **0.5.6**: Simplify and improve documentation comment for WebApi
  * **0.5.5**: First draft of WebApi pattern (e.g. mobile app backend)
  * **0.5.4**: Enable customising Cloudfront `defaultBehavior` in `DistributionProps`, which enables us to remove the explicit `WebRoutesProps.functionAssociation?` in favour of optionally passing this as part of `WebRoutesProps.distributionProps`
