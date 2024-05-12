@@ -6,7 +6,7 @@ import { Certificate, DnsValidatedCertificate } from 'aws-cdk-lib/aws-certificat
 /**
  * @param zone The Route53 hosted zone of the domain
  * @param certificate (optional) A certificate to use for the www subdomain (you may want to use the domain apex certificate with a subject alternative name of www)
- * @param domain (optional) the domain name to redirect to, e.g. 'subdomain.example.com' would redirect 'www.subdomain.example.com' to 'subdomain.example.com' (defaults to the zone name)
+ * @param domainName (optional) the domain name to redirect to, e.g. 'subdomain.example.com' would redirect 'www.subdomain.example.com' to 'subdomain.example.com' (defaults to the zone name)
  */
 export interface RedirectWwwProps {
   zone: route53.IHostedZone,
