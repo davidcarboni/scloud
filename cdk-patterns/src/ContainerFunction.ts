@@ -58,7 +58,7 @@ export class ContainerFunction extends DockerImageFunction {
       tagOrDigest: props?.tagOrDigest || 'latest',
     });
 
-    super(scope, `${id}Function`, {
+    super(scope, id, {
       environment: props?.environment,
       memorySize: props?.memorySize || 1024,
       timeout: props?.timeout || Duration.seconds(30),
