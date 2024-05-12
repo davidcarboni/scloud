@@ -263,7 +263,7 @@ These patterns are listed here for reference. They're not yet fully documented, 
 #### Non-free patterns
 * **SecretJson**/**SecretString** - wraps the `Secret` construct to make it easier to create JSON and string secrets. Note that secrets aren't free, they cost $0.40 per month at the time of writing.
 * **PrivateEndpoint** - extends `InterfaceVpcEndpoint` to make it easy to generate private endpoints for s3, sqs, ecr, secrets manager and cloudwatch. Note that private endpoints aren't free, but if you need to locate a Lambda function in a vpc you may need one.
-* **FargateService** - Builds on the CDK `ApplicationLoadBalancedFargateService` to enable to to deploy a web-facing container. This construct incurs cost to keep the container(s) running so it's not 'fully serverless' and as such is not actively maintained.
+* **FargateService** - Builds on the CDK `ApplicationLoadBalancedFargateService` to enable you to deploy a web-facing container. This construct incurs cost to keep the container(s) running so it's not 'fully serverless' and as such is not actively maintained.
 
 
 ## Philosophy and contribution
