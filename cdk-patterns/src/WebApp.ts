@@ -26,7 +26,7 @@ import { ZipFunction, ZipFunctionProps } from './ZipFunction';
 /**
  * @param lambda The function which will respond to incoming request events.
  * @param zone The DNS zone for this web app.
- * @param domain Optional: by default the zone name will be used (e.g. 'example.com') a different domain here (e.g. 'subdomain.example.com').
+ * @param domainName Optional: by default the zone name will be used (e.g. 'example.com') a different domain here (e.g. 'subdomain.example.com').
  * @param defaultIndex Default: false. If true, maps a viewer request for '/' to an s3 request for /index.html.
  * @param redirectWww Default: true. Redirects www requests to the bare domain name, e.g. www.example.com->example.com, www.sub.example.com->sub.example.com.
  */
