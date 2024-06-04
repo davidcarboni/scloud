@@ -59,6 +59,6 @@ export class ZipFunction extends Function {
   }
 
   static python(scope: Construct, id: string, props?: ZipFunctionProps): ZipFunction {
-    return new ZipFunction(scope, id, { ...props, functionProps: { runtime: Runtime.PYTHON_3_11, ...props?.functionProps } });
+    return new ZipFunction(scope, id, { ...props, functionProps: { runtime: Runtime.PYTHON_3_12, ...props?.functionProps } });
   }
 }
