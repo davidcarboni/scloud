@@ -1,0 +1,1 @@
+https://dev.to/miensol/https-on-cloudfront-using-certificate-manager-and-aws-cdk-3m50
