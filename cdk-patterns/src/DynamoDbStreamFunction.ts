@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-types */
 import { Function, StartingPosition } from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
 import { ZipFunction, ZipFunctionProps } from './ZipFunction';

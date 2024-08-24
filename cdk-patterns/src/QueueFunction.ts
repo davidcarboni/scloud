@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-types */
 import { Duration, RemovalPolicy } from 'aws-cdk-lib';
 import { Function } from 'aws-cdk-lib/aws-lambda';
 import { Queue, QueueEncryption, QueueProps } from 'aws-cdk-lib/aws-sqs';

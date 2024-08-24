@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-types */
 import * as route53 from 'aws-cdk-lib/aws-route53';
 import { Construct } from 'constructs';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
@@ -200,12 +199,12 @@ export function webAppRoutes(
   name: string,
   zone: route53.IHostedZone,
   routes: { [pathPattern: string]: Function | undefined; } = { '/': undefined },
-  domain: string|undefined = undefined,
+  domain: string | undefined = undefined,
   cognitoPool: UserPool | undefined = undefined,
   defaultIndex: boolean = true,
   wwwRedirect: boolean = true,
   autoDeleteObjects: boolean = true,
-): { lambdas: {[path:string]:Function}, bucket: Bucket, distribution: Distribution; } {
+): { lambdas: { [path: string]: Function; }, bucket: Bucket, distribution: Distribution; } {
   const domainName = domain || `${zone.zoneName}`;
 
   // We consider the objects in the static bucket to be expendable because

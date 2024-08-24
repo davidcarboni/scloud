@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-types */
 import { Construct } from 'constructs';
 import { Function } from 'aws-cdk-lib/aws-lambda';
 import { DomainNameOptions, LambdaRestApi } from 'aws-cdk-lib/aws-apigateway';
