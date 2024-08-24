@@ -10,8 +10,13 @@ export interface Request {
   query: { [name: string]: string; },
   headers: { [name: string]: string; },
   cookies: { [name: string]: string; },
+  /** Path parameters will be parsed from the route definitions you pass to apiHandler() */
+  pathParameters: { [name: string]: string; },
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   body: any,
+  /** You can add any custom values you need to the request via this context */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  context: { [key: string]: any; },
 }
 
 export interface Response {
