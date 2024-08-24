@@ -109,24 +109,41 @@ describe('helpers.ts', () => {
   describe('matchRoute', () => {
     const route1 = {};
     const route2 = {};
+    const route3 = {};
+    const route4 = {};
+    const route5 = {};
     const routes = {
       '/path1': route1,
       '/path2': route2,
+      '/path/{param1}/subpath1': route3,
+      '/path/{param2}': route4,
+      '/path/{param3}': route5,
     };
 
     it('Should match an exact route', () => {
       const result = matchRoute(routes, '/path1');
-      expect(result).to.equal(route1);
+      expect(result.route).to.equal(route1);
+      expect(result.params).to.deep.equal({}); // Guarantee a minimum of an emply object - never undefined (so we don't have to check for it)
     });
 
     it('Should not match an unknown route', () => {
       const result = matchRoute(routes, '/path3');
-      expect(result).to.be.undefined;
+      expect(result.route).to.be.undefined;
+      expect(result.params).to.deep.equal({}); // Guarantee a minimum of an emply object - never undefined (so we don't have to check for it)
     });
 
-    it('Should match an route casae-insensitively', () => {
+    it('Should match an route case-insensitively', () => {
       const result = matchRoute(routes, '/Path2');
-      expect(result).to.equal(route2);
+      expect(result.route).to.equal(route2);
+      expect(result.params).to.deep.equal({}); // Guarantee a minimum of an emply object - never undefined (so we don't have to check for it)
+    });
+
+    it('Should match a parameter', () => {
+      const result = matchRoute(routes, '/path/123');
+      // NB: Matching shouldn't pick up {param2} while traversing the list (different length, no match)
+      // and should not continue on to find {param3} (stop at the first match)
+      expect(result.route).to.equal(route4);
+      expect(result.params).to.deep.equal({ param2: '123' });
     });
   });
 });

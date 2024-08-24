@@ -101,21 +101,52 @@ export function parseRequest(event: APIGatewayProxyEvent): Request {
     headers: standardHeaders(event.headers),
     body: parseBody(event.body, event.isBase64Encoded),
     cookies: parseCookie(event.headers),
+    pathParameters: {}, // These need to be parsed as part of route matching
+    context: {}, // You can add any custom values you need to the request via this context
   };
 }
 
-export function matchRoute(routes: Routes, path: string): Route | undefined {
-  let route: Route | undefined;
-
+export function matchRoute(routes: Routes, path: string): { route: Route | undefined, params: { [name: string]: string; }; } {
   // Simple match
-  if (routes[path]) return routes[path];
+  if (routes[path]) return { route: routes[path], params: {} };
 
-  // Case insensitive match
-  Object.keys(routes).forEach((candidate) => {
-    if (candidate.toLowerCase() === path.toLowerCase()) route = routes[candidate];
-  });
+  // List paths to check
+  const paths = Object.keys(routes);
 
-  // TODO: path-parameter matching
+  // Case-insensitive match
+  for (let p = 0; p < paths.length; p++) {
+    const candidate = paths[p];
+    if (candidate.toLowerCase() === path.toLowerCase()) return { route: routes[candidate], params: {} };
+  }
 
-  return route;
+  // Path-parameter matching
+  const pathSegments = path.split('/');
+
+  for (let p = 0; p < paths.length; p++) {
+    const candidate = paths[p];
+    const candidateSegments = candidate.split('/');
+
+    // First check: length match
+    if (pathSegments.length !== candidateSegments.length) continue;
+
+    for (let s = 0; s < pathSegments.length; s++) {
+      const params: { [name: string]: string; } = {};
+      const pathSegment = pathSegments[s];
+      const candidateSegment = candidateSegments[s];
+      if (candidateSegment.startsWith('{') && candidateSegment.endsWith('}')) {
+        // Path parameter
+        const name = candidateSegment.slice(1, -1);
+        params[name] = pathSegment;
+      } else if (pathSegment !== candidateSegment) {
+        break;
+      }
+
+      if (s === pathSegments.length - 1) {
+        // Matched all segments
+        return { route: routes[candidate], params };
+      }
+    }
+  }
+
+  return { route: undefined, params: {} };
 }
