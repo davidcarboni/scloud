@@ -52,7 +52,7 @@ export async function apiHandler(
       // Error handling
       if (errorHandler) response = await errorHandler(request, e as Error);
     } catch (ee) {
-      console.error(`Error in error handler: ${(e as Error).message}\n${(e as Error).stack}`);
+      console.error(`Error in error handler: ${(ee as Error).message}\n${(ee as Error).stack}`);
     }
   }
 
