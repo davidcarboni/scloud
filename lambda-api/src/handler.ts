@@ -25,7 +25,6 @@ export async function apiHandler(
   routes: Routes = {
     '/api/ping': { GET: async (request: Request) => ({ statusCode: 200, body: request }) },
   },
-
   errorHandler: (request: Request, e: Error) => Promise<Response> = async (request: Request) => ({ statusCode: 500, body: { error: `Internal server error: ${request.path}` } }),
   catchAll: Handler = async (request: Request) => textResponse(404, `Not found: ${request.path}`),
 ): Promise<APIGatewayProxyResult> {
@@ -34,15 +33,15 @@ export async function apiHandler(
 
   let response: Response;
   try {
-    const route = matchRoute(routes, request.path);
-    if (!route) {
+    const match = matchRoute(routes, request.path);
+    if (!match.route) {
       // Catch-all / 404
       response = await catchAll(request);
     } else {
-      const handlerFunction = route[request.method as keyof Route];
+      const handlerFunction = match.route[request.method as keyof Route];
 
       // Handle the request:
-      if (handlerFunction) response = await handlerFunction(request);
+      if (handlerFunction) response = await handlerFunction({ ...request, pathParameters: match.params });
       else response = textResponse(405, 'Method not allowed');
     }
   } catch (e) {
