@@ -4,6 +4,7 @@ import {
   Context,
 } from 'aws-lambda';
 import {
+  ContextBuilder,
   Handler, Request, Response, Route, Routes,
 } from './types';
 import { buildCookie, matchRoute, parseRequest } from './helpers';
@@ -27,6 +28,7 @@ export async function apiHandler(
   },
   errorHandler: (request: Request, e: Error) => Promise<Response> = async (request: Request) => ({ statusCode: 500, body: { error: `Internal server error: ${request.path}` } }),
   catchAll: Handler = async (request: Request) => textResponse(404, `Not found: ${request.path}`),
+  contextBuilder: ContextBuilder = async () => ({}),
 ): Promise<APIGatewayProxyResult> {
   console.log(`Executing ${context.functionName} version: ${process.env.COMMIT_HASH}`);
   const request = parseRequest(event);
@@ -41,7 +43,7 @@ export async function apiHandler(
       const handlerFunction = match.route[request.method as keyof Route];
 
       // Handle the request:
-      if (handlerFunction) response = await handlerFunction({ ...request, pathParameters: match.params });
+      if (handlerFunction) response = await handlerFunction({ ...request, pathParameters: match.params, context: await contextBuilder(request) });
       else response = textResponse(405, 'Method not allowed');
     }
   } catch (e) {

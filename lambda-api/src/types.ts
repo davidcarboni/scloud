@@ -35,3 +35,6 @@ export interface Route {
   OPTIONS?: Handler,
 }
 export interface Routes { [path: string]: Route; }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type ContextBuilder = (request: Request) => Promise<{ [key: string]: any; }>;
