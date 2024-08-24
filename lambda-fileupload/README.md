@@ -12,6 +12,7 @@ This is intended to provide you with the operations you'll mostly need most of t
 
 ## Release notes
 
+ * `0.0.8`: `actions/checkout@v4` and Node `20.x`
  * `0.0.7`: Fix default validity windows of `getUrl` and `putUrl` to match the documentation.
 
 ## Functions
