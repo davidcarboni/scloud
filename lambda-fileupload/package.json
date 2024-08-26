@@ -1,6 +1,6 @@
 {
   "name": "@scloud/lambda-fileupload",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "Functions uploading/downloading files with Lambda/API Gateway where the file size is greater than the payload limit.",
   "main": "dist/index.js",
   "files": [
