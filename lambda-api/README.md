@@ -6,6 +6,7 @@ This is a piece of useful boilerplate to handle the mechanics of routing, header
 
 ## Releae notes
 
+ * `0.3.5`: `actions/setup-node@v4` and Node `lts`
  * `0.3.4`: `ContextBuilder` no longer needs to return context values.
  * `0.3.3`: `actions/checkout@v4` and Node `20.x`
  * `0.3.2`: Add `ContextBuilder` to have the option to populate `Request.context` with access to the parsed `Request`.
