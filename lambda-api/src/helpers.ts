@@ -45,19 +45,28 @@ export function standardHeaders(headers: { [name: string]: string | undefined; }
 }
 
 /**
- * Parses the body (if present) to a JSON string. Returns at mimimum an empty object.
+ * Parses the body (if present) from application/x-www-form-urlencoded or JSON string.
+ * If the body fails to parse as JSOn, the raw body is returned.
  * @param body APIGatewayProxyEvent.body
  */
-export function parseBody(body: string | null, isBase64Encoded: boolean): { [name: string]: string; } {
+export function parseBody(body: string | null, isBase64Encoded: boolean, contentType: string = 'application/json'): Record<string, unknown> | string {
   if (!body) return {};
+
   const content = isBase64Encoded ? Buffer.from(body, 'base64').toString('utf8') : body;
-  let result = {};
+
   try {
-    result = JSON.parse(content);
+    if ((contentType || '').toLowerCase() === 'application/x-www-form-urlencoded') {
+      return Object.fromEntries(new URLSearchParams(content));
+    } else {
+      // Default to parsing as JSON:
+      return JSON.parse(content);
+    }
   } catch (e) {
     console.error(`Error parsing request body: ${e}`);
   }
-  return result;
+
+  // Fallback to returning the raw body
+  return content;
 }
 
 /**
@@ -99,7 +108,7 @@ export function parseRequest(event: APIGatewayProxyEvent): Request {
     path: standardPath(event.path),
     query: standardQueryParameters(event.queryStringParameters),
     headers: standardHeaders(event.headers),
-    body: parseBody(event.body, event.isBase64Encoded),
+    body: parseBody(event.body, event.isBase64Encoded, event.headers['content-type']),
     cookies: parseCookie(event.headers),
     pathParameters: {}, // These need to be parsed as part of route matching
     context: {}, // You can add any custom values you need to the request via this context
