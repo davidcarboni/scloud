@@ -6,7 +6,7 @@ This is a piece of useful boilerplate to handle the mechanics of routing, header
 
 ## Releae notes
 
- * `0.3.5`: Enable parsing body as `application/x-www-form-urlencoded` as well as JSON
+ * `0.3.6`: Enable parsing body as `application/x-www-form-urlencoded` as well as JSON
  * `0.3.5`: `actions/setup-node@v4` and Node `lts`
  * `0.3.4`: `ContextBuilder` no longer needs to return context values.
  * `0.3.3`: `actions/checkout@v4` and Node `20.x`
