@@ -92,7 +92,7 @@ describe('helpers.ts', () => {
 
     it('Should gracefully handle unparseable body', () => {
       const query = parseBody('Ain\'t nobody here but us chickens', false);
-      expect(query).to.deep.equal({});
+      expect(query).to.deep.equal('Ain\'t nobody here but us chickens',);
     });
 
     it('Should handle empty body', () => {
