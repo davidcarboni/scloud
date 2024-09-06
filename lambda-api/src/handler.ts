@@ -71,7 +71,7 @@ export async function apiHandler(
     body = response.body;
   } else if (response.body) {
     // Stringify the response object
-    // API Gateway returns applicatipno/json by default
+    // API Gateway returns application/json by default
     body = JSON.stringify(response.body);
   }
   const result: APIGatewayProxyResult = {
