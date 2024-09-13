@@ -84,7 +84,7 @@ export async function apiHandler(
   const cookieHeaders = buildCookie(response.cookies);
   if (cookieHeaders) {
     result.multiValueHeaders = {
-      Cookie: cookieHeaders,
+      'Set-Cookie': cookieHeaders,
     };
   }
 
