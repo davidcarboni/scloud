@@ -1,6 +1,6 @@
 {
   "name": "@scloud/cdk-patterns",
-  "version": "0.6.4",
+  "version": "0.6.5",
   "description": "Serverless CDK patterns for common infrastructure needs",
   "main": "dist/index.js",
   "files": [
