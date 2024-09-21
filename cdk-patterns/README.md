@@ -18,6 +18,7 @@ A couple of highlights:
  * `ghaUser` - if you use Github Actions, this generates an IAM user access key with permission to deploy to resources defined in your stack (see also `addGha*` functions such as `addGhaSecret`, `addGhaVariable`, `addGhaLambda` etc.)
 
 ## Release notes
+ * **0.6.5**: Update to `S3BucketOrigin` fron `S3Origin`
  * **0.6.4**: `actions/checkout@v4`, `actions/setup-node@v4` and Node `lts`
  * **0.6.3**: Add `DynamoDbStreamFunction` - a Lambda that reads a DynamoDB table stream
  * **0.6.2**: Update default Python runtime to 3.12

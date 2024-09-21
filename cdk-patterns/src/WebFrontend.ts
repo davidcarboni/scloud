@@ -6,7 +6,7 @@ import { ARecord, IHostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
 import { CloudFrontTarget } from 'aws-cdk-lib/aws-route53-targets';
-import { S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
+import { S3BucketOrigin } from 'aws-cdk-lib/aws-cloudfront-origins';
 import { githubActions } from './GithubActions';
 import { PrivateBucket } from './PrivateBucket';
 import { RedirectWww } from './RedirectWww';
@@ -78,7 +78,7 @@ export class WebFrontend extends Construct {
       comment: domainName,
       defaultRootObject: props.defaultIndex ? 'index.html' : undefined,
       defaultBehavior: {
-        origin: new S3Origin(this.bucket, { originAccessIdentity }),
+        origin: S3BucketOrigin.withOriginAccessIdentity(this.bucket, { originAccessIdentity }),
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         ...defaultBehavior,
       },
