@@ -6,6 +6,7 @@ This is a piece of useful boilerplate to handle the mechanics of routing, header
 
 ## Releae notes
 
+ * `0.3.8`: Optinoal generic type on `Request`
  * `0.3.7`: Fix cookie setting to use `Set-Cookie`
  * `0.3.6`: Enable parsing body as `application/x-www-form-urlencoded` as well as JSON
  * `0.3.5`: `actions/setup-node@v4` and Node `lts`
