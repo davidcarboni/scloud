@@ -4,7 +4,8 @@
  * The method will be the HTTP method from the API Gateway proxt event.
  * The path will be the path from the API Gateway proxy event, which starts with '/'.
  */
-export interface Request {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export interface Request<B = any> {
   method: string,
   path: string,
   query: { [name: string]: string; },
@@ -12,8 +13,7 @@ export interface Request {
   cookies: { [name: string]: string; },
   /** Path parameters will be parsed from the route definitions you pass to apiHandler() */
   pathParameters: { [name: string]: string; },
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  body: any,
+  body: B,
   /** You can add any custom values you need to the request via this context */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   context: { [key: string]: any; },
