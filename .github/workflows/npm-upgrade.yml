@@ -36,11 +36,10 @@ jobs:
           git commit -m "Automated upgrade" package-lock.json || true # Ignore error if no change
         }
 
-        upgrade infrastructure
+        upgrade .infrastructure
         upgrade metrics
         upgrade slack
         upgrade static
-        upgrade web
 
     - name: git push
       run: |
