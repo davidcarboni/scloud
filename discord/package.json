@@ -1,0 +1,36 @@
+{
+  "name": "discord",
+  "version": "1.0.0",
+  "description": "Sends queued messages to Discord.",
+  "main": "src/lambda.ts",
+  "scripts": {
+    "lint": "eslint --fix src test",
+    "test": "mocha --import=tsx -r tsconfig-paths/register 'test/unit/**/*.spec.ts' # tsconfig-paths/register helps resolve imports in tests",
+    "compile": "tsc",
+    "package": "mkdir -p dist && cp -r js/src dist && cp package*.json dist && cd dist && yarn --prod && echo $(git rev-parse --short HEAD) > COMMIT_HASH && zip -r function.zip .",
+    "verify": "rm -rf js dist && yarn lint && yarn test && yarn compile && yarn package"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/davidcarvoni/scloud"
+  },
+  "author": "David Carboni",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "@eslint/js": "*",
+    "@tsconfig/node18": "*",
+    "@types/aws-lambda": "*",
+    "@types/chai": "*",
+    "@types/mocha": "*",
+    "@types/node": "*",
+    "chai": "*",
+    "eslint": "*",
+    "mocha": "*",
+    "ts-node": "*",
+    "tsconfig-paths": "*",
+    "tsx": "*",
+    "typescript": "*",
+    "typescript-eslint": "*"
+  },
+  "dependencies": {}
+}
