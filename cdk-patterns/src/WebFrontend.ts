@@ -96,7 +96,7 @@ export class WebFrontend extends Construct {
 
     if (props.redirectWww !== false) {
       // Redirect www -> zone root
-      new RedirectWww(scope, id, { zone: props.zone, certificate: this.certificate });
+      new RedirectWww(scope, id, { zone: props.zone, certificate: this.certificate, domainName });
     }
   }
 }
