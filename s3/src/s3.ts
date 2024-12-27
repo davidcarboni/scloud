@@ -11,6 +11,14 @@ import { Readable } from 'stream';
 const client = new S3Client({});
 
 /**
+ * Removes leading slash if present (and tidies up any double slashes)
+ * See jarmod's comment on this SO question: https://stackoverflow.com/questions/76630400/aws-s3-nosuchkey-but-key-exists
+ */
+function cleanKey(key: string): string {
+  return key.split('/').filter((p) => p).join('/');
+}
+
+/**
  * Updates the created date on an s3 object by copying it to itself and setting the storage class to STANDARD.
  * See: https://stackoverflow.com/a/18730911/723506
  *
@@ -20,7 +28,7 @@ const client = new S3Client({});
 export async function touchObject(bucket: string, key: string): Promise<boolean> {
   const command = new CopyObjectCommand({
     Bucket: bucket,
-    Key: key,
+    Key: cleanKey(key),
     CopySource: `${bucket}/${key}`,
     StorageClass: 'STANDARD',
   });
@@ -39,8 +47,8 @@ export async function touchObject(bucket: string, key: string): Promise<boolean>
 export async function copyObject(fromBucket: string, fromKey: string, toBucket: string, toKey: string): Promise<boolean> {
   const copyCommand = new CopyObjectCommand({
     Bucket: toBucket,
-    Key: toKey,
-    CopySource: `${fromBucket}/${fromKey}`,
+    Key: cleanKey(toKey),
+    CopySource: `${fromBucket}/${cleanKey(fromKey)}`,
   });
 
   try {
@@ -60,7 +68,7 @@ export async function moveObject(fromBucket: string, fromKey: string, toBucket: 
 
   const deleteCommand = new DeleteObjectCommand({
     Bucket: fromBucket,
-    Key: fromKey,
+    Key: cleanKey(fromKey),
   });
 
   try {
@@ -79,7 +87,7 @@ export async function moveObject(fromBucket: string, fromKey: string, toBucket: 
 export async function putObject(bucket: string, key: string, object: string | Uint8Array | Buffer | Readable): Promise<boolean> {
   const command = new PutObjectCommand({
     Bucket: bucket,
-    Key: key,
+    Key: cleanKey(key),
     Body: object,
   });
 
@@ -99,6 +107,7 @@ export async function putJson<T>(bucket: string, key: string, object: T): Promis
   return putObject(bucket, key, JSON.stringify(object));
 }
 
+
 /**
  *
  * @param bucket
@@ -109,12 +118,12 @@ export async function getObject(bucket: string, key: string): Promise<StreamingB
   try {
     const command = new GetObjectCommand({
       Bucket: bucket,
-      Key: key,
+      Key: cleanKey(key),
     });
 
     const response = await client.send(command);
     return response.Body;
-  } catch (e) {
+  } catch {
     return undefined;
   }
 }
@@ -144,7 +153,7 @@ export async function deleteObject(bucket: string, key: string): Promise<boolean
   try {
     const command = new DeleteObjectCommand({
       Bucket: bucket,
-      Key: key,
+      Key: cleanKey(key),
     });
     await client.send(command);
     return true;
@@ -165,7 +174,7 @@ export async function deleteObjects(bucket: string, keys: string[]): Promise<num
     const command = new DeleteObjectsCommand({
       Bucket: bucket,
       Delete: {
-        Objects: keys.map((key) => ({ Key: key })),
+        Objects: keys.map((key) => ({ Key: cleanKey(key) })),
       },
     });
 
