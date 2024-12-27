@@ -36,7 +36,7 @@ export async function touchObject(bucket: string, key: string): Promise<boolean>
   try {
     await client.send(command);
     return true;
-  } catch (e) {
+  } catch {
     return false;
   }
 }
@@ -53,7 +53,7 @@ export async function copyObject(fromBucket: string, fromKey: string, toBucket: 
 
   try {
     await client.send(copyCommand);
-  } catch (e) {
+  } catch {
     return false;
   }
 
@@ -73,7 +73,7 @@ export async function moveObject(fromBucket: string, fromKey: string, toBucket: 
 
   try {
     await client.send(deleteCommand);
-  } catch (e) {
+  } catch {
     return false;
   }
 
@@ -94,7 +94,7 @@ export async function putObject(bucket: string, key: string, object: string | Ui
   try {
     await client.send(command);
     return true;
-  } catch (e) {
+  } catch {
     return false;
   }
 }
@@ -138,7 +138,7 @@ export async function getJson<T>(bucket: string, key: string): Promise<T | undef
     try {
       const body = await result.transformToString();
       return JSON.parse(body);
-    } catch (e) {
+    } catch {
       // Swallow error and return undefined
     }
   }
@@ -157,7 +157,7 @@ export async function deleteObject(bucket: string, key: string): Promise<boolean
     });
     await client.send(command);
     return true;
-  } catch (e) {
+  } catch {
     return false;
   }
 }
@@ -180,7 +180,7 @@ export async function deleteObjects(bucket: string, keys: string[]): Promise<num
 
     const result = await client.send(command);
     return result.Deleted?.length;
-  } catch (e) {
+  } catch {
     return undefined;
   }
 }
@@ -198,7 +198,7 @@ export async function listObjects(bucket: string, prefix?: string): Promise<Reco
   try {
     const { Contents } = await client.send(command);
     if (Contents) Contents.forEach((c) => { if (c.Key) result[c.Key] = { modified: c.LastModified, size: c.Size, etag: c.ETag }; });
-  } catch (e) {
+  } catch {
     // Swallow erroro and return empty object
   }
   return result;
