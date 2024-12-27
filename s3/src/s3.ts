@@ -206,12 +206,12 @@ export async function objectExists(bucket: string, key: string): Promise<boolean
 
 /**
  * Downloads a file from s3 to a local temp file (or a path you provide)
- * @param key Key in s3 of object to download
  * @param bucket Bucket to download from
+ * @param key Key in s3 of object to download
  * @param path Optional: local file path to save to. Defaults to `/tmp/${key}` which is valid fot Lambda (up to 500MB at the time of writing)
  * @returns The path to the downloaded file (either the provided path or the default of `/tmp/${key}`)
  */
-export async function downloadTemp(key: string, bucket: string, path?: string): Promise<string> {
+export async function downloadTemp(bucket: string, key: string, path?: string): Promise<string> {
   try {
     // Download
     const body = await getObject(bucket, key);

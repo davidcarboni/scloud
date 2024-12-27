@@ -1,6 +1,6 @@
 {
   "name": "@scloud/s3",
-  "version": "0.0.12",
+  "version": "1.0.0",
   "description": "Functions for s3 CRUD and list.",
   "main": "dist/index.js",
   "files": [
