@@ -8,6 +8,7 @@ import { RestApiOrigin, S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
 import {
   AllowedMethods, CachePolicy, Distribution,
   DistributionProps,
+  ErrorResponse,
   OriginAccessIdentity,
   OriginRequestPolicy,
   ViewerProtocolPolicy,
@@ -25,13 +26,15 @@ import { PrivateBucket } from './PrivateBucket';
  * @param lambda The function which will respond to incoming request events.
  * @param zone The DNS zone for this web app.
  * @param domainName Optional: by default the zone name will be used (e.g. 'example.com') a different domain here (e.g. 'subdomain.example.com').
- * @param redirectWww Default: true. Redirects www requests to the bare domain name, e.g. www.example.com->example.com, www.sub.example.com->sub.example.com.
+ * @param distributionProps Optional: If you want to add additional properties to the Cloudfront distribution, you can pass them here.
+ * @param errorResponses Optional: If you want to add custom error responses to the Cloudfront distribution, you can pass them here.
  */
 export interface WebApiProps {
   lambda: Function,
   zone: IHostedZone,
   domainName?: string,
   distributionProps?: Partial<DistributionProps>,
+  errorResponses?: ErrorResponse[],
 }
 
 /**
@@ -113,6 +116,7 @@ export class WebApi extends Construct {
         ...additionalBehaviors,
       },
       certificate: this.certificate,
+      errorResponses: props.errorResponses,
       ...distributionProps,
     });
     githubActions(scope).addGhaDistribution(id, this.distribution);

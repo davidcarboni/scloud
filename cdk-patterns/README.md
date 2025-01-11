@@ -18,6 +18,8 @@ A couple of highlights:
  * `ghaUser` - if you use Github Actions, this generates an IAM user access key with permission to deploy to resources defined in your stack (see also `addGha*` functions such as `addGhaSecret`, `addGhaVariable`, `addGhaLambda` etc.)
 
 ## Release notes
+errorResponses
+ * **0.6.7**: Add optional `errorResponses` for Cloudfront distributions in `WebApi`, `WebApp`, `WebFrontend` and `WebRoutes`.
  * **0.6.6**: Fix `domainName` not being propagated from `WebFrontend` when constructing `RedirectWww`.
  * **0.6.5**: Update to `S3BucketOrigin` fron `S3Origin`
  * **0.6.4**: `actions/checkout@v4`, `actions/setup-node@v4` and Node `lts`

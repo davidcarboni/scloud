@@ -8,6 +8,7 @@ import { RestApiOrigin, S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
 import {
   AllowedMethods, CachePolicy, Distribution,
   DistributionProps,
+  ErrorResponse,
   OriginAccessIdentity,
   OriginRequestPolicy,
   ViewerProtocolPolicy,
@@ -28,6 +29,8 @@ import { ZipFunction, ZipFunctionProps } from './ZipFunction';
  * @param domainName Optional: by default the zone name will be used (e.g. 'example.com') a different domain here (e.g. 'subdomain.example.com').
  * @param defaultIndex Default: false. If true, maps a viewer request for '/' to an s3 request for /index.html.
  * @param redirectWww Default: true. Redirects www requests to the bare domain name, e.g. www.example.com->example.com, www.sub.example.com->sub.example.com.
+ * @param distributionProps Optional: If you want to add additional properties to the Cloudfront distribution, you can pass them here.
+ * @param errorResponses Optional: If you want to add custom error responses to the Cloudfront distribution, you can pass them here.
  */
 export interface WebAppProps {
   lambda: Function,
@@ -36,6 +39,7 @@ export interface WebAppProps {
   defaultIndex?: boolean,
   redirectWww?: boolean,
   distributionProps?: Partial<DistributionProps>,
+  errorResponses?: ErrorResponse[],
 }
 
 /**
@@ -117,6 +121,7 @@ export class WebApp extends Construct {
         ...additionalBehaviors,
       },
       certificate: this.certificate,
+      errorResponses: props.errorResponses,
       ...distributionProps,
     });
     githubActions(scope).addGhaDistribution(id, this.distribution);

@@ -1,6 +1,6 @@
 import { DnsValidatedCertificate } from 'aws-cdk-lib/aws-certificatemanager';
 import {
-  Distribution, DistributionProps, OriginAccessIdentity, ViewerProtocolPolicy,
+  Distribution, DistributionProps, ErrorResponse, OriginAccessIdentity, ViewerProtocolPolicy,
 } from 'aws-cdk-lib/aws-cloudfront';
 import { ARecord, IHostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
@@ -14,10 +14,12 @@ import { RedirectWww } from './RedirectWww';
 /**
  * @param zone The DNS zone for this web app. By default the domain name is set to the zone name
  * The type IHostedZone enables lookup of the zone (IHostedZone) as well as a zone creatd in the stack (HostedZone)
- * @param domain Optional: by default the zone name will be mapped to the Cloudfront distribution (e.g. 'example.com') but you can specify a different domain here (e.g. 'subdomain.example.com').
+ * @param domainName Optional: by default the zone name will be mapped to the Cloudfront distribution (e.g. 'example.com') but you can specify a different domain here (e.g. 'subdomain.example.com').
  * @param defaultIndex Default: true. Maps a viewer request for '/' to a request for /index.html.
  * @param redirectWww Default: true. Redirects www requests to the bare domain name, e.g. www.example.com->example.com, www.sub.example.com->sub.example.com.
  * @param cnameAliases Optional: additional CNAMEs to add to the Cloudfront distribution. This allows you to use a domain name configured outside of AWS.
+ * @param distributionProps Optional: If you want to add additional properties to the Cloudfront distribution, you can pass them here.
+ * @param errorResponses Optional: If you want to add custom error responses to the Cloudfront distribution, you can pass them here.
  */
 export interface WebFrontendProps {
   zone: IHostedZone,
@@ -26,6 +28,7 @@ export interface WebFrontendProps {
   redirectWww?: boolean,
   cnameAliases?: string[],
   distributionProps?: Partial<DistributionProps>,
+  errorResponses?: ErrorResponse[],
 }
 
 /**
@@ -83,6 +86,7 @@ export class WebFrontend extends Construct {
         ...defaultBehavior,
       },
       certificate: this.certificate,
+      errorResponses: props.errorResponses,
       ...distributionProps,
     });
     githubActions(scope).addGhaDistribution(id, this.distribution);

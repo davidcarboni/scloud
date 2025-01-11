@@ -7,6 +7,7 @@ import { RestApiOrigin, S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
 import {
   AllowedMethods, CachePolicy, Distribution,
   DistributionProps,
+  ErrorResponse,
   OriginAccessIdentity,
   OriginRequestPolicy,
   ViewerProtocolPolicy,
@@ -29,6 +30,8 @@ import { RedirectWww } from './RedirectWww';
  * @param wwwRedirect Default: true. Redirects requests for www. to the bare domain name, e.g. www.example.com->example.com, www.sub.example.com->sub.example.com.
  * @param distributionProps Any properties for the distribution you'd like to add or override
  * @param functionAssociation A Cloudfront function to be associated with the default behavior (s3 static content)
+ * @param distributionProps Optional: If you want to add additional properties to the Cloudfront distribution, you can pass them here.
+ * @param errorResponses Optional: If you want to add custom error responses to the Cloudfront distribution, you can pass them here.
  */
 export interface WebRoutesProps {
   zone: IHostedZone,
@@ -36,6 +39,7 @@ export interface WebRoutesProps {
   defaultIndex?: boolean | string,
   redirectWww?: boolean,
   distributionProps?: Partial<DistributionProps>,
+  errorResponses?: ErrorResponse[],
 }
 
 /**
@@ -112,6 +116,7 @@ export class WebRoutes extends Construct {
         ...defaultBehavior,
       },
       certificate: this.certificate,
+      errorResponses: props.errorResponses,
       ...distributionProps,
     });
     githubActions(scope).addGhaDistribution(id, this.distribution);
