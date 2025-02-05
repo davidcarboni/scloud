@@ -65,14 +65,14 @@ export class WebApi extends Construct {
     const domainName = props.domainName || `${props.zone.zoneName}`;
 
     // Static content
-    const bucket = PrivateBucket.expendable(scope, `${id}Static`);
-    githubActions(scope).addGhaBucket(id, bucket);
+    this.bucket = PrivateBucket.expendable(scope, `${id}Static`);
+    githubActions(scope).addGhaBucket(id, this.bucket);
 
     // Permissions to access the bucket from Cloudfront
     const originAccessIdentity = new OriginAccessIdentity(scope, `${id}OAI`, {
       comment: 'Access to static bucket',
     });
-    bucket.grantRead(originAccessIdentity);
+    this.bucket.grantRead(originAccessIdentity);
 
     // Web app handler - default values can be overridden using lambdaProps
     this.lambda = props.lambda;
