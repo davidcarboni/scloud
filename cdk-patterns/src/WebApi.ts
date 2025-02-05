@@ -9,7 +9,6 @@ import {
   AllowedMethods, CachePolicy, Distribution,
   DistributionProps,
   ErrorResponse,
-  OriginAccessIdentity,
   OriginRequestPolicy,
   ViewerProtocolPolicy,
 } from 'aws-cdk-lib/aws-cloudfront';
@@ -67,12 +66,6 @@ export class WebApi extends Construct {
     // Static content
     this.bucket = PrivateBucket.expendable(scope, `${id}Static`);
     githubActions(scope).addGhaBucket(id, this.bucket);
-
-    // Permissions to access the bucket from Cloudfront
-    const originAccessIdentity = new OriginAccessIdentity(scope, `${id}OAI`, {
-      comment: 'Access to static bucket',
-    });
-    this.bucket.grantRead(originAccessIdentity);
 
     // Web app handler - default values can be overridden using lambdaProps
     this.lambda = props.lambda;
