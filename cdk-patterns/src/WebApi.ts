@@ -108,7 +108,7 @@ export class WebApi extends Construct {
       // The aim is to route *.css, *.js, *.jpeg, etc)
       additionalBehaviors: {
         '*.*': {
-          origin: S3BucketOrigin.withOriginAccessIdentity(this.bucket, { originAccessIdentity }),
+          origin: S3BucketOrigin.withOriginAccessControl(this.bucket),
           allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
           viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
           compress: true,
