@@ -4,7 +4,7 @@ import {
 import { DnsValidatedCertificate } from 'aws-cdk-lib/aws-certificatemanager';
 import { CloudFrontTarget } from 'aws-cdk-lib/aws-route53-targets';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
-import { RestApiOrigin, S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
+import { RestApiOrigin, S3BucketOrigin } from 'aws-cdk-lib/aws-cloudfront-origins';
 import {
   AllowedMethods, CachePolicy, Distribution,
   DistributionProps,
@@ -108,7 +108,7 @@ export class WebApi extends Construct {
       // The aim is to route *.css, *.js, *.jpeg, etc)
       additionalBehaviors: {
         '*.*': {
-          origin: new S3Origin(bucket, { originAccessIdentity }),
+          origin: S3BucketOrigin.withOriginAccessIdentity(this.bucket, { originAccessIdentity }),
           allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
           viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
           compress: true,

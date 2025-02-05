@@ -3,7 +3,7 @@ import { Stack } from 'aws-cdk-lib';
 import { DnsValidatedCertificate } from 'aws-cdk-lib/aws-certificatemanager';
 import { CloudFrontTarget } from 'aws-cdk-lib/aws-route53-targets';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
-import { RestApiOrigin, S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
+import { RestApiOrigin, S3BucketOrigin } from 'aws-cdk-lib/aws-cloudfront-origins';
 import {
   AllowedMethods, CachePolicy, Distribution,
   DistributionProps,
@@ -111,7 +111,7 @@ export class WebRoutes extends Construct {
         // All requests that aren't known to the API go to s3.
         // This serves static content and also handles spam traffic.
         // There are lots of probes for Wordpress installations so this largely avoids invoking lambdas in response to those.
-        origin: new S3Origin(this.bucket, { originAccessIdentity }),
+        origin: S3BucketOrigin.withOriginAccessIdentity(this.bucket, { originAccessIdentity }),
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         ...defaultBehavior,
       },
