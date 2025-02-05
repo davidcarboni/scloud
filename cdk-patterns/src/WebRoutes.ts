@@ -8,7 +8,6 @@ import {
   AllowedMethods, CachePolicy, Distribution,
   DistributionProps,
   ErrorResponse,
-  OriginAccessIdentity,
   OriginRequestPolicy,
   ViewerProtocolPolicy,
 } from 'aws-cdk-lib/aws-cloudfront';
@@ -86,12 +85,6 @@ export class WebRoutes extends Construct {
     this.bucket = PrivateBucket.expendable(scope, `${id}Static`);
     githubActions(scope).addGhaBucket(id, this.bucket);
 
-    // Permissions to access the bucket from Cloudfront
-    const originAccessIdentity = new OriginAccessIdentity(scope, `${id}OAI`, {
-      comment: 'Access to static bucket',
-    });
-    this.bucket.grantRead(originAccessIdentity);
-
     this.certificate = new DnsValidatedCertificate(scope, `${id}Certificate`, {
       domainName,
       hostedZone: props.zone,
@@ -111,7 +104,7 @@ export class WebRoutes extends Construct {
         // All requests that aren't known to the API go to s3.
         // This serves static content and also handles spam traffic.
         // There are lots of probes for Wordpress installations so this largely avoids invoking lambdas in response to those.
-        origin: S3BucketOrigin.withOriginAccessIdentity(this.bucket, { originAccessIdentity }),
+        origin: S3BucketOrigin.withOriginAccessControl(this.bucket),
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         ...defaultBehavior,
       },

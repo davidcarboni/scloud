@@ -1,6 +1,6 @@
 import { DnsValidatedCertificate } from 'aws-cdk-lib/aws-certificatemanager';
 import {
-  Distribution, DistributionProps, ErrorResponse, OriginAccessIdentity, ViewerProtocolPolicy,
+  Distribution, DistributionProps, ErrorResponse, ViewerProtocolPolicy,
 } from 'aws-cdk-lib/aws-cloudfront';
 import { ARecord, IHostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
@@ -60,12 +60,6 @@ export class WebFrontend extends Construct {
     this.bucket = PrivateBucket.expendable(scope, `${id}Static`);
     githubActions(scope).addGhaBucket(id, this.bucket);
 
-    // Permissions to access the bucket from Cloudfront
-    const originAccessIdentity = new OriginAccessIdentity(scope, `${id}OAI`, {
-      comment: 'Access to static bucket',
-    });
-    this.bucket.grantRead(originAccessIdentity);
-
     this.certificate = new DnsValidatedCertificate(scope, `${id}Certificate`, {
       domainName,
       hostedZone: props.zone,
@@ -81,7 +75,7 @@ export class WebFrontend extends Construct {
       comment: domainName,
       defaultRootObject: props.defaultIndex ? 'index.html' : undefined,
       defaultBehavior: {
-        origin: S3BucketOrigin.withOriginAccessIdentity(this.bucket, { originAccessIdentity }),
+        origin: S3BucketOrigin.withOriginAccessControl(this.bucket),
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         ...defaultBehavior,
       },

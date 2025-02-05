@@ -19,6 +19,7 @@ A couple of highlights:
 
 ## Release notes
 errorResponses
+ * **0.7.2**: Retire use of `OriginAccessIdentity` and switch to `.withOriginAccessControl` across all patterns as recommended by CDK documentation.
  * **0.7.1**: Switch to `withOriginAccessControl` for `WebApi`
  * **0.6.8**: Update remaining patterns to `S3BucketOrigin` fron `S3Origin` and fix bucket reference in `WebApi`
  * **0.6.7**: Add optional `errorResponses` for Cloudfront distributions in `WebApi`, `WebApp`, `WebFrontend` and `WebRoutes`.

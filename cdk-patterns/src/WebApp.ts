@@ -9,7 +9,6 @@ import {
   AllowedMethods, CachePolicy, Distribution,
   DistributionProps,
   ErrorResponse,
-  OriginAccessIdentity,
   OriginRequestPolicy,
   ViewerProtocolPolicy,
 } from 'aws-cdk-lib/aws-cloudfront';
@@ -68,14 +67,8 @@ export class WebApp extends Construct {
     const domainName = props.domainName || `${props.zone.zoneName}`;
 
     // Static content
-    const bucket = PrivateBucket.expendable(scope, `${id}Static`);
-    githubActions(scope).addGhaBucket(id, bucket);
-
-    // Permissions to access the bucket from Cloudfront
-    const originAccessIdentity = new OriginAccessIdentity(scope, `${id}OAI`, {
-      comment: 'Access to static bucket',
-    });
-    bucket.grantRead(originAccessIdentity);
+    this.bucket = PrivateBucket.expendable(scope, `${id}Static`);
+    githubActions(scope).addGhaBucket(id, this.bucket);
 
     // Web app handler - default values can be overridden using lambdaProps
     this.lambda = props.lambda;
@@ -113,7 +106,7 @@ export class WebApp extends Construct {
       // The aim is to route *.css, *.js, *.jpeg, etc)
       additionalBehaviors: {
         '*.*': {
-          origin: S3BucketOrigin.withOriginAccessIdentity(bucket, { originAccessIdentity }),
+          origin: S3BucketOrigin.withOriginAccessControl(this.bucket),
           allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
           viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
           compress: true,
