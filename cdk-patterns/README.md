@@ -19,6 +19,7 @@ A couple of highlights:
 
 ## Release notes
 errorResponses
+ * **0.9.1**: Add the ability to pass a logoutUrl
  * **0.8.1**: Allow multiple callback URLs
  * **0.7.2**: Retire use of `OriginAccessIdentity` and switch to `.withOriginAccessControl` across all patterns as recommended by CDK documentation.
  * **0.7.1**: Switch to `withOriginAccessControl` for `WebApi`
