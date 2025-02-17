@@ -362,8 +362,8 @@ export class Cognito extends Construct {
     callbackUrl: string,
     zone?: IHostedZone,
     domainName?: string,
-    logoutUrl?: string,
     domainPrefix?: string,
+    logoutUrl?: string,
     ...alternativeCallbackUrls: string[]
   ): Cognito {
     const email = new Cognito(scope, id);

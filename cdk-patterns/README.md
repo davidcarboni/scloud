@@ -19,6 +19,7 @@ A couple of highlights:
 
 ## Release notes
 errorResponses
+ * **0.9.3**: Fix parameter order in `withEmailLogin`
  * **0.9.2**: Add missing logoutUrl
  * **0.9.1**: Add the ability to pass a logoutUrl
  * **0.8.1**: Allow multiple callback URLs
