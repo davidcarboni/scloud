@@ -362,11 +362,12 @@ export class Cognito extends Construct {
     callbackUrl: string,
     zone?: IHostedZone,
     domainName?: string,
+    logoutUrl?: string,
     domainPrefix?: string,
     ...alternativeCallbackUrls: string[]
   ): Cognito {
     const email = new Cognito(scope, id);
-    email.createUserPoolClient(callbackUrl, true, ...alternativeCallbackUrls);
+    email.createUserPoolClient(callbackUrl, true, logoutUrl, ...alternativeCallbackUrls);
     if (domainPrefix) email.addDomainPrefix(domainPrefix);
     else if (zone) email.addCustomDomain(zone, domainName || `auth.${zone.zoneName}`);
     return email;
