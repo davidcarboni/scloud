@@ -19,7 +19,8 @@ A couple of highlights:
 
 ## Release notes
 errorResponses
- * **0.9.5**: Add DynamoDB table read/write to GHA access policy
+ * **0.9.7**: Fix for tableArn when adding a DDB table to GHA policy
+ * **0.9.6**: Add DynamoDB table read/write to GHA access policy
  * **0.9.5**: Add the ability to create more than one OIDC role if needed.
  * **0.9.4**: Update dependencies
  * **0.9.3**: Fix parameter order in `withEmailLogin`

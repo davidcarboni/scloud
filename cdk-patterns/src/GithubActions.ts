@@ -191,7 +191,7 @@ class GithubActions extends Construct {
           "dynamodb:Query",
           "dynamodb:Scan",
         ];
-        this.addToPolicy('dynamoTablesRead', [item.table.tableName, `${item.table.tableName}/index/*`], readPermissions);
+        this.addToPolicy('dynamoTablesRead', [item.table.tableArn, `${item.table.tableArn}/index/*`], readPermissions);
       }
 
       // DynamoDB tables - write
@@ -202,7 +202,7 @@ class GithubActions extends Construct {
           "dynamodb:DeleteItem",
           "dynamodb:BatchWriteItem",
         ];
-        this.addToPolicy('dynamoTablesWrite', [item.table.tableName, `${item.table.tableName}/index/*`], writePermissions);
+        this.addToPolicy('dynamoTablesWrite', [item.table.tableArn, `${item.table.tableArn}/index/*`], writePermissions);
       }
     }
 
