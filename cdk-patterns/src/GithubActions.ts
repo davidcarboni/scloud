@@ -232,8 +232,9 @@ class GithubActions extends Construct {
   }
 
   /**
- * A user for Gihud Actions CI/CD.
- */
+   * @deprecated: use githubActions().ghaOidcRole() instead.
+   * A user for Gihud Actions CI/CD.
+   */
   ghaUser(username?: string): { user: User, accessKey: CfnAccessKey | undefined; } {
     // A user with the policy attached
     const user = new User(this.scope, 'ghaUser', { userName: username || `gha-${this.stackName}` });
