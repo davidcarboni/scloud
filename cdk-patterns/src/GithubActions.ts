@@ -1,4 +1,4 @@
- 
+
 import * as fs from 'fs';
 import {
   CfnAccessKey, ManagedPolicy, OpenIdConnectProvider, PolicyStatement, Role, User, WebIdentityPrincipal,
@@ -48,8 +48,9 @@ class GithubActions extends Construct {
 
   constructor(
     scope: Construct,
+    id?: string
   ) {
-    super(scope, 'GithubActions');
+    super(scope, id || 'GithubActions');
     this.stackName = Stack.of(scope).stackName;
     this.account = Stack.of(scope).account;
     this.scope = scope;
@@ -273,9 +274,15 @@ class GithubActions extends Construct {
   }
 }
 
-export function githubActions(scope: Construct): GithubActions {
+/**
+ * Returns a singleton instance of the GithubActions construct by default.
+ * For most use cases, only one OIDC role is needed in GitHub Actions.
+ * If you need different roles with different permissions, you can create multiple instances of this construct by passing a different id.
+ * @param id Optional: by default the id will be 'GithubActions', which gives you a singleton instance.
+ */
+export function githubActions(scope: Construct, id?: string): GithubActions {
   // Find the existing instance in the stack, if present:
   const stack = Stack.of(scope);
-  const existing = stack.node.tryFindChild('GithubActions');
-  return existing as GithubActions || new GithubActions(scope);
+  const existing = stack.node.tryFindChild(id || 'GithubActions');
+  return existing as GithubActions || new GithubActions(scope, id);
 }
