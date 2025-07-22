@@ -19,6 +19,7 @@ A couple of highlights:
 
 ## Release notes
 errorResponses
+ * **0.9.5**: Add the ability to create more than one OIDC role if needed.
  * **0.9.4**: Update dependencies
  * **0.9.3**: Fix parameter order in `withEmailLogin`
  * **0.9.2**: Add missing logoutUrl
