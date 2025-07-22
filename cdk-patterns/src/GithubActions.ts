@@ -11,6 +11,7 @@ import { IBucket } from 'aws-cdk-lib/aws-s3';
 import { IDistribution } from 'aws-cdk-lib/aws-cloudfront';
 import { Construct } from 'constructs';
 import _ from 'lodash';
+import { ITable } from 'aws-cdk-lib/aws-dynamodb';
 
 /**
  * To use this construct, call the githubActions() function to get a singleton instance.
@@ -41,6 +42,7 @@ class GithubActions extends Construct {
       lambdas: <IFunction[]>[],
       services: <IFargateService[]>[],
       distributions: <IDistribution[]>[],
+      tables: <{ table: ITable, writeAccess?: boolean; }[]>[],
     },
     secrets: <string[]>[],
     variables: <string[]>[],
@@ -104,6 +106,16 @@ class GithubActions extends Construct {
   ) {
     this.ghaInfo.resources.repositories.push(repository);
     this.addGhaVariable(name, 'ecr', repository.repositoryName);
+  }
+
+  addGhaTable(
+    name: string,
+    table: ITable,
+    writeAccess: boolean = false,
+  ) {
+    if (!name || !table) return;
+    this.ghaInfo.resources.tables.push({ table, writeAccess });
+    this.addGhaVariable(name, 'table', table.tableName);
   }
 
   ghaPolicy() {
@@ -170,6 +182,28 @@ class GithubActions extends Construct {
       this.addToPolicy('distributions', distributionArns, [
         'cloudfront:CreateInvalidation',
       ]);
+
+      // DynamoDB tables - read
+      for (const item of this.ghaInfo.resources.tables) {
+        const readPermissions = [
+          "dynamodb:GetItem",
+          "dynamodb:BatchGetItem",
+          "dynamodb:Query",
+          "dynamodb:Scan",
+        ];
+        this.addToPolicy('dynamoTablesRead', [item.table.tableName, `${item.table.tableName}/index/*`], readPermissions);
+      }
+
+      // DynamoDB tables - write
+      for (const item of this.ghaInfo.resources.tables.filter((item) => item.writeAccess)) {
+        const writePermissions = [
+          "dynamodb:PutItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:BatchWriteItem",
+        ];
+        this.addToPolicy('dynamoTablesWrite', [item.table.tableName, `${item.table.tableName}/index/*`], writePermissions);
+      }
     }
 
     return this.policy;
