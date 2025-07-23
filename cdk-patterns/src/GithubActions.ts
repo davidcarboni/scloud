@@ -184,26 +184,30 @@ class GithubActions extends Construct {
       ]);
 
       // DynamoDB tables - read
+      const dynamoTablesReadResources: string[] = [];
       for (const item of this.ghaInfo.resources.tables) {
-        const readPermissions = [
-          "dynamodb:GetItem",
-          "dynamodb:BatchGetItem",
-          "dynamodb:Query",
-          "dynamodb:Scan",
-        ];
-        this.addToPolicy('dynamoTablesRead', [item.table.tableArn, `${item.table.tableArn}/index/*`], readPermissions);
+        dynamoTablesReadResources.push(item.table.tableArn);
+        dynamoTablesReadResources.push(`${item.table.tableArn}/index/*`);
       }
+      this.addToPolicy('dynamoTablesRead', dynamoTablesReadResources, [
+        "dynamodb:GetItem",
+        "dynamodb:BatchGetItem",
+        "dynamodb:Query",
+        "dynamodb:Scan",
+      ]);
 
       // DynamoDB tables - write
-      for (const item of this.ghaInfo.resources.tables.filter((item) => item.writeAccess)) {
-        const writePermissions = [
-          "dynamodb:PutItem",
-          "dynamodb:UpdateItem",
-          "dynamodb:DeleteItem",
-          "dynamodb:BatchWriteItem",
-        ];
-        this.addToPolicy('dynamoTablesWrite', [item.table.tableArn, `${item.table.tableArn}/index/*`], writePermissions);
+      const dynamoTablesWriteResources: string[] = [];
+      for (const item of this.ghaInfo.resources.tables) {
+        dynamoTablesWriteResources.push(item.table.tableArn);
+        dynamoTablesWriteResources.push(`${item.table.tableArn}/index/*`);
       }
+      this.addToPolicy('dynamoTablesWrite', dynamoTablesWriteResources, [
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:BatchWriteItem",
+      ]);
     }
 
     return this.policy;

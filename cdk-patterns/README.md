@@ -19,6 +19,7 @@ A couple of highlights:
 
 ## Release notes
 errorResponses
+ * **0.9.8**: Fix for adding tables to the GHA policy
  * **0.9.7**: Fix for tableArn when adding a DDB table to GHA policy
  * **0.9.6**: Add DynamoDB table read/write to GHA access policy
  * **0.9.5**: Add the ability to create more than one OIDC role if needed.
