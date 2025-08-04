@@ -2,7 +2,6 @@
 
 import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
-import noOnlyTests from 'eslint-plugin-no-only-tests';
 
 // https://typescript-eslint.io/getting-started/
 
@@ -25,9 +24,6 @@ export default tseslint.config(
       '@typescript-eslint/no-unused-expressions': 'off',
       '@typescript-eslint/no-unused-vars': 'off',
       'no-only-tests/no-only-tests': 'error',
-    },
-    plugins: {
-      'no-only-tests': noOnlyTests,
     },
   },
 );
