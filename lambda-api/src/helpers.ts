@@ -73,7 +73,7 @@ export function parseBody(body: string | null, isBase64Encoded: boolean, content
  * Parses the cookie, if any, returning at minimum an empty object.
  * @param headers APIGatewayProxyEvent.headers
  */
-export function parseCookie(headers: { [name: string]: string | undefined; }): { [name: string]: string; } {
+export function parseCookie(headers: { [name: string]: string | undefined; }): { [name: string]: string | undefined; } {
   const header = headers.cookie || headers.Cookie || '';
   return cookie.parse(header);
 }
