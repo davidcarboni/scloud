@@ -34,6 +34,7 @@
   "homepage": "https://github.com/davidcarboni/scloud#readme",
   "devDependencies": {
     "@eslint/js": "*",
+    "@tsconfig/node22": "*",
     "@types/chai": "*",
     "@types/cookie": "*",
     "@types/mocha": "*",
