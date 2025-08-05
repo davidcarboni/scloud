@@ -7,7 +7,7 @@ import {
   // ContextBuilder,
   Handler, Request, Response, Route, Routes,
 } from './types';
-import { buildCookie, matchRoute, parseRequest } from './helpers';
+import { buildCookie, buildHeaders, matchRoute, parseRequest } from './helpers';
 
 function textResponse(statusCode: number, body: string): Response {
   return {
@@ -64,10 +64,11 @@ export async function apiHandler(
 
   // API Gateway Proxy result
   let body: string = '';
+  const headers = buildHeaders(response);
   if (typeof response.body === 'string') {
     // Use the body as-is
     // Potentially add a text/plain content type header:
-    response.headers = { 'Content-Type': 'text/plain', ...response.headers };
+    response.headers = { 'Content-Type': 'text/plain', ...headers };
     body = response.body;
   } else if (response.body) {
     // Stringify the response object
@@ -77,11 +78,11 @@ export async function apiHandler(
   const result: APIGatewayProxyResult = {
     statusCode: response.statusCode,
     body,
-    headers: response.headers,
+    headers: headers,
   };
 
   // Cookies (if set)
-  const cookieHeaders = buildCookie(response.cookies);
+  const cookieHeaders = buildCookie(response);
   if (cookieHeaders) {
     result.multiValueHeaders = {
       'Set-Cookie': cookieHeaders,

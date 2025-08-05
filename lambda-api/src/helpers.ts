@@ -1,6 +1,6 @@
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import * as cookie from 'cookie';
-import { Request, Route, Routes } from './types';
+import { Request, Response, ResponseSchema, Route, Routes } from './types';
 
 /**
  * Ensures the path is lowercased, always has a leading slash and never a trailing slash
@@ -78,14 +78,19 @@ export function parseCookie(headers: { [name: string]: string | undefined; }): {
   return cookie.parse(header);
 }
 
-export function buildCookie(values: { [key: string]: string; } | undefined): string[] | undefined {
-  if (!values) return undefined;
+export function buildCookie(response: Response<ResponseSchema>): string[] | undefined {
+  if (!response.cookies) return undefined;
+
+  const cookies: { [key: string]: string; } = {};
+  for (const [key, value] of Object.entries(response.cookies)) {
+    cookies[key] = `${value}`;
+  }
 
   const header: string[] = [];
   const oneYear = 60 * 60 * 24 * 365;
 
-  Object.keys(values).forEach((key) => {
-    const value = values[key];
+  Object.keys(cookies).forEach((key) => {
+    const value = cookies[key];
     if (value === '') {
       // If explicitly unset, expire the cookie value
       header.push(cookie.serialize(key, '', {
@@ -100,6 +105,19 @@ export function buildCookie(values: { [key: string]: string; } | undefined): str
   });
 
   return header;
+}
+
+export function buildHeaders(response: Response<ResponseSchema>): { [key: string]: string; } {
+  if (!response.headers) return {};
+
+  const headers: { [key: string]: string; } = {};
+  if (response.headers) {
+    for (const [key, value] of Object.entries(response.headers)) {
+      headers[key] = value.toString();
+    }
+  }
+
+  return headers;
 }
 
 export function parseRequest(event: APIGatewayProxyEvent): Request {
