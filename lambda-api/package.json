@@ -52,6 +52,7 @@
   },
   "dependencies": {
     "@types/aws-lambda": "*",
-    "cookie": "*"
+    "cookie": "*",
+    "zod": "*"
   }
 }
