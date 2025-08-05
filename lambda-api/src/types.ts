@@ -7,6 +7,11 @@
 
 import { z } from "zod";
 
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const stringRecord = z.record(z.string(), z.string());
+type StringRecord = z.infer<typeof stringRecord>;
+
 export interface RequestSchema {
   context?: z.ZodType;
   headers?: z.ZodType;
@@ -22,19 +27,7 @@ export interface ResponseSchema {
   body?: z.ZodType;
 }
 
-// export interface Schemas {
-//   context?: z.ZodType;
-//   headers?: z.ZodType;
-//   cookies?: z.ZodType;
-//   pathParameters?: z.ZodType;
-//   query?: z.ZodType;
-//   body?: z.ZodType;
-//   response?: z.ZodType;
-// }
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const StringRecord = typeof z.record(z.string(), z.string());
-type InferSchema<T> = T extends z.ZodType ? z.infer<T> : z.infer<typeof StringRecord>;
+type InferSchema<T> = T extends z.ZodType ? z.infer<T> : z.infer<StringRecord>;
 
 export interface Request<R extends RequestSchema = RequestSchema> {
   method: string,
