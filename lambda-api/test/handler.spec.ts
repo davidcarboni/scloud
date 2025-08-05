@@ -68,7 +68,7 @@ describe('handler.ts', () => {
     it('Should return 200 for a matched route', async () => {
       const result = await apiHandler({ ...event, path: '/ok', httpMethod: 'GET' }, context, {
         '/ok': {
-          GET: async (r: Request) => ({ statusCode: 200 }),
+          GET: { handler: async (r: Request) => ({ statusCode: 200, body: '' }) },
         },
       });
       expect(result.statusCode).to.equal(200);
@@ -82,7 +82,7 @@ describe('handler.ts', () => {
     it('Should return 405 for an unmatched method', async () => {
       const result = await apiHandler({ ...event, path: '/method', httpMethod: 'GET' }, context, {
         '/method': {
-          POST: async (r: Request) => ({ statusCode: 200, body: { method: 'POST' } }),
+          POST: { handler: async (r: Request) => ({ statusCode: 200, body: { method: 'POST' } }) },
         },
       });
       expect(result.statusCode).to.equal(405);
@@ -91,8 +91,10 @@ describe('handler.ts', () => {
     it('Should return 500 for an error', async () => {
       const result = await apiHandler({ ...event, path: '/boom', httpMethod: 'GET' }, context, {
         '/boom': {
-          GET: async (r: Request) => {
-            throw new Error('Intended error');
+          GET: {
+            handler: async (r: Request) => {
+              throw new Error('Intended error');
+            }
           },
         },
       });
