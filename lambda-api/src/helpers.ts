@@ -1,6 +1,6 @@
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import * as cookie from 'cookie';
-import { Request, Response, ResponseSchema, Route, Routes } from './types';
+import { Request, Response, Route, Routes } from './types';
 
 /**
  * Ensures the path is lowercased, always has a leading slash and never a trailing slash
@@ -28,19 +28,14 @@ export function standardQueryParameters(query: { [name: string]: string | undefi
 }
 
 /**
- * Ensures all header names are lowercased for ease of access.
+ * Ensures all headers have a value.
  * @param headers APIGatewayProxyEvent.headers
  */
 export function standardHeaders(headers: { [name: string]: string | undefined; }): { [name: string]: string; } {
   const result: { [name: string]: string; } = {};
-  Object.keys(headers).forEach((name) => {
-    const value = headers[name];
-    if (value) {
-      // Provide both original-case and lowercased (standardised) header names for ease of access:
-      result[name] = value;
-      result[name.toLowerCase()] = value;
-    }
-  });
+  for (const [name, value] of Object.entries(headers)) {
+    result[name] = value ?? '';
+  }
   return result;
 }
 
@@ -73,33 +68,46 @@ export function parseBody(body: string | null, isBase64Encoded: boolean, content
  * Parses the cookie, if any, returning at minimum an empty object.
  * @param headers APIGatewayProxyEvent.headers
  */
-export function parseCookie(headers: { [name: string]: string | undefined; }): { [name: string]: string | undefined; } {
-  const header = headers.cookie || headers.Cookie || '';
-  return cookie.parse(header);
+export function parseCookie(headers: { [name: string]: string | undefined; }): { [name: string]: string; } {
+  const header = getHeader('Cookie', headers);
+  const values = header ? cookie.parse(header) : {};
+
+  // Ensure we don't return any undefined values
+  const result: { [name: string]: string; } = {};
+  for (const [name, value] of Object.entries(values)) {
+    if (value) result[name] = value;
+  }
+  return result;
 }
 
-export function buildCookie(response: Response<ResponseSchema>): string[] | undefined {
+export function buildCookie(
+  response: Response,
+  maxAge: number | undefined = 60 * 60 * 24 * 365,
+  expires: Date | undefined = undefined,
+  secure: boolean = true,
+  httpOnly: boolean = true,
+  sameSite: 'strict' | 'lax' | 'none' = 'lax',
+): string[] | undefined {
   if (!response.cookies) return undefined;
 
   const cookies: { [key: string]: string; } = {};
   for (const [key, value] of Object.entries(response.cookies)) {
-    cookies[key] = `${value}`;
+    cookies[key] = value;
   }
 
   const header: string[] = [];
-  const oneYear = 60 * 60 * 24 * 365;
 
   Object.keys(cookies).forEach((key) => {
     const value = cookies[key];
     if (value === '') {
       // If explicitly unset, expire the cookie value
       header.push(cookie.serialize(key, '', {
-        expires: new Date(), secure: true, httpOnly: true, sameSite: 'strict',
+        expires: new Date(), secure, httpOnly, sameSite,
       }));
     } else if (value) {
       // Otherwise, set it only if a value was given
       header.push(cookie.serialize(key, value, {
-        maxAge: oneYear, secure: true, httpOnly: true, sameSite: 'strict',
+        maxAge, expires, secure, httpOnly, sameSite,
       }));
     }
   });
@@ -107,17 +115,36 @@ export function buildCookie(response: Response<ResponseSchema>): string[] | unde
   return header;
 }
 
-export function buildHeaders(response: Response<ResponseSchema>): { [key: string]: string; } {
-  if (!response.headers) return {};
+/**
+ * Case-insensitive header lookup
+ */
+export function getHeader(name: string, headers: { [key: string]: string | undefined; } | undefined): string | undefined {
+  if (!headers) return undefined;
 
-  const headers: { [key: string]: string; } = {};
-  if (response.headers) {
-    for (const [key, value] of Object.entries(response.headers)) {
-      headers[key] = value.toString();
+  // Exact match
+  if (headers[name]) return headers[name];
+
+  // Case-insensitive match
+  const lowercased: { [key: string]: string | undefined; } = {};
+  for (const [key, value] of Object.entries(headers)) {
+    lowercased[key.toLowerCase()] = value;
+  }
+  return lowercased[name.toLowerCase()];
+}
+
+/**
+ * Case-insensitive header setting
+ */
+export function setHeader(name: string, value: string, headers: { [key: string]: string | undefined; } | undefined): void {
+  if (!headers) return;
+  let set = false;
+  for (const key of Object.keys(headers)) {
+    if (name.toLowerCase() === key.toLowerCase()) {
+      headers[key] = value;
+      set = true;
     }
   }
-
-  return headers;
+  if (!set) headers[name] = value;
 }
 
 export function parseRequest(event: APIGatewayProxyEvent): Request {
@@ -126,31 +153,29 @@ export function parseRequest(event: APIGatewayProxyEvent): Request {
     path: standardPath(event.path),
     query: standardQueryParameters(event.queryStringParameters),
     headers: standardHeaders(event.headers),
-    body: parseBody(event.body, event.isBase64Encoded, event.headers['content-type']),
+    body: parseBody(event.body, event.isBase64Encoded, getHeader('Content-Type', event.headers)),
     cookies: parseCookie(event.headers),
     pathParameters: {}, // These need to be parsed as part of route matching
-    context: {}, // You can add any custom values you need to the request via this context
+    context: { event }, // You can add any custom values you need to the request via this context
   };
 }
 
-export function matchRoute(routes: Routes, path: string): { route: Route | undefined, params: { [name: string]: string; }; } {
-  // Simple match
-  if (routes[path]) return { route: routes[path], params: {} };
+export function matchRoute(routes: Routes, path: string): { methods: Route | undefined, params: { [name: string]: string; }; } {
+  // Direct match
+  if (routes[path]) return { methods: routes[path], params: {} };
 
   // List paths to check
   const paths = Object.keys(routes);
 
   // Case-insensitive match
-  for (let p = 0; p < paths.length; p++) {
-    const candidate = paths[p];
-    if (candidate.toLowerCase() === path.toLowerCase()) return { route: routes[candidate], params: {} };
+  for (const candidate of paths) {
+    if (candidate.toLowerCase() === path.toLowerCase()) return { methods: routes[candidate], params: {} };
   }
 
   // Path-parameter matching
   const pathSegments = path.split('/');
 
-  for (let p = 0; p < paths.length; p++) {
-    const candidate = paths[p];
+  for (const candidate of paths) {
     const candidateSegments = candidate.split('/');
 
     // First check: length match
@@ -158,22 +183,22 @@ export function matchRoute(routes: Routes, path: string): { route: Route | undef
 
     for (let s = 0; s < pathSegments.length; s++) {
       const params: { [name: string]: string; } = {};
-      const pathSegment = pathSegments[s];
-      const candidateSegment = candidateSegments[s];
+      const pathSegment = pathSegments[s] ?? '';
+      const candidateSegment = candidateSegments[s] ?? '';
       if (candidateSegment.startsWith('{') && candidateSegment.endsWith('}')) {
         // Path parameter
         const name = candidateSegment.slice(1, -1);
         params[name] = pathSegment;
-      } else if (pathSegment !== candidateSegment) {
+      } else if (pathSegment.toLowerCase() !== candidateSegment.toLowerCase()) {
         break;
       }
 
       if (s === pathSegments.length - 1) {
         // Matched all segments
-        return { route: routes[candidate], params };
+        return { methods: routes[candidate], params };
       }
     }
   }
 
-  return { route: undefined, params: {} };
+  return { methods: undefined, params: {} };
 }

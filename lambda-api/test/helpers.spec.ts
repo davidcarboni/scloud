@@ -1,10 +1,13 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import {
+  buildCookie,
+  getHeader,
   matchRoute,
-  parseBody, standardHeaders, standardPath,
+  parseBody, parseCookie, setHeader, standardHeaders, standardPath,
   standardQueryParameters,
 } from '../src/helpers';
+import { Routes } from '@/types';
 
 describe('helpers.ts', () => {
   describe('standardPath', () => {
@@ -64,45 +67,113 @@ describe('helpers.ts', () => {
   });
 
   describe('standardHeaders', () => {
-    it('Should provide original header names plus lowercased header names', () => {
-      const headers = standardHeaders({ Cookie: '1', 'Content-Type': '2' });
-      expect(headers).to.deep.equal({
-        Cookie: '1',
-        cookie: '1',
-        'Content-Type': '2',
-        'content-type': '2',
-      });
+    it('Should set undefined values to empty strings', () => {
+      const headers = standardHeaders({ a: '1', b: '', c: undefined });
+      expect(headers).to.deep.equal({ a: '1', b: '', c: '' });
+    });
+  });
+
+  describe('getheader', () => {
+    it('Should access a header value case-insensitively', () => {
+      const headers = { 'Content-Type': 'text/plain' };
+      expect(getHeader('content-type', headers)).to.equal('text/plain');
     });
 
-    it('Should remove blank values', () => {
-      const headers = standardHeaders({ a: '1', b: '', c: undefined });
-      expect(headers).to.deep.equal({ a: '1' });
+    it('Should return undefined if the header is not set', () => {
+      const headers = { 'Content-Type': 'text/plain' };
+      expect(getHeader('Origin', headers)).to.be.undefined;
+    });
+  });
+
+  describe('setheader', () => {
+    it('Should update a header value case-insensitively', () => {
+      const headers = { 'Content-Type': 'text/plain' };
+      setHeader('content-type', 'application/json', headers);
+      expect(getHeader('Content-Type', headers)).to.equal('application/json');
+      expect(Object.keys(headers)).to.deep.equal(['Content-Type']);
+    });
+
+    it('Should set a header value', () => {
+      const headers = {};
+      setHeader('content-type', 'application/json', headers);
+      expect(Object.keys(headers)).to.deep.equal(['content-type']);
+    });
+  });
+
+  describe('parseCookie', () => {
+    it('Should parse a cookie', () => {
+      const headers = { Cookie: 'a=1; b=2' };
+      const cookies = parseCookie(headers);
+      expect(cookies).to.deep.equal({ a: '1', b: '2' });
+    });
+
+    it('Should gracefully handle no cookies', () => {
+      const headers = {};
+      const cookies = parseCookie(headers);
+      expect(cookies).to.deep.equal({});
+    });
+
+    it('Should gracefully handle an empty cookie value', () => {
+      const headers = { Cookie: 'a=1; b=; c=3' };
+      const cookies = parseCookie(headers);
+      expect(cookies).to.deep.equal({ a: '1', c: '3' });
+    });
+  });
+
+  describe('buildCookie', () => {
+    it('Should build a cookie header from a response', () => {
+      const response = { cookies: { a: '1', b: '2' } };
+      const cookie = buildCookie(response);
+      expect(cookie).to.deep.equal([
+        'a=1; Max-Age=31536000; HttpOnly; Secure; SameSite=Lax',
+        'b=2; Max-Age=31536000; HttpOnly; Secure; SameSite=Lax',
+      ]);
+    });
+
+    it('Should unset a cookie value if explicitly blank', () => {
+      const response = { cookies: { a: '' } };
+      const cookie = buildCookie(response);
+      const expectedIsh = 'a=; Expires=Thu, 07 Aug 2025 18:04:35 GMT; HttpOnly; Secure; SameSite=Lax';
+      expect((cookie || [])[0].slice(0, 12)).to.equal(expectedIsh.slice(0, 12));
+      expect((cookie || [])[0].slice(-32)).to.equal(expectedIsh.slice(-32));
+    });
+
+    it('Should gracefully handle no cookies', () => {
+      const response = {};
+      const cookie = buildCookie(response);
+      expect(cookie).to.be.undefined;
     });
   });
 
   describe('parseBody', () => {
     it('Should parse body', () => {
-      const query = parseBody(JSON.stringify({ a: '1', b: '2' }), false);
-      expect(query).to.deep.equal({ a: '1', b: '2' });
+      const body = parseBody(JSON.stringify({ a: '1', b: '2' }), false);
+      expect(body).to.deep.equal({ a: '1', b: '2' });
     });
+
     it('Should parse a base-64 encoded body', () => {
-      const query = parseBody(Buffer.from(JSON.stringify({ a: '1', b: '2' })).toString('base64'), true);
-      expect(query).to.deep.equal({ a: '1', b: '2' });
+      const body = parseBody(Buffer.from(JSON.stringify({ a: '1', b: '2' })).toString('base64'), true);
+      expect(body).to.deep.equal({ a: '1', b: '2' });
+    });
+
+    it('Should parse an application/x-www-form-urlencoded body', () => {
+      const body = parseBody('a=1&b=2', false, 'application/x-www-form-urlencoded');
+      expect(body).to.deep.equal({ a: '1', b: '2' });
     });
 
     it('Should gracefully handle unparseable body', () => {
-      const query = parseBody('Ain\'t nobody here but us chickens', false);
-      expect(query).to.deep.equal('Ain\'t nobody here but us chickens',);
+      const body = parseBody('Ain\'t nobody here but us chickens', false);
+      expect(body).to.deep.equal('Ain\'t nobody here but us chickens',);
     });
 
     it('Should handle empty body', () => {
-      const query = parseBody('', false);
-      expect(query).to.deep.equal({});
+      const body = parseBody('', false);
+      expect(body).to.deep.equal({});
     });
 
     it('Should handle no body', () => {
-      const query = parseBody(null, false);
-      expect(query).to.deep.equal({});
+      const body = parseBody(null, false);
+      expect(body).to.deep.equal({});
     });
   });
 
@@ -112,38 +183,44 @@ describe('helpers.ts', () => {
     const route3 = {};
     const route4 = {};
     const route5 = {};
-    const routes = {
+    const routes: Routes = {
       '/path1': route1,
       '/path2': route2,
-      '/path/{param1}/subpath1': route3,
-      '/path/{param2}': route4,
-      '/path/{param3}': route5,
+      '/path/{param3}/subpath1': route3,
+      '/path/{param4}': route4,
+      '/path/{param5}': route5,
     };
 
     it('Should match an exact route', () => {
       const result = matchRoute(routes, '/path1');
-      expect(result.route).to.equal(route1);
+      expect(result.methods).to.equal(route1);
+      expect(result.params).to.deep.equal({}); // Guarantee a minimum of an emply object - never undefined (so we don't have to check for it)
+    });
+
+    it('Should match a route case-insensitively', () => {
+      const result = matchRoute(routes, '/Path2');
+      expect(result.methods).to.equal(route2);
       expect(result.params).to.deep.equal({}); // Guarantee a minimum of an emply object - never undefined (so we don't have to check for it)
     });
 
     it('Should not match an unknown route', () => {
-      const result = matchRoute(routes, '/path3');
-      expect(result.route).to.be.undefined;
-      expect(result.params).to.deep.equal({}); // Guarantee a minimum of an emply object - never undefined (so we don't have to check for it)
-    });
-
-    it('Should match an route case-insensitively', () => {
-      const result = matchRoute(routes, '/Path2');
-      expect(result.route).to.equal(route2);
+      const result = matchRoute(routes, '/pathX');
+      expect(result.methods).to.be.undefined;
       expect(result.params).to.deep.equal({}); // Guarantee a minimum of an emply object - never undefined (so we don't have to check for it)
     });
 
     it('Should match a parameter', () => {
       const result = matchRoute(routes, '/path/123');
-      // NB: Matching shouldn't pick up {param2} while traversing the list (different length, no match)
-      // and should not continue on to find {param3} (stop at the first match)
-      expect(result.route).to.equal(route4);
-      expect(result.params).to.deep.equal({ param2: '123' });
+      // NB: Matching shouldn't pick up {param3} while traversing the list (different length, no match)
+      // and should not continue on to find {param5} (stop at the first match)
+      expect(result.methods).to.equal(route4);
+      expect(result.params).to.deep.equal({ param4: '123' });
+    });
+
+    it('Should match a parameter case-insensitively', () => {
+      const result = matchRoute(routes, '/path/123');
+      expect(result.methods).to.equal(route4);
+      expect(result.params).to.deep.equal({ param4: '123' });
     });
   });
 });
