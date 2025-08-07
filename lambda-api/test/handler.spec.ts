@@ -5,63 +5,8 @@ import { APIGatewayProxyEvent, Context } from 'aws-lambda';
 import { apiHandler } from '../src/handler';
 import { Request } from '../src/types';
 
-const event: APIGatewayProxyEvent = {
-  body: '',
-  headers: {},
-  multiValueHeaders: {},
-  httpMethod: '',
-  isBase64Encoded: false,
-  path: '',
-  pathParameters: null,
-  queryStringParameters: {},
-  multiValueQueryStringParameters: {},
-  stageVariables: null,
-  resource: '?',
-  requestContext: {
-    accountId: '',
-    apiId: '',
-    authorizer: null,
-    httpMethod: '',
-    identity: {
-      accessKey: null,
-      accountId: null,
-      apiKey: null,
-      apiKeyId: null,
-      caller: null,
-      clientCert: null,
-      cognitoAuthenticationProvider: null,
-      cognitoAuthenticationType: null,
-      cognitoIdentityId: null,
-      cognitoIdentityPoolId: null,
-      principalOrgId: null,
-      sourceIp: '',
-      user: null,
-      userAgent: null,
-      userArn: null,
-    },
-    path: '',
-    protocol: '',
-    requestId: '',
-    requestTimeEpoch: 0,
-    resourceId: '',
-    resourcePath: '',
-    stage: '',
-  },
-};
-const context: Context = {
-  awsRequestId: '',
-  callbackWaitsForEmptyEventLoop: false,
-  functionName: '',
-  functionVersion: '',
-  invokedFunctionArn: '',
-  logGroupName: '',
-  logStreamName: '',
-  memoryLimitInMB: '',
-  getRemainingTimeInMillis: () => 0,
-  done: () => { },
-  fail: () => { },
-  succeed: () => { },
-};
+const event: APIGatewayProxyEvent = {} as APIGatewayProxyEvent;
+const context: Context = {} as Context;
 
 describe('handler.ts', () => {
   describe('handler', () => {
