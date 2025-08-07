@@ -106,5 +106,37 @@ describe('handler.ts', () => {
       });
       expect(result.statusCode).to.equal(500);
     });
+
+    it('Should call a custom error handler', async () => {
+      const result = await apiHandler({ ...event, path: '/boom', httpMethod: 'GET' }, context, {
+        '/boom': {
+          GET: {
+            handler: async (r: Request) => {
+              throw new Error('Intended error');
+            }
+          },
+        },
+      },
+        async (r: Request, e: Error) => ({ statusCode: 111, body: 'handled' }),
+      );
+      expect(result.statusCode).to.equal(111);
+      expect(result.body).to.equal('handled');
+    });
+
+    it('Should return 500 for an error in a custom error handler', async () => {
+      const result = await apiHandler({ ...event, path: '/boom', httpMethod: 'GET' }, context, {
+        '/boom': {
+          GET: {
+            handler: async (r: Request) => {
+              throw new Error('Intended error');
+            }
+          },
+        },
+      },
+        async (r: Request, e: Error) => { throw new Error('Intended error in custom error handler'); },
+      );
+      expect(result.statusCode).to.equal(500);
+      expect(result.body).to.equal('Internal server error');
+    });
   });
 });
