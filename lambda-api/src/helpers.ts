@@ -33,7 +33,7 @@ export function standardQueryParameters(query: { [name: string]: string | undefi
  */
 export function standardHeaders(headers: { [name: string]: string | undefined; }): { [name: string]: string; } {
   const result: { [name: string]: string; } = {};
-  for (const [name, value] of Object.entries(headers)) {
+  for (const [name, value] of Object.entries(headers || {})) {
     result[name] = value ?? '';
   }
   return result;
