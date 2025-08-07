@@ -1,6 +1,6 @@
 {
   "name": "@scloud/lambda-api",
-  "version": "0.3.7",
+  "version": "1.0.0",
   "description": "Lambda handler for API Gateway proxy requests",
   "main": "dist/index.js",
   "files": [
@@ -34,6 +34,7 @@
   "homepage": "https://github.com/davidcarboni/scloud#readme",
   "devDependencies": {
     "@eslint/js": "*",
+    "@tsconfig/node22": "*",
     "@types/chai": "*",
     "@types/cookie": "*",
     "@types/mocha": "*",
@@ -51,6 +52,7 @@
   },
   "dependencies": {
     "@types/aws-lambda": "*",
-    "cookie": "*"
+    "cookie": "*",
+    "zod": "*"
   }
 }

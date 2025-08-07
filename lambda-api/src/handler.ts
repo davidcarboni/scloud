@@ -4,16 +4,22 @@ import {
   Context,
 } from 'aws-lambda';
 import {
-  ContextBuilder,
-  Handler, Request, Response, Route, Routes,
+  Request, Response, Handler, Route, Routes,
+  ApiError,
 } from './types';
-import { buildCookie, matchRoute, parseRequest } from './helpers';
+import { buildCookie, getHeader, matchRoute, parseRequest, setHeader } from './helpers';
 
-function textResponse(statusCode: number, body: string): Response {
+function errorResponse(statusCode: number, body: unknown, e?: unknown): Response {
+  if (e instanceof ApiError) {
+    return {
+      statusCode: e.statusCode,
+      body: e.body,
+    };
+  }
+  if (e) console.error(`${(e as Error).stack}`);
   return {
-    statusCode,
-    headers: { 'Content-Type': 'text/plain' },
-    body
+    statusCode: statusCode,
+    body: body,
   };
 }
 
@@ -24,64 +30,83 @@ export async function apiHandler(
   event: APIGatewayProxyEvent,
   context: Context,
   routes: Routes = {
-    '/api/ping': { GET: async (request: Request) => ({ statusCode: 200, body: request }) },
+    '/ping': { GET: { handler: async (request) => ({ statusCode: 200, body: request }) } },
   },
-  errorHandler: (request: Request, e: Error) => Promise<Response> = async (request: Request) => ({ statusCode: 500, body: { error: `Internal server error: ${request.path}` } }),
-  catchAll: Handler = async (request: Request) => textResponse(404, `Not found: ${request.path}`),
-  contextBuilder?: ContextBuilder,
+  errorHandler: ((request: Request, e: Error) => Promise<Response>) | undefined = undefined,
+  catchAll: Handler | undefined = undefined,
 ): Promise<APIGatewayProxyResult> {
-  console.log(`Executing ${context.functionName} version: ${process.env.COMMIT_HASH}`);
   const request = parseRequest(event);
 
   let response: Response;
   try {
     const match = matchRoute(routes, request.path);
-    if (!match.route) {
-      // Catch-all / 404
-      response = await catchAll(request);
-    } else {
-      const handlerFunction = match.route[request.method as keyof Route];
+    if (match.params) request.pathParameters = match.params;
 
-      // Handle the request:
-      if (handlerFunction) {
-        if (contextBuilder) await contextBuilder(request);
-        response = await handlerFunction({ ...request, pathParameters: match.params });
-      } else {
-        response = textResponse(405, 'Method not allowed');
+    if (match.methods) {
+      const route = match.methods[request.method as keyof Route];
+      if (!route) throw new ApiError(405, 'Method not allowed');
+
+      // Verify request body
+      if (route.request?.body) {
+        const parsed = route.request.body.safeParse(request.body);
+        if (!parsed.success) {
+          throw new ApiError(400, parsed.error);
+        }
+        request.body = parsed.data;
       }
+
+      response = await route.handler(request);
+
+      // Verify response body
+      if (route.response?.body) {
+        const parsed = route.response.body.safeParse(response.body);
+        if (!parsed.success) {
+          console.error(JSON.stringify(parsed.error, null, 2));
+          throw new ApiError(500, 'Internal server error');
+        }
+        response.body = parsed.data;
+      }
+    } else if (catchAll) {
+      // Catch-all / 404
+      response = await catchAll.handler(request);
+    } else {
+      throw new ApiError(404, 'Not found');
     }
   } catch (e) {
-    // Fallback error handling
-    console.error(`${(e as Error).message}\n${(e as Error).stack}`);
-    response = textResponse(500, `Internal server error: ${request.path}`);
-    try {
-      // Error handling
-      if (errorHandler) response = await errorHandler(request, e as Error);
-    } catch (ee) {
-      console.error(`Error in error handler: ${(ee as Error).message}\n${(ee as Error).stack}`);
+    if (errorHandler) {
+      try {
+        response = await errorHandler(request, e as Error);
+      } catch (ee) {
+        response = errorResponse(500, 'Internal server error', ee);
+      }
+    } else {
+      response = errorResponse(500, 'Internal server error', e);
     }
   }
 
-  // API Gateway Proxy result
-  let body: string = '';
+  // Translate the response to an API Gateway Proxy result
+  let body: string | undefined;
+  const headers = response.headers || {};
   if (typeof response.body === 'string') {
     // Use the body as-is
-    // Potentially add a text/plain content type header:
-    response.headers = { 'Content-Type': 'text/plain', ...response.headers };
+    // Add text/plain if no Content-Type header is set:
+    if (!getHeader('Content-Type', headers)) setHeader('Content-Type', 'text/plain', headers);
     body = response.body;
   } else if (response.body) {
     // Stringify the response object
     // API Gateway returns application/json by default
     body = JSON.stringify(response.body);
   }
+
+  // Prepare response
   const result: APIGatewayProxyResult = {
-    statusCode: response.statusCode,
-    body,
-    headers: response.headers,
+    statusCode: response.statusCode ?? 200,
+    headers,
+    body: body || '',
   };
 
-  // Cookies (if set)
-  const cookieHeaders = buildCookie(response.cookies);
+  // Add cookie headers
+  const cookieHeaders = buildCookie(response);
   if (cookieHeaders) {
     result.multiValueHeaders = {
       'Set-Cookie': cookieHeaders,

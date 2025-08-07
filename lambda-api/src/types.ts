@@ -1,40 +1,69 @@
-/**
- * Simplified representation of the HTTP Request.
- * The implementation guarantees that you'll always have non-null objects for query, headers, cookies, and body.
- * The method will be the HTTP method from the API Gateway proxt event.
- * The path will be the path from the API Gateway proxy event, which starts with '/'.
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { APIGatewayProxyEvent } from "aws-lambda";
+import z from "zod";
+
 export interface Request<B = any> {
   method: string,
   path: string,
-  query: { [name: string]: string; },
-  headers: { [name: string]: string; },
-  cookies: { [name: string]: string; },
-  /** Path parameters will be parsed from the route definitions you pass to apiHandler() */
-  pathParameters: { [name: string]: string; },
-  body: B,
-  /** You can add any custom values you need to the request via this context */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  context: { [key: string]: any; },
+  query: Record<string, string>;
+  headers: Record<string, string>;
+  cookies: Record<string, string>;
+  pathParameters: Record<string, string>;
+  body: B;
+  context: {
+    event: APIGatewayProxyEvent;
+    [key: string]: any;
+  },
 }
 
-export interface Response {
-  statusCode: number,
-  headers?: { [name: string]: string; },
-  cookies?: { [name: string]: string; },
-  body?: object | string,
+export interface Response<B = any> {
+  statusCode?: number;
+  headers?: Record<string, string>;
+  cookies?: Record<string, string>;
+  body?: B;
 }
 
-export type Handler = (request: Request) => Promise<Response>;
+type AnySchema = z.ZodType<any, any, any>;
+export interface Handler<SReq extends AnySchema = AnySchema, SRes extends AnySchema = AnySchema> {
+  request?: {
+    body?: SReq;
+    headers?: z.ZodObject<any>;
+    cookies?: z.ZodObject<any>;
+    pathParameters?: z.ZodObject<any>;
+    query?: z.ZodObject<any>;
+  };
+  response?: {
+    body?: SRes;
+    headers?: z.ZodObject<any>;
+    cookies?: z.ZodObject<any>;
+  };
+  handler: (request: Request<z.infer<SReq>>) => Promise<Response<z.infer<SRes>>>;
+}
+
 export interface Route {
-  GET?: Handler,
-  POST?: Handler,
-  PUT?: Handler,
-  DELETE?: Handler,
-  OPTIONS?: Handler,
+  GET?: Handler;
+  POST?: Handler;
+  PUT?: Handler;
+  DELETE?: Handler;
+  PATCH?: Handler;
+  OPTIONS?: Handler;
+  HEAD?: Handler;
 }
-export interface Routes { [path: string]: Route; }
 
+export interface Routes {
+  [path: string]: Route;
+}
 
-export type ContextBuilder = (request: Request) => Promise<void>;
+export class ApiError extends Error {
+  statusCode: number;
+  body: unknown;
+
+  constructor(statusCode: number, body: unknown) {
+    super(typeof body === 'string' ? body : JSON.stringify(body, null, 2));
+    this.statusCode = statusCode;
+    this.body = body;
+
+    // Required for instanceof to work properly
+    Object.setPrototypeOf(this, ApiError.prototype);
+  }
+}
