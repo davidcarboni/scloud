@@ -23,7 +23,8 @@ export interface Response<B = any> {
   body?: B;
 }
 
-export interface Route<SReq extends z.ZodType<any, any, any> = z.ZodType<any, any, any>, SRes extends z.ZodType<any, any, any> = z.ZodType<any, any, any>> {
+type AnySchema = z.ZodType<any, any, any>;
+export interface Handler<SReq extends AnySchema = AnySchema, SRes extends AnySchema = AnySchema> {
   request?: {
     body?: SReq;
     headers?: z.ZodObject<any>;
@@ -39,14 +40,16 @@ export interface Route<SReq extends z.ZodType<any, any, any> = z.ZodType<any, an
   handler: (request: Request<z.infer<SReq>>) => Promise<Response<z.infer<SRes>>>;
 }
 
+export interface Route {
+  GET?: Handler;
+  POST?: Handler;
+  PUT?: Handler;
+  DELETE?: Handler;
+  PATCH?: Handler;
+  OPTIONS?: Handler;
+  HEAD?: Handler;
+}
+
 export interface Routes {
-  [path: string]: {
-    GET?: Route;
-    POST?: Route;
-    PUT?: Route;
-    DELETE?: Route;
-    PATCH?: Route;
-    OPTIONS?: Route;
-    HEAD?: Route;
-  };
+  [path: string]: Route;
 }
