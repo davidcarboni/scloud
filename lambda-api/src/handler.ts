@@ -45,7 +45,27 @@ export async function apiHandler(
     if (match.methods) {
       const route = match.methods[request.method as keyof Route];
       if (!route) throw new ApiError(405, 'Method not allowed');
+
+      // Verify request body
+      if (route.request?.body) {
+        const parsed = route.request.body.safeParse(request.body);
+        if (!parsed.success) {
+          throw new ApiError(400, parsed.error);
+        }
+        request.body = parsed.data;
+      }
+
       response = await route.handler(request);
+
+      // Verify response body
+      if (route.response?.body) {
+        const parsed = route.response.body.safeParse(response.body);
+        if (!parsed.success) {
+          console.error(JSON.stringify(parsed.error, null, 2));
+          throw new ApiError(500, 'Internal server error');
+        }
+        response.body = parsed.data;
+      }
     } else if (catchAll) {
       // Catch-all / 404
       response = await catchAll.handler(request);
