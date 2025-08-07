@@ -10,13 +10,13 @@ import {
 import { buildCookie, getHeader, matchRoute, parseRequest, setHeader } from './helpers';
 
 function errorResponse(statusCode: number, body: unknown, e?: unknown): Response {
-  if (e) console.error(`Error in error handler: ${(e as Error).message}\n${(e as Error).stack}`);
   if (e instanceof ApiError) {
     return {
       statusCode: e.statusCode,
       body: e.body,
     };
   }
+  if (e) console.error(`${(e as Error).stack}`);
   return {
     statusCode: statusCode,
     body: body,
@@ -34,9 +34,7 @@ export async function apiHandler(
   },
   errorHandler: ((request: Request, e: Error) => Promise<Response>) | undefined = undefined,
   catchAll: Handler | undefined = undefined,
-  // contextBuilder?: ContextBuilder,
 ): Promise<APIGatewayProxyResult> {
-  console.log(`Executing ${context.functionName} version: ${process.env.COMMIT_HASH}`);
   const request = parseRequest(event);
 
   let response: Response;
