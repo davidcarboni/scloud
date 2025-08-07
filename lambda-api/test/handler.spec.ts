@@ -4,6 +4,7 @@ import { describe, it } from 'mocha';
 import { APIGatewayProxyEvent, Context } from 'aws-lambda';
 import { apiHandler } from '../src/handler';
 import { Request } from '../src/types';
+import z from 'zod';
 
 const event: APIGatewayProxyEvent = {} as APIGatewayProxyEvent;
 const context: Context = {} as Context;
@@ -17,6 +18,66 @@ describe('handler.ts', () => {
         },
       });
       expect(result.statusCode).to.equal(200);
+    });
+
+    it('Should find path parameters', async () => {
+      const result = await apiHandler({ ...event, path: '/ok/123', httpMethod: 'GET' }, context, {
+        '/ok/{id}': {
+          GET: { handler: async (r: Request) => ({ statusCode: 200, body: r.pathParameters.id }) },
+        },
+      });
+      expect(result.statusCode).to.equal(200);
+      expect(result.body).to.equal('123');
+    });
+
+    it('Should parse request body', async () => {
+      const result = await apiHandler({ ...event, path: '/ok', httpMethod: 'POST', body: JSON.stringify({ id: '123' }) }, context, {
+        '/ok': {
+          POST: {
+            request: { body: z.object({ id: z.string() }) },
+            handler: async (r: Request) => ({ statusCode: 200, body: r.body.id })
+          },
+        },
+      });
+      expect(result.statusCode).to.equal(200);
+      expect(result.body).to.equal('123');
+    });
+
+    it('Should return 400 for an invalid request body', async () => {
+      const result = await apiHandler({ ...event, path: '/ok', httpMethod: 'POST' }, context, {
+        '/ok': {
+          POST: {
+            request: { body: z.object({ id: z.string() }) },
+            handler: async (r: Request) => ({ statusCode: 200, body: r.body.id })
+          },
+        },
+      });
+      expect(result.statusCode).to.equal(400);
+    });
+
+    it('Should parse response body', async () => {
+      const result = await apiHandler({ ...event, path: '/ok', httpMethod: 'POST', body: JSON.stringify({ id: '123' }) }, context, {
+        '/ok': {
+          POST: {
+            response: { body: z.object({ id: z.string() }) },
+            handler: async (r: Request) => ({ statusCode: 200, body: { id: '123' } })
+          },
+        },
+      });
+      expect(result.statusCode).to.equal(200);
+      expect(JSON.parse(result.body)).to.deep.equal({ id: '123' });
+    });
+
+    it('Should return 500 for an invalid response body', async () => {
+      const result = await apiHandler({ ...event, path: '/ok', httpMethod: 'POST', body: JSON.stringify({ id: '123' }) }, context, {
+        '/ok': {
+          POST: {
+            response: { body: z.object({ id: z.string() }) },
+            handler: async (r: Request) => ({ statusCode: 200, body: 123 })
+          },
+        },
+      });
+      expect(result.statusCode).to.equal(500);
     });
 
     it('Should return 404 for an unmatched path', async () => {
