@@ -5,14 +5,21 @@ import {
 } from 'aws-lambda';
 import {
   Request, Response, Handler, Route, Routes,
+  ApiError,
 } from './types';
 import { buildCookie, getHeader, matchRoute, parseRequest, setHeader } from './helpers';
 
-function textResponse(statusCode: number, body: string): Response {
+function errorResponse(statusCode: number, body: unknown, e?: unknown): Response {
+  if (e) console.error(`Error in error handler: ${(e as Error).message}\n${(e as Error).stack}`);
+  if (e instanceof ApiError) {
+    return {
+      statusCode: e.statusCode,
+      body: e.body,
+    };
+  }
   return {
-    statusCode,
-    headers: { 'Content-Type': 'text/plain' },
-    body
+    statusCode: statusCode,
+    body: body,
   };
 }
 
@@ -25,8 +32,8 @@ export async function apiHandler(
   routes: Routes = {
     '/ping': { GET: { handler: async (request) => ({ statusCode: 200, body: request }) } },
   },
-  errorHandler: (request: Request, e: Error) => Promise<Response> = async (request: Request, e: Error) => { console.log('Error:', request.method, request.path, e); return { statusCode: 500, body: { error: 'Internal server error' } }; },
-  catchAll: Handler = { handler: async () => textResponse(404, 'Not found') },
+  errorHandler: ((request: Request, e: Error) => Promise<Response>) | undefined = undefined,
+  catchAll: Handler | undefined = undefined,
   // contextBuilder?: ContextBuilder,
 ): Promise<APIGatewayProxyResult> {
   console.log(`Executing ${context.functionName} version: ${process.env.COMMIT_HASH}`);
@@ -35,34 +42,31 @@ export async function apiHandler(
   let response: Response;
   try {
     const match = matchRoute(routes, request.path);
+    if (match.params) request.pathParameters = match.params;
+
     if (match.methods) {
       const route = match.methods[request.method as keyof Route];
-
-      // Handle the request:
-      if (route) {
-        // if (contextBuilder) await contextBuilder(request);
-        request.pathParameters = match.params;
-        response = await route.handler(request);
-      } else {
-        response = textResponse(405, 'Method not allowed');
-      }
-    } else {
+      if (!route) throw new ApiError(405, 'Method not allowed');
+      response = await route.handler(request);
+    } else if (catchAll) {
       // Catch-all / 404
       response = await catchAll.handler(request);
+    } else {
+      throw new ApiError(404, 'Not found');
     }
   } catch (e) {
-    // Fallback error handling
-    console.error(`${(e as Error).message}\n${(e as Error).stack}`);
-    response = textResponse(500, `Internal server error: ${request.path}`);
-    try {
-      // Error handling
-      if (errorHandler) response = await errorHandler(request, e as Error);
-    } catch (ee) {
-      console.error(`Error in error handler: ${(ee as Error).message}\n${(ee as Error).stack}`);
+    if (errorHandler) {
+      try {
+        response = await errorHandler(request, e as Error);
+      } catch (ee) {
+        response = errorResponse(500, 'Internal server error', ee);
+      }
+    } else {
+      response = errorResponse(500, 'Internal server error', e);
     }
   }
 
-  // API Gateway Proxy result
+  // Translate the response to an API Gateway Proxy result
   let body: string | undefined;
   const headers = response.headers || {};
   if (typeof response.body === 'string') {
@@ -76,13 +80,14 @@ export async function apiHandler(
     body = JSON.stringify(response.body);
   }
 
+  // Prepare response
   const result: APIGatewayProxyResult = {
     statusCode: response.statusCode ?? 200,
-    body: body || '',
     headers,
+    body: body || '',
   };
 
-  // Cookies (if set)
+  // Add cookie headers
   const cookieHeaders = buildCookie(response);
   if (cookieHeaders) {
     result.multiValueHeaders = {
