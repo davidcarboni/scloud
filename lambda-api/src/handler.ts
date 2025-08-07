@@ -4,10 +4,9 @@ import {
   Context,
 } from 'aws-lambda';
 import {
-  // ContextBuilder,
-  Handler, Request, Response, Route, Routes,
+  Request, Response, Handler, Route, Routes,
 } from './types';
-import { buildCookie, buildHeaders, matchRoute, parseRequest } from './helpers';
+import { buildCookie, getHeader, matchRoute, parseRequest, setHeader } from './helpers';
 
 function textResponse(statusCode: number, body: string): Response {
   return {
@@ -24,10 +23,10 @@ export async function apiHandler(
   event: APIGatewayProxyEvent,
   context: Context,
   routes: Routes = {
-    '/api/ping': { GET: { handler: async (request: Request) => ({ statusCode: 200, body: request }) } },
+    '/ping': { GET: { handler: async (request) => ({ statusCode: 200, body: request }) } },
   },
-  errorHandler: (request: Request, e: Error) => Promise<Response> = async (request: Request) => ({ statusCode: 500, body: { error: `Internal server error: ${request.path}` } }),
-  catchAll: Handler = { handler: async (request: Request) => textResponse(404, `Not found: ${request.path}`) },
+  errorHandler: (request: Request, e: Error) => Promise<Response> = async (request: Request, e: Error) => { console.log('Error:', request.method, request.path, e); return { statusCode: 500, body: { error: 'Internal server error' } }; },
+  catchAll: Handler = { handler: async () => textResponse(404, 'Not found') },
   // contextBuilder?: ContextBuilder,
 ): Promise<APIGatewayProxyResult> {
   console.log(`Executing ${context.functionName} version: ${process.env.COMMIT_HASH}`);
@@ -36,19 +35,20 @@ export async function apiHandler(
   let response: Response;
   try {
     const match = matchRoute(routes, request.path);
-    if (!match.route) {
-      // Catch-all / 404
-      response = await catchAll.handler(request);
-    } else {
-      const handlerFunction = match.route[request.method as keyof Route];
+    if (match.methods) {
+      const route = match.methods[request.method as keyof Route];
 
       // Handle the request:
-      if (handlerFunction) {
+      if (route) {
         // if (contextBuilder) await contextBuilder(request);
-        response = await handlerFunction.handler({ ...request, pathParameters: match.params });
+        request.pathParameters = match.params;
+        response = await route.handler(request);
       } else {
         response = textResponse(405, 'Method not allowed');
       }
+    } else {
+      // Catch-all / 404
+      response = await catchAll.handler(request);
     }
   } catch (e) {
     // Fallback error handling
@@ -63,22 +63,23 @@ export async function apiHandler(
   }
 
   // API Gateway Proxy result
-  let body: string = '';
-  const headers = buildHeaders(response);
+  let body: string | undefined;
+  const headers = response.headers || {};
   if (typeof response.body === 'string') {
     // Use the body as-is
-    // Potentially add a text/plain content type header:
-    response.headers = { 'Content-Type': 'text/plain', ...headers };
+    // Add text/plain if no Content-Type header is set:
+    if (!getHeader('Content-Type', headers)) setHeader('Content-Type', 'text/plain', headers);
     body = response.body;
   } else if (response.body) {
     // Stringify the response object
     // API Gateway returns application/json by default
     body = JSON.stringify(response.body);
   }
+
   const result: APIGatewayProxyResult = {
-    statusCode: response.statusCode,
-    body,
-    headers: headers,
+    statusCode: response.statusCode ?? 200,
+    body: body || '',
+    headers,
   };
 
   // Cookies (if set)
