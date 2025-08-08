@@ -1,5 +1,5 @@
 
-import * as fs from 'fs';
+import { existsSync, writeFileSync } from 'node:fs';
 import {
   CfnAccessKey, ManagedPolicy, OpenIdConnectProvider, PolicyStatement, Role, User, WebIdentityPrincipal,
 } from 'aws-cdk-lib/aws-iam';
@@ -296,10 +296,10 @@ class GithubActions extends Construct {
   }
 
   saveGhaValues() {
-    if (fs.existsSync('secrets')) {
+    if (existsSync('cdk.out')) {
       // Write out the list of secret and variable names:
-      fs.writeFileSync(`secrets/${this.stackName}.ghaSecrets.json`, JSON.stringify(this.ghaInfo.secrets));
-      fs.writeFileSync(`secrets/${this.stackName}.ghaVariables.json`, JSON.stringify(this.ghaInfo.variables));
+      writeFileSync(`cdk.out/${this.stackName}.ghaSecrets.json`, JSON.stringify(this.ghaInfo.secrets));
+      writeFileSync(`cdk.out/${this.stackName}.ghaVariables.json`, JSON.stringify(this.ghaInfo.variables));
     }
 
     // Flush ghaInfo so we're free to build another stack if needed:
