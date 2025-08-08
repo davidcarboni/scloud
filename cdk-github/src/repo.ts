@@ -37,14 +37,6 @@ export async function getRepo(owner: string, repo: string): Promise<Repo> {
   throw new Error('Error getting repo information');
 }
 
-export async function getRepoId(owner: string, repo: string) {
-  const parameters: RestEndpointMethodTypes['repos']['get']['parameters'] = {
-    owner,
-    repo,
-  };
-  return (await octokit.repos.get(parameters)).data.id;
-}
-
 export async function getRepoPublicKey(owner: string, repo: string): Promise<PublicKey> {
   if (repoPublicKey) return repoPublicKey;
 
