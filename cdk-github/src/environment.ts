@@ -17,16 +17,12 @@ type EnvironmentPublicKey = GetResponseDataTypeFromEndpointMethod<
 
 const environmentPublicKeys: Record<string, EnvironmentPublicKey> = {};
 
-async function getRepoId(owner: string, repo: string) {
-  return (await octokit.repos.get({ owner, repo })).data.id;
-}
-
 export async function getEnvironmentPublicKey(owner: string, repo: string, environment: string): Promise<EnvironmentPublicKey> {
   if (environmentPublicKeys[environment]) return environmentPublicKeys[environment];
 
-  const repoId = await getRepoId(owner, repo);
   const parameters: RestEndpointMethodTypes['actions']['getEnvironmentPublicKey']['parameters'] = {
-    repository_id: repoId,
+    owner,
+    repo,
     environment_name: environment,
   };
   const response = await octokit.actions.getEnvironmentPublicKey(parameters);
@@ -43,8 +39,9 @@ export async function getEnvironmentPublicKey(owner: string, repo: string, envir
 
 export async function listEnvironmentSecrets(owner: string, repo: string, environment: string): Promise<string[]> {
   const parameters: RestEndpointMethodTypes['actions']['listEnvironmentSecrets']['parameters'] = {
+    owner,
+    repo,
     environment_name: environment,
-    repository_id: await getRepoId(owner, repo),
     per_page: 100,
   };
   const response = await octokit.actions.listEnvironmentSecrets(parameters);
@@ -73,8 +70,9 @@ export async function listEnvironmentSecrets(owner: string, repo: string, enviro
 
 export async function listEnvironmentVariables(owner: string, repo: string, environment: string): Promise<string[]> {
   const parameters: RestEndpointMethodTypes['actions']['listEnvironmentVariables']['parameters'] = {
+    owner,
+    repo,
     environment_name: environment,
-    repository_id: await getRepoId(owner, repo),
     per_page: 100,
   };
   const response = await octokit.actions.listEnvironmentVariables(parameters);
@@ -111,10 +109,10 @@ export async function setEnvironmentSecret(
   if (!secretValue) throw new Error(`No value for environment secret ${secretName} (${owner}/${repo} - ${environment})`);
   const environmentPublicKey = await getEnvironmentPublicKey(owner, repo, environment);
   const encryptedValue = await encrypt(secretValue, environmentPublicKey.key);
-  const repoId = await getRepoId(owner, repo);
   const parameters: RestEndpointMethodTypes['actions']['createOrUpdateEnvironmentSecret']['parameters'] = {
+    owner,
+    repo,
     environment_name: environment,
-    repository_id: repoId,
     secret_name: secretName,
     encrypted_value: encryptedValue,
     key_id: environmentPublicKey.key_id,
@@ -149,8 +147,9 @@ export async function setEnvironmentVariable(
   try {
     // Most likely we're updating an existing variable:
     const parameters: RestEndpointMethodTypes['actions']['updateEnvironmentVariable']['parameters'] = {
+      owner,
+      repo,
       environment_name: environment,
-      repository_id: await getRepoId(owner, repo),
       name,
       value,
     };
@@ -164,8 +163,9 @@ export async function setEnvironmentVariable(
   } catch (e) {
     // If not, we might be creating a new variable:
     const parameters: RestEndpointMethodTypes['actions']['createEnvironmentVariable']['parameters'] = {
+      owner,
+      repo,
       environment_name: environment,
-      repository_id: await getRepoId(owner, repo),
       name,
       value,
     };
@@ -186,8 +186,9 @@ export async function deleteEnvironmentSecret(
   environment: string,
 ): Promise<string> {
   const parameters: RestEndpointMethodTypes['actions']['deleteEnvironmentSecret']['parameters'] = {
+    owner,
+    repo,
     environment_name: environment,
-    repository_id: await getRepoId(owner, repo),
     secret_name: secretName,
   };
   const response = await octokit.rest.actions.deleteEnvironmentSecret(parameters);
@@ -207,8 +208,9 @@ export async function deleteEnvironmentVariable(
   environment: string,
 ): Promise<string> {
   const parameters: RestEndpointMethodTypes['actions']['deleteEnvironmentVariable']['parameters'] = {
+    owner,
+    repo,
     environment_name: environment,
-    repository_id: await getRepoId(owner, repo),
     name: variableName,
   };
   const response = await octokit.rest.actions.deleteEnvironmentVariable(parameters);
