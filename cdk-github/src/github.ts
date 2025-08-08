@@ -1,5 +1,5 @@
 #!/usr/bin/env node
- 
+
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import {
   deleteEnvironmentSecret, deleteEnvironmentVariable, listEnvironmentSecrets, listEnvironmentVariables, setEnvironmentSecret, setEnvironmentVariable,
@@ -53,7 +53,7 @@ function envVarCase(camelCaseName: string): string {
 async function readVariables(): Promise<KeyValuesCollection> {
   const variables: KeyValuesCollection = { repo: {}, environment: {} };
 
-  const cdkOutputs = 'secrets/cdk-outputs.json';
+  const cdkOutputs = 'cdk.out/cdk-outputs.json';
   // const awsConfig = '~/.aws/credentials';
   if (existsSync(cdkOutputs)) {
     const json = readFileSync(cdkOutputs, 'utf-8').trim();
@@ -61,8 +61,8 @@ async function readVariables(): Promise<KeyValuesCollection> {
     const stackNames = Object.keys(outputs);
     if (stackNames.length > 0) {
       await Promise.all(stackNames.map(async (stackName) => {
-        if (existsSync(`secrets/${stackName}.ghaVariables.json`)) {
-          const variableNames = JSON.parse(readFileSync(`secrets/${stackName}.ghaVariables.json`, 'utf-8')) as string[];
+        if (existsSync(`cdk.out/${stackName}.ghaVariables.json`)) {
+          const variableNames = JSON.parse(readFileSync(`cdk.out/${stackName}.ghaVariables.json`, 'utf-8')) as string[];
 
           const environment = environmentMappings[stackName];
           if (environment) { variables.environment[environment] = {}; }
@@ -88,7 +88,7 @@ async function readVariables(): Promise<KeyValuesCollection> {
 async function readSecrets(): Promise<KeyValuesCollection> {
   const secrets: KeyValuesCollection = { repo: {}, environment: {} };
 
-  const cdkOutputs = 'secrets/cdk-outputs.json';
+  const cdkOutputs = 'cdk.out/cdk-outputs.json';
   // const awsConfig = '~/.aws/credentials';
   if (existsSync(cdkOutputs)) {
     const json = readFileSync(cdkOutputs, 'utf-8').trim();
@@ -96,8 +96,8 @@ async function readSecrets(): Promise<KeyValuesCollection> {
     const stackNames = Object.keys(outputs);
     if (stackNames.length > 0) {
       await Promise.all(stackNames.map(async (stackName) => {
-        if (existsSync(`secrets/${stackName}.ghaSecrets.json`)) {
-          const secretNames = JSON.parse(readFileSync(`secrets/${stackName}.ghaSecrets.json`, 'utf-8')) as string[];
+        if (existsSync(`cdk.out/${stackName}.ghaSecrets.json`)) {
+          const secretNames = JSON.parse(readFileSync(`cdk.out/${stackName}.ghaSecrets.json`, 'utf-8')) as string[];
 
           const environment = environmentMappings[stackName];
           if (environment) { secrets.environment[environment] = {}; }
