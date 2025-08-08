@@ -8,10 +8,10 @@ This is intended to provide you with the environment/variable/secret handling ca
 
 ## Setup
 
-Assuming you've called the `ghaOidcRole` or `ghaUser` function, you should have some output files under your `.infrastructure/secrets` directory, e.g.:
+Assuming you've called the `ghaOidcRole` or `ghaUser` function, you should have some output files under your `.infrastructure/cdk.out` directory, e.g.:
 
- * `.infrastructure/secrets/StackName.ghaSecrets.json`
- * `.infrastructure/secrets/StackName.ghaVariables.json`
+ * `.infrastructure/cdk.out/StackName.ghaSecrets.json`
+ * `.infrastructure/cdk.out/StackName.ghaVariables.json`
 
 `@scloud/cdk-github` uses these files as inputs to understand the values that need to be set on the repo (or its environments) and whether or not the value needs to be handled as a secret.
 
@@ -35,7 +35,7 @@ You will also need the following environment variables, or pass an object with t
 
 ```
 export USERNAME=octocat
-export PERSONAL_ACCESS_TOKEN=ghp_xxxxxxxxxxx
+export PERSONAL_ACCESS_TOKEN=github_ghp_xxxxxxxxxxx
 export OWNER=organization
 export REPO=repository
 ```
@@ -45,7 +45,7 @@ or
 ```
 {
   username: 'octocat',
-  personalAccessToken: 'ghp_xxxxxxxxxxx',
+  personalAccessToken: 'github_ghp_xxxxxxxxxxx',
   owner: 'organization',
   repo: 'repository',
 }
