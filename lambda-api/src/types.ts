@@ -24,7 +24,7 @@ export interface Response<B = any> {
 }
 
 type AnySchema = z.ZodType<any, any, any>;
-export interface Handler<SReq extends AnySchema = AnySchema, SRes extends AnySchema = AnySchema> {
+export interface Handler<SReq extends AnySchema | undefined = undefined, SRes extends AnySchema | undefined = undefined> {
   request?: {
     body?: SReq;
     headers?: z.ZodObject<any>;
@@ -41,13 +41,13 @@ export interface Handler<SReq extends AnySchema = AnySchema, SRes extends AnySch
 }
 
 export interface Route {
-  GET?: Handler;
-  POST?: Handler;
-  PUT?: Handler;
-  DELETE?: Handler;
-  PATCH?: Handler;
-  OPTIONS?: Handler;
-  HEAD?: Handler;
+  GET?: Handler<undefined, AnySchema>;
+  POST?: Handler<AnySchema, AnySchema>;
+  PUT?: Handler<AnySchema, AnySchema>;
+  DELETE?: Handler<undefined, AnySchema>;
+  PATCH?: Handler<undefined, AnySchema>;
+  OPTIONS?: Handler<undefined, AnySchema>;
+  HEAD?: Handler<undefined, AnySchema>;
 }
 
 export interface Routes {
