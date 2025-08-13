@@ -32,9 +32,7 @@ function apiErrorResponse(e?: unknown): Response {
 export async function apiHandler(
   event: APIGatewayProxyEvent,
   context: Context,
-  routes: Routes = {
-    '/ping': { GET: { handler: async (request) => ({ statusCode: 200, body: request }) } },
-  },
+  routes: Routes,
   errorHandler: ((request: Request, e: Error) => Promise<Response | undefined>) | undefined = undefined,
   catchAll: Handler | undefined = undefined,
 ): Promise<APIGatewayProxyResult> {
