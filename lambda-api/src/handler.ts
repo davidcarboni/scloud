@@ -35,12 +35,12 @@ export async function apiHandler(
   routes: Routes = {
     '/ping': { GET: { handler: async (request) => ({ statusCode: 200, body: request }) } },
   },
-  errorHandler: ((request: Request, e: Error) => Promise<Response>) | undefined = undefined,
+  errorHandler: ((request: Request, e: Error) => Promise<Response | undefined>) | undefined = undefined,
   catchAll: Handler | undefined = undefined,
 ): Promise<APIGatewayProxyResult> {
   const request = parseRequest(event);
 
-  let response: Response;
+  let response: Response | undefined;
   try {
     const match = matchRoute(routes, request.path);
     if (match.params) request.pathParameters = match.params;
@@ -64,7 +64,7 @@ export async function apiHandler(
       if (route.response?.body) {
         const parsed = route.response.body.safeParse(response.body);
         if (!parsed.success) {
-          console.error(JSON.stringify(parsed.error, null, 2));
+          console.error('Invalid response body:', JSON.stringify(parsed.error, null, 2));
           throw new ApiError(500, 'Internal server error');
         }
         response.body = parsed.data;
@@ -78,13 +78,15 @@ export async function apiHandler(
   } catch (e) {
     if (errorHandler) {
       try {
+        // errorHandler can optionally return undefined to request standard error handling:
         response = await errorHandler(request, e as Error);
       } catch (ee) {
         response = apiErrorResponse(ee);
       }
-    } else {
-      response = apiErrorResponse(e);
     }
+
+    // Standard error handling
+    response = response ?? apiErrorResponse(e);
   }
 
   // Translate the response to an API Gateway Proxy result
