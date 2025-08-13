@@ -329,8 +329,8 @@ export async function updateGithub(deleteLeftoverValues: boolean = false, repoDe
     const newSecrets = await processSecrets(deleteLeftoverValues || process.argv.includes('--delete'));
 
     // Useful for debugging secret values being passed to Github:
-    writeFileSync('secrets/gha_secrets.txt', JSON.stringify(newSecrets, null, 2));
-    writeFileSync('secrets/gha_variables.txt', JSON.stringify(newVariables, null, 2));
+    writeFileSync('cdk.out/gha_secrets.txt', JSON.stringify(newSecrets, null, 2));
+    writeFileSync('cdk.out/gha_variables.txt', JSON.stringify(newVariables, null, 2));
   } catch (err) {
     console.error(err);
     throw err;
