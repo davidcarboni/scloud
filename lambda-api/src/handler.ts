@@ -9,17 +9,20 @@ import {
 } from './types';
 import { buildCookie, getHeader, matchRoute, parseRequest, setHeader } from './helpers';
 
-function errorResponse(statusCode: number, body: unknown, e?: unknown): Response {
+function apiErrorResponse(e?: unknown): Response {
+  // Intentional API error response
   if (e instanceof ApiError) {
     return {
       statusCode: e.statusCode,
       body: e.body,
     };
   }
-  if (e) console.error(`${(e as Error).stack}`);
+
+  // Unhandled error
+  if (e) console.error(e instanceof Error ? e.stack : e);
   return {
-    statusCode: statusCode,
-    body: body,
+    statusCode: 500,
+    body: 'Internal server error',
   };
 }
 
@@ -77,10 +80,10 @@ export async function apiHandler(
       try {
         response = await errorHandler(request, e as Error);
       } catch (ee) {
-        response = errorResponse(500, 'Internal server error', ee);
+        response = apiErrorResponse(ee);
       }
     } else {
-      response = errorResponse(500, 'Internal server error', e);
+      response = apiErrorResponse(e);
     }
   }
 
