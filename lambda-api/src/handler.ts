@@ -8,6 +8,7 @@ import {
   ApiError,
 } from './types';
 import { buildCookie, getHeader, matchRoute, parseRequest, setHeader } from './helpers';
+import z from 'zod';
 
 function apiErrorResponse(e?: unknown): Response {
   // Intentional API error response
@@ -51,7 +52,7 @@ export async function apiHandler(
       if (route.request?.body) {
         const parsed = route.request.body.safeParse(request.body);
         if (!parsed.success) {
-          throw new ApiError(400, parsed.error);
+          throw new ApiError(400, z.treeifyError(parsed.error));
         }
         request.body = parsed.data;
       }
@@ -62,7 +63,8 @@ export async function apiHandler(
       if (route.response?.body) {
         const parsed = route.response.body.safeParse(response.body);
         if (!parsed.success) {
-          console.error('Invalid response body:', JSON.stringify(parsed.error, null, 2));
+          console.error('Invalid response body:', request.method, request.path, JSON.stringify(z.treeifyError(parsed.error), null, 2));
+          response = undefined; // Remove the response so it can be replaced by the error handler
           throw new ApiError(500, 'Internal server error');
         }
         response.body = parsed.data;
