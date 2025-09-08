@@ -1,6 +1,6 @@
 {
   "name": "@scloud/lambda-api",
-  "version": "1.0.6",
+  "version": "1.1.0",
   "description": "Lambda handler for API Gateway proxy requests",
   "main": "dist/index.js",
   "files": [
