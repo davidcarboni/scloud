@@ -6,6 +6,8 @@ This is a piece of useful boilerplate to handle the mechanics of routing, header
 
 ## Releae notes
 
+ * `1.0.5`: Add a test to verify that camel case path parameter values aren't lowercased
+ * `1.0.4`: Optional schema checks using Zod
  * `0.3.8`: Optinoal generic type on `Request`
  * `0.3.7`: Fix cookie setting to use `Set-Cookie`
  * `0.3.6`: Enable parsing body as `application/x-www-form-urlencoded` as well as JSON
