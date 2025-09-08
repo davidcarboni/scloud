@@ -6,6 +6,7 @@ This is a piece of useful boilerplate to handle the mechanics of routing, header
 
 ## Releae notes
 
+ * `1.1.1`: Remove functionality to lowercase the request path because this can alter path parameter values, which can be case sensitive strings
  * `1.0.5`: Add a test to verify that camel case path parameter values aren't lowercased
  * `1.0.4`: Optional schema checks using Zod
  * `0.3.8`: Optinoal generic type on `Request`

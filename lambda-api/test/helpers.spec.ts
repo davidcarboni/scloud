@@ -36,11 +36,6 @@ describe('helpers.ts', () => {
       expect(path).to.equal('/path');
     });
 
-    it('Should lowercase', () => {
-      const path = standardPath('/PATH');
-      expect(path).to.equal('/path');
-    });
-
     it('Should remove blank segments', () => {
       const path = standardPath('/a//b');
       expect(path).to.equal('/a/b');

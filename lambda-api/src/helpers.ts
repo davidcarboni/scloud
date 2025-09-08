@@ -3,14 +3,14 @@ import * as cookie from 'cookie';
 import { Request, Response, Route, Routes } from './types';
 
 /**
- * Ensures the path is lowercased, always has a leading slash and never a trailing slash
+ * Ensures the path always has a leading slash and never a trailing slash
  * @param path APIGatewayProxyEvent.path
  */
 export function standardPath(path: string): string {
   // Get path segments, filtering out any blanks
   const segments = path.split('/').filter((segment) => segment);
   // Return path
-  return `/${segments.join('/').toLowerCase()}`;
+  return `/${segments.join('/')}`;
 }
 
 /**
