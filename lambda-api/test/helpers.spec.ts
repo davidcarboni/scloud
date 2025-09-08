@@ -183,12 +183,14 @@ describe('helpers.ts', () => {
     const route3 = {};
     const route4 = {};
     const route5 = {};
+    const route6 = {};
     const routes: Routes = {
       '/path1': route1,
       '/path2': route2,
       '/path/{param3}/subpath1': route3,
       '/path/{param4}': route4,
       '/path/{param5}': route5,
+      '/camelCase/{camelCaseParam}': route6,
     };
 
     it('Should match an exact route', () => {
@@ -221,6 +223,12 @@ describe('helpers.ts', () => {
       const result = matchRoute(routes, '/path/123');
       expect(result.methods).to.equal(route4);
       expect(result.params).to.deep.equal({ param4: '123' });
+    });
+
+    it('Should match a cametCaseparameter', () => {
+      const result = matchRoute(routes, '/camelCase/camelCaseValue');
+      expect(result.methods).to.equal(route6);
+      expect(result.params).to.deep.equal({ camelCaseParam: 'camelCaseValue' });
     });
   });
 });
