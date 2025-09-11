@@ -1,8 +1,7 @@
 import {
   CopyObjectCommand,
-  DeleteObjectCommand, DeleteObjectsCommand, GetObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client,
+  DeleteObjectCommand, DeleteObjectsCommand, GetObjectCommand, GetObjectCommandOutput, ListObjectsV2Command, PutObjectCommand, S3Client,
 } from '@aws-sdk/client-s3';
-import { StreamingBlobPayloadOutputTypes } from '@smithy/types';
 import * as fs from 'fs';
 import { Readable } from 'stream';
 
@@ -114,7 +113,7 @@ export async function putJson<T>(bucket: string, key: string, object: T): Promis
  * @param key
  * @returns Undefined for failure or, in Node SdkStream<IncomingMessage | Readable> or, in a browser SdkStream<ReadableStream | Blob> (see AWS types for more innformation)
  */
-export async function getObject(bucket: string, key: string): Promise<StreamingBlobPayloadOutputTypes | undefined> {
+export async function getObject(bucket: string, key: string): Promise<GetObjectCommandOutput['Body']> {
   try {
     const command = new GetObjectCommand({
       Bucket: bucket,

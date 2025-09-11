@@ -5,6 +5,7 @@ A collection of wrapper functions for the AWS SDKv3 that provide simplified CRUD
 This is intended to provide you with the operations you'll mostly need most of the time and, if you have an edge-case, you can use this as example code to help you get what you need done more easily.
 
 ## Changelog
+ * **1.0.2**: Cleaner typing for return value of s3 getObject
  * **1.0.1**: Fix order of parameters in `downloadTemp` - breaking change because it switches the order of two string values
  * **0.0.13**: `actions/setup-node@v4` and Node `lts`
  * **0.0.12**: `actions/checkout@v4` and Node `20.x`
