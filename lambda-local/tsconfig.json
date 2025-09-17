@@ -1,30 +1,16 @@
 {
+  "extends": "@tsconfig/node22/tsconfig.json",
   "compilerOptions": {
-    "target": "es2021",
-    "module": "commonjs",
-    "lib": [
-      "es2021"
-    ],
-    "baseUrl": "src", // Helps resolve imports in tests
     "declaration": true,
-    "inlineSourceMap": true,
-    "inlineSources": true,
-    "strict": true,
-    "noImplicitAny": true,
     "strictNullChecks": true,
-    "noImplicitThis": true,
-    "alwaysStrict": true,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
     "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": false,
-    "experimentalDecorators": true,
-    "strictPropertyInitialization": false,
-    "esModuleInterop": true,
-    "typeRoots": [
-      "./node_modules/@types"
-    ],
+    "inlineSources": true,
+    "inlineSourceMap": true,
     "outDir": "js",
-  },
-  // No include or exclude as these seem to mess with resolving imports from tests
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    }
+  }
 }
