@@ -1,6 +1,4 @@
-/* eslint-disable no-unused-vars */
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { request } from 'http';
+
 import express, { Request, Response } from 'express';
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
 
@@ -66,7 +64,7 @@ const contextTemplate: Context = {
   succeed: () => { },
 };
 
-// eslint-disable-next-line no-unused-vars
+
 export function cloudfrontLocal(cloudfrontPathMappings: CloudfrontPathMappings) {
   const port = +(process.env.port || '3000');
   const app = express();

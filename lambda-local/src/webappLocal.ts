@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-vars */
-// eslint-disable-next-line import/no-extraneous-dependencies
 import * as fs from 'fs';
 import express, { Request, Response } from 'express';
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
@@ -62,7 +60,7 @@ const contextTemplate: Context = {
   succeed: () => { },
 };
 
-// eslint-disable-next-line no-unused-vars
+
 export function webappLocal(
   handler: (
     event: APIGatewayProxyEvent, context: Context) => Promise<APIGatewayProxyResult>,

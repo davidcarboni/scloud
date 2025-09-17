@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
 import express, { Request, Response } from 'express';
 import {
   Context, SQSBatchResponse, ScheduledEvent,
@@ -31,7 +30,7 @@ const contextTemplate: Context = {
   succeed: () => { },
 };
 
-// eslint-disable-next-line no-unused-vars
+
 export function scheduledLocal(handler: (event: ScheduledEvent, context: Context) => Promise<SQSBatchResponse>) {
   const port = +(process.env.port || '3000');
   const app = express();
