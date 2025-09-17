@@ -6,65 +6,6 @@ export interface CloudfrontPathMappings {
   [key: string]: (event: APIGatewayProxyEvent, context: Context) => Promise<APIGatewayProxyResult>;
 }
 
-const eventTemplate: APIGatewayProxyEvent = {
-  body: '',
-  headers: {},
-  multiValueHeaders: {},
-  httpMethod: '',
-  isBase64Encoded: false,
-  path: '',
-  pathParameters: null,
-  queryStringParameters: {},
-  multiValueQueryStringParameters: {},
-  stageVariables: null,
-  resource: '?',
-  requestContext: {
-    accountId: '',
-    apiId: '',
-    authorizer: null,
-    httpMethod: '',
-    identity: {
-      accessKey: null,
-      accountId: null,
-      apiKey: null,
-      apiKeyId: null,
-      caller: null,
-      clientCert: null,
-      cognitoAuthenticationProvider: null,
-      cognitoAuthenticationType: null,
-      cognitoIdentityId: null,
-      cognitoIdentityPoolId: null,
-      principalOrgId: null,
-      sourceIp: '',
-      user: null,
-      userAgent: null,
-      userArn: null,
-    },
-    path: '',
-    protocol: '',
-    requestId: '',
-    requestTimeEpoch: 0,
-    resourceId: '',
-    resourcePath: '',
-    stage: '',
-  },
-};
-const contextTemplate: Context = {
-  awsRequestId: '',
-  callbackWaitsForEmptyEventLoop: false,
-  functionName: '',
-  functionVersion: '',
-  invokedFunctionArn: '',
-  logGroupName: '',
-  logStreamName: '',
-  memoryLimitInMB: '',
-  getRemainingTimeInMillis: () => 0,
-  done: () => { },
-  fail: () => { },
-  succeed: () => { },
-};
-
-
 export function cloudfrontLocal(cloudfrontPathMappings: CloudfrontPathMappings) {
   const port = +(process.env.port || '3000');
   const app = express();
@@ -100,8 +41,7 @@ export function cloudfrontLocal(cloudfrontPathMappings: CloudfrontPathMappings) 
       if (Array.isArray(req.query[parameter])) multiValueQueryStringParameters[parameter] = req.query[parameter] as string[];
     });
 
-    const event = {
-      ...eventTemplate,
+    const event: APIGatewayProxyEvent = {
       body: typeof req.body === 'string' ? req.body : JSON.stringify(req.body),
       headers,
       multiValueHeaders,
@@ -110,12 +50,11 @@ export function cloudfrontLocal(cloudfrontPathMappings: CloudfrontPathMappings) 
       queryStringParameters,
       multiValueQueryStringParameters,
       requestContext: {
-        ...eventTemplate.requestContext,
         httpMethod: req.method,
         path: req.path,
         protocol: req.protocol,
-      },
-    };
+      } as unknown as APIGatewayProxyEvent['requestContext'],
+    } as unknown as APIGatewayProxyEvent;
 
     try {
       // Print out the event that will be sent to the handler
@@ -146,39 +85,35 @@ export function cloudfrontLocal(cloudfrontPathMappings: CloudfrontPathMappings) 
       });
 
       // Invoke the function handler:
-      const result: APIGatewayProxyResult = handler ? await handler(event, contextTemplate) : { statusCode: 404, body: `Path not matched: ${event.path} (${paths})` };
+      const result: APIGatewayProxyResult = handler ? await handler(event, {} as Context) : { statusCode: 404, body: `Path not matched: ${event.path} (${paths})` };
 
       // Print out the response if successful
-      if (result) {
-        if (result.statusCode === 404) {
-          console.log(`404: ${event.path}`);
-        } else {
-          console.log('Result:');
-          Object.keys(result).forEach((key) => {
-            console.log(` - ${key}: ${JSON.stringify(result[key as keyof APIGatewayProxyResult]).slice(0, 100)}`);
-          });
-        }
-      }
+      console.log(event.httpMethod, event.path, result.statusCode);
+      console.log('Result:');
+      console.log(JSON.stringify(result, null, 2));
 
       // Send the response
       res.status(result.statusCode);
       if (result.multiValueHeaders) {
-        Object.keys(result.multiValueHeaders).forEach((key) => {
+        for (const key of Object.keys(result.multiValueHeaders)) {
           res.set(key, result.multiValueHeaders![key].map((value) => `${value}`));
-        });
+        };
       }
       if (result.headers) {
-        Object.keys(result.headers).forEach((key) => {
+        for (const key of Object.keys(result.headers)) {
           res.set(key, `${result.headers![key]}`);
-        });
+        };
       }
+
+      // Body
       res.send(result.body);
+
     } catch (e) {
       // Log the error and send a 500 response
       console.log(e);
       console.log((e as Error).stack);
       res.status(500).send(`${e}`);
-    }
+    };
   });
 
   app.listen(port, () => {
