@@ -12,6 +12,7 @@ You can add a script to your `package.json` to trigger the code. Add `nodemon` a
   "scripts": {
     "local": "nodemon src/lambda.ts --local",
     ...
+  }
 ```
 
 If you'd like to run on a different port, you can set a `PORT` environment variable.
