@@ -5,7 +5,7 @@ export interface CloudfrontPathMappings {
   [key: string]: (event: APIGatewayProxyEvent, context: Context) => Promise<APIGatewayProxyResult>;
 }
 
-export function webappRoutesLocal(cloudfrontPathMappings: CloudfrontPathMappings, staticContent?: string) {
+export function webappRoutesLocal(cloudfrontPathMappings: CloudfrontPathMappings, staticContent?: string, debug = false) {
   const port = +(process.env.port || '3000');
   const app = express();
 
@@ -58,10 +58,11 @@ export function webappRoutesLocal(cloudfrontPathMappings: CloudfrontPathMappings
 
       try {
         // Print out the event that will be sent to the handler
-        console.log('Event:');
-        Object.keys(event).forEach((key) => {
-          console.log(` - ${key}: ${JSON.stringify(event[key as keyof APIGatewayProxyEvent])}`);
-        });
+        if (debug) {
+          console.log('Event:');
+          console.log(event.httpMethod, event.path);
+          console.log(JSON.stringify(event, null, 2));
+        }
 
         const paths = Object.keys(cloudfrontPathMappings);
 
@@ -73,15 +74,10 @@ export function webappRoutesLocal(cloudfrontPathMappings: CloudfrontPathMappings
         const result = handler ? await handler(event, {} as Context) : { statusCode: 404, body: `Path not matched: ${event.path} (${paths})` };
 
         // Print out the response if successful
-        if (result) {
-          if (result.statusCode === 404) {
-            console.log(`404: ${event.path}`);
-          } else {
-            console.log('Result:');
-            Object.keys(result).forEach((key) => {
-              console.log(` - ${key}: ${JSON.stringify(result[key as keyof APIGatewayProxyResult]).slice(0, 100)}`);
-            });
-          }
+        if (debug) {
+          console.log('Result:');
+          console.log(event.httpMethod, event.path, result.statusCode);
+          console.log(JSON.stringify(result, null, 2));
         }
 
         // Send the response

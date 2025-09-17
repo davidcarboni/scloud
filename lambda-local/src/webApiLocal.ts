@@ -52,9 +52,7 @@ export function webApiLocal(lambdaHandler: (event: APIGatewayProxyEvent, context
     if (debug) {
       console.log('Event:');
       console.log(event.httpMethod, event.path);
-      for (const key of Object.keys(event)) {
-        console.log(` - ${key}: ${JSON.stringify(event[key as keyof APIGatewayProxyEvent])}`);
-      }
+      console.log(JSON.stringify(event, null, 2));
     }
 
     try {

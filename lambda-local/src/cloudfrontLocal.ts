@@ -60,9 +60,7 @@ export function cloudfrontLocal(cloudfrontPathMappings: CloudfrontPathMappings, 
       // Print out the event that will be sent to the handler
       console.log('Event:');
       console.log(event.httpMethod, event.path);
-      Object.keys(event).forEach((key) => {
-        console.log(` - ${key}: ${JSON.stringify(event[key as keyof APIGatewayProxyEvent])}`);
-      });
+      console.log(JSON.stringify(event, null, 2));
     }
 
     try {
