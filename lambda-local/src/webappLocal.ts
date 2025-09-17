@@ -3,9 +3,9 @@ import express, { Request, Response } from 'express';
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
 
 export function webappLocal(
-  handler: (
-    event: APIGatewayProxyEvent, context: Context) => Promise<APIGatewayProxyResult>,
+  handler: (event: APIGatewayProxyEvent, context: Context) => Promise<APIGatewayProxyResult>,
   staticContent?: { sourceDirectory: string, appPath: string; },
+  debug = false,
 ) {
   if (staticContent?.sourceDirectory) {
     if (!fs.existsSync(staticContent.sourceDirectory)) {
@@ -68,15 +68,21 @@ export function webappLocal(
 
     try {
       // Print out the event that will be sent to the handler
-      console.log('Event:');
-      console.log(JSON.stringify(event, null, 2));
+      if (debug) {
+        console.log('Event:');
+        console.log(event.httpMethod, event.path);
+        console.log(JSON.stringify(event, null, 2));
+      }
 
       // Invoke the function handler:
       const result = await handler(event, {} as Context);
 
       // Print out the response if successful
-      console.log('Result:');
-      console.log(JSON.stringify(result, null, 2));
+      if (debug) {
+        console.log('Result:');
+        console.log(event.httpMethod, event.path, result.statusCode);
+        console.log(JSON.stringify(result, null, 2));
+      }
 
       // Headers
       res.status(result.statusCode);

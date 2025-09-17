@@ -3,7 +3,7 @@ import {
   Context, SQSBatchResponse, SQSEvent, SQSRecord,
 } from 'aws-lambda';
 
-export function sqsLocal(handler: (event: SQSEvent, context: Context) => Promise<SQSBatchResponse>) {
+export function sqsLocal(handler: (event: SQSEvent, context: Context) => Promise<SQSBatchResponse>, debug = false) {
   const port = +(process.env.port || '3000');
   const app = express();
 
@@ -14,14 +14,18 @@ export function sqsLocal(handler: (event: SQSEvent, context: Context) => Promise
     try {
       // Print out the event that will be sent to the handler
       const event: SQSEvent = { Records: [{ body: req.body } as SQSRecord] };
-      console.log('Event:');
-      console.log(JSON.stringify(event, null, 2));
+      if (debug) {
+        console.log('Event:');
+        console.log(JSON.stringify(event, null, 2));
+      }
 
       // Invoke the function handler:
       const result = await handler(event, {} as Context);
 
-      console.log('Result:');
-      console.log(JSON.stringify(result, null, 2));
+      if (debug) {
+        console.log('Result:');
+        console.log(JSON.stringify(result, null, 2));
+      }
 
       // Send the response
       res.status(200).send(JSON.stringify(result));

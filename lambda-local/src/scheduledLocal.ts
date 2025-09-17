@@ -15,7 +15,7 @@ const eventTemplate: ScheduledEvent = {
   detail: {},
 };
 
-export function scheduledLocal(handler: (event: ScheduledEvent, context: Context) => Promise<SQSBatchResponse>) {
+export function scheduledLocal(handler: (event: ScheduledEvent, context: Context) => Promise<SQSBatchResponse>, debug = false) {
   const port = +(process.env.port || '3000');
   const app = express();
 
@@ -24,8 +24,10 @@ export function scheduledLocal(handler: (event: ScheduledEvent, context: Context
       // Invoke the function handler:
       const result = await handler(eventTemplate, {} as Context);
 
-      console.log('Result:');
-      console.log(JSON.stringify(result, null, 2));
+      if (debug) {
+        console.log('Result:');
+        console.log(JSON.stringify(result, null, 2));
+      }
 
       // Body
       res.status(200).send(JSON.stringify(result));

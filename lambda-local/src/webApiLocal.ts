@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express';
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
 
-export function webApiLocal(lambdaHandler: (event: APIGatewayProxyEvent, context: Context) => Promise<APIGatewayProxyResult>) {
+export function webApiLocal(lambdaHandler: (event: APIGatewayProxyEvent, context: Context) => Promise<APIGatewayProxyResult>, debug = false) {
   const port = +(process.env.port || '3000');
   const app = express();
 
@@ -48,20 +48,24 @@ export function webApiLocal(lambdaHandler: (event: APIGatewayProxyEvent, context
       } as unknown as APIGatewayProxyEvent['requestContext'],
     } as unknown as APIGatewayProxyEvent;
 
-    try {
-      // Print out the event that will be sent to the handler
+    // Print out the event that will be sent to the handler
+    if (debug) {
       console.log('Event:');
+      console.log(event.httpMethod, event.path);
       for (const key of Object.keys(event)) {
         console.log(` - ${key}: ${JSON.stringify(event[key as keyof APIGatewayProxyEvent])}`);
       }
+    }
+
+    try {
 
       // Invoke the function handler:
       const result = await lambdaHandler(event, {} as Context);
 
       // Print out the result
-      console.log(event.httpMethod, event.path, result.statusCode);
-      if (result) {
+      if (debug) {
         console.log('Result:');
+        console.log(event.httpMethod, event.path, result.statusCode);
         console.log(JSON.stringify(result.body, null, 2));
       }
 
