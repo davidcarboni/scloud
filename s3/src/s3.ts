@@ -170,15 +170,35 @@ export async function deleteObjects(bucket: string, keys: string[]): Promise<num
   if (keys.length === 0) return 0;
 
   try {
-    const command = new DeleteObjectsCommand({
-      Bucket: bucket,
-      Delete: {
-        Objects: keys.map((key) => ({ Key: cleanKey(key) })),
-      },
-    });
 
-    const result = await client.send(command);
-    return result.Deleted?.length;
+    const cleanKeys = keys.map((key) => cleanKey(key));
+    let count = 0;
+    do {
+      // Remove a batch from the array of keys.
+      // 1000 is the max number of objects that can be deleted in a single request
+      const batch = cleanKeys.splice(-1000);
+
+      // Send the delete command
+      const command = new DeleteObjectsCommand({
+        Bucket: bucket,
+        Delete: {
+          Objects: batch.map((key) => ({ Key: key })),
+        },
+      });
+      const result = await client.send(command);
+
+      // Count deletions
+      result.Deleted?.forEach((deleted) => {
+        if (deleted.Key) {
+          count++;
+        }
+      });
+
+    } while (cleanKeys.length > 0);
+
+    // Return deleted count
+    return count;
+
   } catch {
     return undefined;
   }
