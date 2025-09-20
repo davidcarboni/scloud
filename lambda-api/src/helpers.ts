@@ -181,10 +181,10 @@ export function matchRoute(routes: Routes, path: string): { methods: Route | und
     // First check: length match
     if (pathSegments.length !== candidateSegments.length) continue;
 
+    const params: { [name: string]: string; } = {};
     for (let s = 0; s < pathSegments.length; s++) {
-      const params: { [name: string]: string; } = {};
-      const pathSegment = pathSegments[s] ?? '';
-      const candidateSegment = candidateSegments[s] ?? '';
+      const pathSegment = pathSegments[s];
+      const candidateSegment = candidateSegments[s];
       if (candidateSegment.startsWith('{') && candidateSegment.endsWith('}')) {
         // Path parameter
         const name = candidateSegment.slice(1, -1);
