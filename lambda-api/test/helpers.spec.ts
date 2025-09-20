@@ -179,6 +179,7 @@ describe('helpers.ts', () => {
     const route4 = {};
     const route5 = {};
     const route6 = {};
+    const route7 = {};
     const routes: Routes = {
       '/path1': route1,
       '/path2': route2,
@@ -186,6 +187,7 @@ describe('helpers.ts', () => {
       '/path/{param4}': route4,
       '/path/{param5}': route5,
       '/camelCase/{camelCaseParam}': route6,
+      '/path/{param1}/subpath/{param2}': route7,
     };
 
     it('Should match an exact route', () => {
@@ -212,6 +214,12 @@ describe('helpers.ts', () => {
       // and should not continue on to find {param5} (stop at the first match)
       expect(result.methods).to.equal(route4);
       expect(result.params).to.deep.equal({ param4: '123' });
+    });
+
+    it('Should multiple parameters', () => {
+      const result = matchRoute(routes, '/path/123/subpath/456');
+      expect(result.methods).to.equal(route7);
+      expect(result.params).to.deep.equal({ param1: '123', param2: '456' });
     });
 
     it('Should match a parameter case-insensitively', () => {
