@@ -205,7 +205,7 @@ describe('helpers.ts', () => {
     it('Should not match an unknown route', () => {
       const result = matchRoute(routes, '/pathX');
       expect(result.methods).to.be.undefined;
-      expect(result.params).to.deep.equal({}); // Guarantee a minimum of an emply object - never undefined (so we don't have to check for it)
+      expect(result.params).to.be.undefined; // Guarantee a minimum of an emply object - never undefined (so we don't have to check for it)
     });
 
     it('Should match a parameter', () => {

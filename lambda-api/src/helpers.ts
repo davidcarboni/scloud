@@ -160,7 +160,7 @@ export function parseRequest(event: APIGatewayProxyEvent): Request {
   };
 }
 
-export function matchRoute(routes: Routes, path: string): { methods: Route | undefined, params: { [name: string]: string; }; } {
+export function matchRoute(routes: Routes, path: string): { methods: Route | undefined, params?: { [name: string]: string; }; } {
   // Direct match
   if (routes[path]) return { methods: routes[path], params: {} };
 
@@ -200,5 +200,5 @@ export function matchRoute(routes: Routes, path: string): { methods: Route | und
     }
   }
 
-  return { methods: undefined, params: {} };
+  return { methods: undefined };
 }
