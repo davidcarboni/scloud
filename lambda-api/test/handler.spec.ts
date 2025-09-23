@@ -4,7 +4,7 @@ import { describe, it } from 'mocha';
 import { APIGatewayProxyEvent, Context } from 'aws-lambda';
 import { apiHandler } from '../src/handler';
 import { Request } from '../src/types';
-import z from 'zod';
+import z from 'zod/v4';
 
 const event: APIGatewayProxyEvent = {} as APIGatewayProxyEvent;
 const context: Context = {} as Context;

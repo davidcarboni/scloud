@@ -8,7 +8,7 @@ import {
   ApiError,
 } from './types';
 import { buildCookie, getHeader, matchRoute, parseRequest, setHeader } from './helpers';
-import z from 'zod';
+import z from 'zod/v4';
 
 function apiErrorResponse(e?: unknown): Response {
   // Intentional API error response

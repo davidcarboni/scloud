@@ -6,6 +6,7 @@ This is a piece of useful boilerplate to handle the mechanics of routing, header
 
 ## Releae notes
 
+ * `1.1.13`: Import from zod/v4 for backward compatibility with Zod 3
  * `1.1.2`: Fix to be able to match multiple path parameters
  * `1.1.1`: Remove functionality to lowercase the request path because this can alter path parameter values, which can be case sensitive strings
  * `1.0.5`: Add a test to verify that camel case path parameter values aren't lowercased
