@@ -98,7 +98,7 @@ export class WebApi extends Construct {
         ...defaultBehavior,
       },
       // All requests for something with a file extension go to s3 (actually, any path that contains a period).
-      // The aim is to route *.css, *.js, *.jpeg, etc)
+      // The aim is to dump junk requests (generally bots looking for Wordpress installations) into s3 so they don't invoke the Lambda.
       additionalBehaviors: {
         '*.*': {
           origin: S3BucketOrigin.withOriginAccessControl(this.bucket),
