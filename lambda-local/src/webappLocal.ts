@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import express, { Request, Response } from 'express';
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
+import cors from 'cors';
 
 export function webappLocal(
   handler: (event: APIGatewayProxyEvent, context: Context) => Promise<APIGatewayProxyResult>,
@@ -19,7 +20,16 @@ export function webappLocal(
   // https://stackoverflow.com/questions/12345166/how-to-force-parse-request-body-as-plain-text-instead-of-json-in-express
   app.use(express.text({ type: '*/*', limit: '6mb' }));
 
-  // "Static bucket" serving
+  // Allow all origins for local development
+  app.use(
+    cors({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      origin: (origin: any, callback: any) => callback(null, origin),
+      credentials: true,
+    }),
+  );
+
+    // "Static bucket" serving
   if (staticContent) app.use(staticContent.appPath, express.static(staticContent.sourceDirectory));
 
   // Route everything else to the Lambda handler function
