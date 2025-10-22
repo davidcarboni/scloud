@@ -1,6 +1,6 @@
 import {
   CopyObjectCommand,
-  DeleteObjectCommand, DeleteObjectsCommand, GetObjectCommand, GetObjectCommandOutput, ListObjectsV2Command, PutObjectCommand, S3Client,
+  DeleteObjectCommand, DeleteObjectsCommand, GetObjectCommand, GetObjectCommandOutput, paginateListObjectsV2, PutObjectCommand, S3Client,
 } from '@aws-sdk/client-s3';
 import * as fs from 'fs';
 import { Readable } from 'stream';
@@ -205,22 +205,30 @@ export async function deleteObjects(bucket: string, keys: string[]): Promise<num
 }
 
 /**
- * Default maxKeys is 1000
+ * List all object keys in the bucket that (optionally) match a prefix.
  */
-export async function listObjects(bucket: string, prefix?: string): Promise<Record<string, { modified?: Date, size?: number, etag?: string; }>> {
-  const command = new ListObjectsV2Command({
-    Bucket: bucket,
-    Prefix: prefix,
-  });
+export async function listObjects(bucket: string, prefix?: string, limit?: number): Promise<string[]> {
+  const paginator = paginateListObjectsV2(
+    { client },
+    {
+      Bucket: bucket,
+      Prefix: prefix,
+    }
+  );
 
-  const result: Record<string, { modified?: Date, size?: number, etag?: string; }> = {};
-  try {
-    const { Contents } = await client.send(command);
-    if (Contents) Contents.forEach((c) => { if (c.Key) result[c.Key] = { modified: c.LastModified, size: c.Size, etag: c.ETag }; });
-  } catch {
-    // Swallow erroro and return empty object
+  const keys: string[] = [];
+
+  for await (const page of paginator) {
+    if (limit && keys.length >= limit) break;
+    for (const obj of page.Contents || []) {
+      if (obj.Key) {
+        keys.push(obj.Key);
+        if (limit && keys.length >= limit) break;
+      }
+    }
   }
-  return result;
+
+  return keys;
 }
 
 /**
