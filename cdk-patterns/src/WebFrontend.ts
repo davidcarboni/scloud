@@ -73,7 +73,7 @@ export class WebFrontend extends Construct {
     this.distribution = new Distribution(scope, `${id}Distribution`, {
       domainNames: [domainName],
       comment: domainName,
-      defaultRootObject: props.defaultIndex ? 'index.html' : undefined,
+      defaultRootObject: props.defaultIndex === false ? undefined : 'index.html',
       defaultBehavior: {
         origin: S3BucketOrigin.withOriginAccessControl(this.bucket),
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
