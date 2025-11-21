@@ -32,7 +32,7 @@
   },
   "homepage": "https://github.com/davidcarboni/scloud#readme",
   "devDependencies": {
-    "@eslint/js": "^9.35.0",
+    "@eslint/js": "*",
     "@tsconfig/node22": "*",
     "@types/aws-lambda": "*",
     "@types/chai": "*",
