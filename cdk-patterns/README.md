@@ -19,6 +19,7 @@ A couple of highlights:
 
 ## Release notes
 errorResponses
+ * **0.9.13**: Placeholder (commented out) code looking to conditionally create an apex record when creating a Cognito custom domain.
  * **0.9.12**: Document that there's a Cognito quirk where it seems an A record is required at the zone apex (even in a delegated subdomain) otherwise you can't create a custom user pool domain.
  * **0.9.11**: Set defaultRootObject to true by default in WebFrontend
  * **0.9.8**: Fix for adding tables to the GHA policy

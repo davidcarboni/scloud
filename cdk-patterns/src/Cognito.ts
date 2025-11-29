@@ -261,6 +261,25 @@ export class Cognito extends Construct {
     // NB at the time of writing there's a hard limit of 4 custom Cognito domains.
     const authDomainName = domainName || `auth.${zone.zoneName}`;
 
+
+    // Ideally find a way to look up an existing A record at the apex and conditionally create a placeholder
+    // see https://stackoverflow.com/questions/79833464/aws-cognito-custom-domain-fails-to-create-invalid-request-provided-awscogn/79833465#79833465
+    // const apexCheck = ARecord.fromARecordAttributes(this, 'ExistingApex', { targetDNS: authDomainName, zone });
+
+    // // 2️⃣ Create placeholder if no apex exists
+    // try {
+    //   const exists = apexCheck.node.defaultChild; // will throw if not found
+    //   if (exists) console.log(`Zone apex record found for ${zone.zoneName}. We can create a Cognito custom domain at ${authDomainName}`);
+    // } catch {
+    //   console.log(`Zone apex record not found for ${zone.zoneName}. We need to create a placeholder record to enable a Cognito custom domain to be created successfully at ${authDomainName}`);
+    //   new ARecord(this, 'ZoneApexPlaceholder', {
+    //     zone,
+    //     recordName: authDomainName,
+    //     target: RecordTarget.fromIpAddresses('192.0.2.1'), // safe placeholder IP in TEST-NET-1
+    //     comment: 'Placeholder zone apex record to enable a Cognito custom domain to be created',
+    //   });
+    // }
+
     // AWS-managed certificate (auto-renews)
     const certificate = new DnsValidatedCertificate(this, `${this.id}UserPoolCertificate`, {
       domainName: authDomainName,
