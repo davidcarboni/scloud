@@ -239,12 +239,18 @@ export class Cognito extends Construct {
 
   /**
    * Add a custom domain name to the Cognito User Pool.
+   * 
+   * NOTE: there's a Cognito quirk where it seems that an A record at the zone apex must exist 
+   * (even for a delegated subdomain) otherwise you can't create a custom user pool domain.
+   * @see https://stackoverflow.com/questions/79833464/aws-cognito-custom-domain-fails-to-create-invalid-request-provided-awscogn/79833465#79833465
    *
-   * AWS recommends auth.<domain> for custom domains, which is the default if you don't pass a value for domainName.
+   * AWS recommends auth.<domain> for custom domains, so this is the default if you don't pass a value for domainName.
    *
    * NB at the time of writing there's a hard limit of 4 custom Cognito domains per AWS account.
    *
-   * You can either add a custom domain or a domain prefix, but not both.
+   * You can add either a custom domain or a domain prefix, but not both.
+   * 
+   * A domain prefix must be globally unique across all AWS accounts.
    *
    * @param zone The HostedZone in which to create an alias record for the user pool.
    * @param domainName Leave this out to use the recommended `auth.<domain>`, or pass a fully qualified domain name.
@@ -255,16 +261,19 @@ export class Cognito extends Construct {
     // NB at the time of writing there's a hard limit of 4 custom Cognito domains.
     const authDomainName = domainName || `auth.${zone.zoneName}`;
 
-    // Custom domain can only be set up after the initial pass has created an A record at the apex
+    // AWS-managed certificate (auto-renews)
+    const certificate = new DnsValidatedCertificate(this, `${this.id}UserPoolCertificate`, {
+      domainName: authDomainName,
+      hostedZone: zone,
+      region: 'us-east-1', // Cloudfront requires this
+    });
+
+    // NB a custom domain can only be set up after an A record has been created at the zone apex
     this.domain = new cognito.UserPoolDomain(this, `${this.id}UserPoolDomain`, {
       userPool: this.userPool,
       customDomain: {
         domainName: authDomainName,
-        certificate: new DnsValidatedCertificate(this, `${this.id}UserPoolCertificate`, {
-          domainName: authDomainName,
-          hostedZone: zone,
-          region: 'us-east-1', // Cloudfront requires this
-        }),
+        certificate,
       },
     });
 
