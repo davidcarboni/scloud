@@ -199,9 +199,9 @@ export class Cognito extends Construct {
     if (props.enableEmail) identityProviders.push(UserPoolClientIdentityProvider.COGNITO);
     if (this.googleIdp) identityProviders.push(UserPoolClientIdentityProvider.GOOGLE);
     if (this.facebookIdp) identityProviders.push(UserPoolClientIdentityProvider.FACEBOOK);
-    this.samlIdps.forEach((saml) => {
-      identityProviders.push(UserPoolClientIdentityProvider.custom(saml.providerName));
-    });
+    for (const samlIdp of this.samlIdps) {
+      identityProviders.push(UserPoolClientIdentityProvider.custom(samlIdp.providerName));
+    }
 
     this.callbackUrl = props.callbackUrl;
     this.callbackUrls = [props.callbackUrl];
@@ -230,8 +230,8 @@ export class Cognito extends Construct {
     // These dependencies seemed to be needed at the time of writing:
     if (this.googleIdp) userPoolClient.node.addDependency(this.googleIdp);
     if (this.facebookIdp) userPoolClient.node.addDependency(this.facebookIdp);
-    if (this.samlIdps) {
-      this.samlIdps.forEach((samlIdp) => userPoolClient.node.addDependency(samlIdp));
+    for (const samlIdp of this.samlIdps) {
+      userPoolClient.node.addDependency(samlIdp);
     }
 
     this.userPoolClient = userPoolClient;
