@@ -186,30 +186,31 @@ export class Cognito extends Construct {
    * @param alternativeCallbackUrls Zero or more additonal authorized callback URL, for example if you wneed to allow localhost in a development environment.
    * @returns cognito.UserPoolClient
    */
-  createUserPoolClient(
+  createUserPoolClient(props: {
     callbackUrl: string,
     enableEmail?: boolean,
     logoutUrl?: string,
-    ...alternativeCallbackUrls: string[]
-  ): UserPoolClient {
+    alternativeCallbackUrls: string[];
+    generateSecret?: boolean,
+  }): UserPoolClient {
     if (this.userPoolClient) throw new Error(`User pool client has already been created for ${this.id}`);
 
     const identityProviders: cognito.UserPoolClientIdentityProvider[] = [];
-    if (enableEmail) identityProviders.push(UserPoolClientIdentityProvider.COGNITO);
+    if (props.enableEmail) identityProviders.push(UserPoolClientIdentityProvider.COGNITO);
     if (this.googleIdp) identityProviders.push(UserPoolClientIdentityProvider.GOOGLE);
     if (this.facebookIdp) identityProviders.push(UserPoolClientIdentityProvider.FACEBOOK);
     this.samlIdps.forEach((saml) => {
       identityProviders.push(UserPoolClientIdentityProvider.custom(saml.providerName));
     });
 
-    this.callbackUrl = callbackUrl;
-    this.callbackUrls = [callbackUrl];
-    this.callbackUrls.push(...alternativeCallbackUrls);
-    this.logoutUrl = logoutUrl;
+    this.callbackUrl = props.callbackUrl;
+    this.callbackUrls = [props.callbackUrl];
+    this.callbackUrls.push(...props.alternativeCallbackUrls);
+    this.logoutUrl = props.logoutUrl;
     const userPoolClient = new UserPoolClient(this, `${this.id}UserPoolClient`, {
       userPool: this.userPool,
       userPoolClientName: this.id,
-      generateSecret: false,
+      generateSecret: props.generateSecret === false ? false : true,
       preventUserExistenceErrors: true,
       supportedIdentityProviders: identityProviders,
       oAuth: {
@@ -365,11 +366,12 @@ export class Cognito extends Construct {
     domainName?: string,
     domainPrefix?: string,
     logoutUrl?: string,
+    generateSecret?: boolean,
     ...alternativeCallbackUrls: string[]
   ): Cognito {
     const sso = new Cognito(scope, id);
     sso.addSamlIdp(samlProviderName, federationMetadataUrl, federationMetadataXml);
-    sso.createUserPoolClient(callbackUrl, false, logoutUrl, ...alternativeCallbackUrls);
+    sso.createUserPoolClient({ callbackUrl, enableEmail: false, logoutUrl, alternativeCallbackUrls, generateSecret });
     if (domainPrefix) sso.addDomainPrefix(domainPrefix);
     else if (zone) sso.addCustomDomain(zone, domainName || `auth.${zone.zoneName}`);
     return sso;
@@ -392,10 +394,11 @@ export class Cognito extends Construct {
     domainName?: string,
     domainPrefix?: string,
     logoutUrl?: string,
+    generateSecret?: boolean,
     ...alternativeCallbackUrls: string[]
   ): Cognito {
     const email = new Cognito(scope, id);
-    email.createUserPoolClient(callbackUrl, true, logoutUrl, ...alternativeCallbackUrls);
+    email.createUserPoolClient({ callbackUrl, enableEmail: true, logoutUrl, alternativeCallbackUrls, generateSecret });
     if (domainPrefix) email.addDomainPrefix(domainPrefix);
     else if (zone) email.addCustomDomain(zone, domainName || `auth.${zone.zoneName}`);
     return email;
@@ -423,12 +426,13 @@ export class Cognito extends Construct {
     domainName?: string,
     domainPrefix?: string,
     logoutUrl?: string,
+    generateSecret?: boolean,
     ...alternativeCallbackUrls: string[]
   ): Cognito {
     const social = new Cognito(scope, id);
     if (googleClientId && googleClientSecret) social.addGoogleIdp(googleClientId, googleClientSecret);
     if (facebookAppId && facebookAppSecret) social.addFacebookIdp(facebookAppId, facebookAppSecret);
-    social.createUserPoolClient(callbackUrl, enableEmailLogin, logoutUrl, ...alternativeCallbackUrls);
+    social.createUserPoolClient({ callbackUrl, enableEmail: enableEmailLogin, logoutUrl, alternativeCallbackUrls, generateSecret });
     if (domainPrefix) social.addDomainPrefix(domainPrefix);
     else if (zone) social.addCustomDomain(zone, domainName || `auth.${zone.zoneName}`);
     return social;
@@ -470,11 +474,12 @@ export class Cognito extends Construct {
     domainName?: string,
     domainPrefix?: string,
     logoutUrl?: string,
+    generateSecret?: boolean,
     ...alternativeCallbackUrls: string[]
   ): Cognito {
     const sso = new Cognito(scope, id);
     sso.addSamlIdp(samlProviderName, federationMetadataUrl, undefined);
-    sso.createUserPoolClient(callbackUrl, false, logoutUrl, ...alternativeCallbackUrls);
+    sso.createUserPoolClient({ callbackUrl, enableEmail: false, logoutUrl, alternativeCallbackUrls, generateSecret });
     if (domainPrefix) sso.addDomainPrefix(domainPrefix);
     else if (zone) sso.addCustomDomain(zone, domainName || `auth.${zone.zoneName}`);
     return sso;
@@ -520,11 +525,12 @@ export class Cognito extends Construct {
     domainName?: string,
     domainPrefix?: string,
     logoutUrl?: string,
+    generateSecret?: boolean,
     ...alternativeCallbackUrls: string[]
   ): Cognito {
     const sso = new Cognito(scope, id);
     sso.addSamlIdp(samlProviderName, undefined, federationMetadataXml);
-    sso.createUserPoolClient(callbackUrl, false, logoutUrl, ...alternativeCallbackUrls);
+    sso.createUserPoolClient({ callbackUrl, enableEmail: false, logoutUrl, alternativeCallbackUrls, generateSecret });
     if (domainPrefix) sso.addDomainPrefix(domainPrefix);
     else if (zone) sso.addCustomDomain(zone, domainName || `auth.${zone.zoneName}`);
     return sso;
