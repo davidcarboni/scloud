@@ -20,7 +20,7 @@ function apiErrorResponse(e?: unknown): Response {
   }
 
   // Unhandled error
-  if (e) console.error(e instanceof Error ? e.stack : e);
+  if (e) console.error(e);
   return {
     statusCode: 500,
     body: 'Internal server error',
