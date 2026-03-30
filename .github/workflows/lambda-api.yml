@@ -11,11 +11,13 @@ on:
 permissions:
   id-token: write
   contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      id-token: write
     steps:
       - uses: actions/checkout@v4
 
@@ -41,10 +43,9 @@ jobs:
 
       - name: Publish
         working-directory: ./${{ github.workflow }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          yarn publish --patch --access public
+          npm version patch
+          npm publish --provenance --access public
 
       - name: Push
         working-directory: ./${{ github.workflow }}
