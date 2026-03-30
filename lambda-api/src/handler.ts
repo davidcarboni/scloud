@@ -14,6 +14,7 @@ function apiErrorResponse(e?: unknown): Response {
   // Intentional API error response
   if (e instanceof ApiError) {
     return {
+      headers: e.headers,
       statusCode: e.statusCode,
       body: e.body,
     };

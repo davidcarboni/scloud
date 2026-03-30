@@ -57,11 +57,13 @@ export interface Routes {
 export class ApiError extends Error {
   statusCode: number;
   body: unknown;
+  headers?: Record<string, string>;
 
-  constructor(statusCode: number, body: unknown) {
+  constructor(statusCode: number, body: unknown, headers?: Record<string, string>) {
     super(typeof body === 'string' ? body : JSON.stringify(body, null, 2));
     this.statusCode = statusCode;
     this.body = body;
+    this.headers = headers;
 
     // Required for instanceof to work properly
     Object.setPrototypeOf(this, ApiError.prototype);

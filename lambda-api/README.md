@@ -6,6 +6,7 @@ This is a piece of useful boilerplate to handle the mechanics of routing, header
 
 ## Releae notes
 
+ * `1.1.5`: Enable sending headers in ApiError
  * `1.1.4`: Simplify error console logging
  * `1.1.3`: Import from zod/v4 for backward compatibility with Zod 3
  * `1.1.2`: Fix to be able to match multiple path parameters
