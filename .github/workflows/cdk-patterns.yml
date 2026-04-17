@@ -7,11 +7,14 @@ on:
       # or when this workflow file is changed
       - "cdk-patterns/**"
       - ".github/workflows/cdk-patterns.yml"
+
+permissions:
+  id-token: write
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
 

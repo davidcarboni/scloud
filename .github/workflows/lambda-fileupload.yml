@@ -1,25 +1,28 @@
 name: lambda-fileupload
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
-    # Build when there are changes in the directory that holds the component,
-    # or when this workflow file is changed
-    - 'lambda-fileupload/**'
-    - '.github/workflows/lambda-fileupload.yml'
+      # Build when there are changes in the directory that holds the component,
+      # or when this workflow file is changed
+      - "lambda-fileupload/**"
+      - ".github/workflows/lambda-fileupload.yml"
+
+permissions:
+  id-token: write
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
 
       # Setup .npmrc file to publish to npm
       - uses: actions/setup-node@v4
         with:
-          node-version: 'lts/*'
-          registry-url: 'https://registry.npmjs.org'
+          node-version: "lts/*"
+          registry-url: "https://registry.npmjs.org"
 
       - name: git setup
         run: |
