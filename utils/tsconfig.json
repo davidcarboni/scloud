@@ -5,7 +5,6 @@
     "lib": [
       "es2021"
     ],
-    "baseUrl": "src", // Helps resolve imports in tests
     "declaration": true,
     "strict": true,
     "noImplicitAny": true,
@@ -27,7 +26,10 @@
     "types": [
       "node"
     ],
-    "outDir": "js",
+    "outDir": "dist",
+    "rootDir": "src"
   },
-  // No include or exclude as these seem to mess with resolving imports from tests
+  "include": [
+    "src/**/*"
+  ]
 }

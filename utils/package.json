@@ -2,16 +2,29 @@
   "name": "@scloud/utils",
   "version": "0.1.4",
   "description": "Useful functions, mainly for building Lambdas.",
-  "main": "dist/index.js",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./*": {
+      "require": "./dist/*.js",
+      "import": "./dist/*.js",
+      "types": "./dist/*.d.ts"
+    }
+  },
   "files": [
-    "dist/*"
+    "dist"
   ],
   "scripts": {
     "local": "nodemon src/lambda.ts --local",
     "lint": "eslint --fix --ext ts src test",
     "test": "mocha -r ts-node/register -r tsconfig-paths/register 'test/**/*.spec.ts' # tsconfig-paths/register helps resolve imports in tests",
     "compile": "tsc",
-    "package": "mkdir -p dist && cp -r js/src/* dist"
+    "package": "yarn compile"
   },
   "repository": {
     "type": "git",

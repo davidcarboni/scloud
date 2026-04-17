@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { parseJson } from 'json';
+import { parseJson } from '../src/json';
 import { describe, it } from 'mocha';
 
 // chai.use(require('chai-as-promised'));
