@@ -1,6 +1,6 @@
-
-import express, { Request, Response } from 'express';
+import * as http from 'http';
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
+import { buildEvent, readBody, sendResult } from './httpHelpers';
 
 export interface CloudfrontPathMappings {
   [key: string]: (event: APIGatewayProxyEvent, context: Context) => Promise<APIGatewayProxyResult>;
@@ -8,56 +8,13 @@ export interface CloudfrontPathMappings {
 
 export function cloudfrontLocal(cloudfrontPathMappings: CloudfrontPathMappings, debug = false) {
   const port = +(process.env.port || '3000');
-  const app = express();
 
-  // https://stackoverflow.com/questions/12345166/how-to-force-parse-request-body-as-plain-text-instead-of-json-in-express
-  app.use(express.text({ type: '*/*' }));
-
-  app.all('/*', async (req: Request, res: Response) => {
-    // const url = new URL(req.originalUrl, 'https://example.com');
-    // Headers - NB it seems that in Lambda multiValueHeaders always contains the values from headers
-    const headers: Record<string, string | undefined> = {};
-    const multiValueHeaders: Record<string, string[] | undefined> = {};
-    Object.keys(req.headers).forEach((header) => {
-      if (req.headers[header] === undefined) {
-        headers[header] = undefined;
-        multiValueHeaders[header] = undefined;
-      }
-      if (typeof req.headers[header] === 'string') {
-        headers[header] = req.headers[header] as string;
-        multiValueHeaders[header] = [req.headers[header] as string];
-      }
-      if (Array.isArray(req.headers[header])) {
-        multiValueHeaders[header] = req.headers[header] as string[];
-      }
-    });
-
-    // Query string - basic translation
-    const queryStringParameters: Record<string, string | undefined> = {};
-    const multiValueQueryStringParameters: Record<string, string[] | undefined> = {};
-    Object.keys(req.query).forEach((parameter) => {
-      queryStringParameters[parameter] = undefined;
-      if (typeof req.query[parameter] === 'string') queryStringParameters[parameter] = req.query[parameter] as string;
-      if (Array.isArray(req.query[parameter])) multiValueQueryStringParameters[parameter] = req.query[parameter] as string[];
-    });
-
-    const event: APIGatewayProxyEvent = {
-      body: typeof req.body === 'string' ? req.body : JSON.stringify(req.body),
-      headers,
-      multiValueHeaders,
-      httpMethod: req.method,
-      path: req.path,
-      queryStringParameters,
-      multiValueQueryStringParameters,
-      requestContext: {
-        httpMethod: req.method,
-        path: req.path,
-        protocol: req.protocol,
-      } as unknown as APIGatewayProxyEvent['requestContext'],
-    } as unknown as APIGatewayProxyEvent;
+  http.createServer(async (req, res) => {
+    const url = new URL(req.url || '/', `http://localhost:${port}`);
+    const body = await readBody(req);
+    const event = buildEvent(req, body, url);
 
     if (debug) {
-      // Print out the event that will be sent to the handler
       console.log('Event:');
       console.log(event.httpMethod, event.path);
       console.log(JSON.stringify(event, null, 2));
@@ -88,38 +45,20 @@ export function cloudfrontLocal(cloudfrontPathMappings: CloudfrontPathMappings, 
       // Invoke the function handler:
       const result: APIGatewayProxyResult = handler ? await handler(event, {} as Context) : { statusCode: 404, body: `Path not matched: ${event.path} (${paths})` };
 
-      // Print out the response if successful
       if (debug) {
         console.log('Result:');
         console.log(event.httpMethod, event.path, result.statusCode);
         console.log(JSON.stringify(result, null, 2));
       }
 
-      // Send the response
-      res.status(result.statusCode);
-      if (result.multiValueHeaders) {
-        for (const key of Object.keys(result.multiValueHeaders)) {
-          res.set(key, result.multiValueHeaders![key].map((value) => `${value}`));
-        };
-      }
-      if (result.headers) {
-        for (const key of Object.keys(result.headers)) {
-          res.set(key, `${result.headers![key]}`);
-        };
-      }
-
-      // Body
-      res.send(result.body);
-
+      sendResult(res, result);
     } catch (e) {
-      // Log the error and send a 500 response
       console.log(e);
       console.log((e as Error).stack);
-      res.status(500).send(`${e}`);
-    };
-  });
-
-  app.listen(port, () => {
+      res.writeHead(500);
+      res.end(`${e}`);
+    }
+  }).listen(port, () => {
     console.log(`Lambda handler can be invoked at http://localhost:${port}`);
   });
 }

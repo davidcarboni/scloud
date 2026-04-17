@@ -1,5 +1,7 @@
-import express, { Request, Response } from 'express';
+import * as http from 'http';
+import * as path from 'path';
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
+import { buildEvent, readBody, sendResult, serveStaticFile } from './httpHelpers';
 
 export interface CloudfrontPathMappings {
   [key: string]: (event: APIGatewayProxyEvent, context: Context) => Promise<APIGatewayProxyResult>;
@@ -7,107 +9,59 @@ export interface CloudfrontPathMappings {
 
 export function webappRoutesLocal(cloudfrontPathMappings: CloudfrontPathMappings, staticContent?: string, debug = false) {
   const port = +(process.env.port || '3000');
-  const app = express();
 
-  // https://stackoverflow.com/questions/12345166/how-to-force-parse-request-body-as-plain-text-instead-of-json-in-express
-  app.use(express.text({ type: '*/*' }));
+  http.createServer(async (req, res) => {
+    const url = new URL(req.url || '/', `http://localhost:${port}`);
+    const body = await readBody(req);
+    const event = buildEvent(req, body, url);
 
-  Object.keys(cloudfrontPathMappings).forEach((route) => {
-    app.all(route, async (req: Request, res: Response) => {
-      // const url = new URL(req.originalUrl, 'https://example.com');
-      // Headers - NB it seems that in Lambda multiValueHeaders always contains the values from headers
-      const headers: Record<string, string | undefined> = {};
-      const multiValueHeaders: Record<string, string[] | undefined> = {};
-      Object.keys(req.headers).forEach((header) => {
-        if (req.headers[header] === undefined) {
-          headers[header] = undefined;
-          multiValueHeaders[header] = undefined;
-        }
-        if (typeof req.headers[header] === 'string') {
-          headers[header] = req.headers[header] as string;
-          multiValueHeaders[header] = [req.headers[header] as string];
-        }
-        if (Array.isArray(req.headers[header])) {
-          multiValueHeaders[header] = req.headers[header] as string[];
-        }
+    if (debug) {
+      console.log('Event:');
+      console.log(event.httpMethod, event.path);
+      console.log(JSON.stringify(event, null, 2));
+    }
+
+    try {
+      const paths = Object.keys(cloudfrontPathMappings);
+
+      // Try an exact match first, then fall back to prefix/wildcard matching
+      let handler = cloudfrontPathMappings[event.path];
+      paths.forEach((route) => {
+        let partialMatch = route;
+        // Strip leading slash:
+        if (partialMatch.startsWith('/')) partialMatch = route.slice(1);
+        // Remove trailing '*' wildcard:
+        if (partialMatch.endsWith('*')) partialMatch = route.slice(0, -1);
+        const candidate = event.path.startsWith(partialMatch) ? cloudfrontPathMappings[route] : undefined;
+        handler = handler || candidate;
       });
 
-      // Query string - basic translation
-      const queryStringParameters: Record<string, string | undefined> = {};
-      const multiValueQueryStringParameters: Record<string, string[] | undefined> = {};
-      Object.keys(req.query).forEach((parameter) => {
-        queryStringParameters[parameter] = undefined;
-        if (typeof req.query[parameter] === 'string') queryStringParameters[parameter] = req.query[parameter] as string;
-        if (Array.isArray(req.query[parameter])) multiValueQueryStringParameters[parameter] = req.query[parameter] as string[];
-      });
+      if (handler) {
+        const result: APIGatewayProxyResult = await handler(event, {} as Context);
 
-      const event: APIGatewayProxyEvent = {
-        body: typeof req.body === 'string' ? req.body : JSON.stringify(req.body),
-        headers,
-        multiValueHeaders,
-        httpMethod: req.method,
-        path: req.path,
-        queryStringParameters,
-        multiValueQueryStringParameters,
-        requestContext: {
-          httpMethod: req.method,
-          path: req.path,
-          protocol: req.protocol,
-        } as unknown as APIGatewayProxyEvent['requestContext'],
-      } as unknown as APIGatewayProxyEvent;
-
-      try {
-        // Print out the event that will be sent to the handler
-        if (debug) {
-          console.log('Event:');
-          console.log(event.httpMethod, event.path);
-          console.log(JSON.stringify(event, null, 2));
-        }
-
-        const paths = Object.keys(cloudfrontPathMappings);
-
-        // Use the handler for this Express route
-        const handler = cloudfrontPathMappings[route];
-        if (!handler) console.log(`Unmatched path: ${event.path}`);
-
-        // Invoke the function handler:
-        const result = handler ? await handler(event, {} as Context) : { statusCode: 404, body: `Path not matched: ${event.path} (${paths})` };
-
-        // Print out the response if successful
         if (debug) {
           console.log('Result:');
           console.log(event.httpMethod, event.path, result.statusCode);
           console.log(JSON.stringify(result, null, 2));
         }
 
-        // Send the response
-        res.status(result.statusCode);
-        if (result.multiValueHeaders) {
-          Object.keys(result.multiValueHeaders).forEach((key) => {
-            res.set(key, result.multiValueHeaders![key].map((value) => `${value}`));
-          });
-        }
-        if (result.headers) {
-          Object.keys(result.headers).forEach((key) => {
-            res.set(key, `${result.headers![key]}`);
-          });
-        }
-
-        // Body
-        res.send(result.body);
-
-      } catch (e) {
-        // Log the error and send a 500 response
-        console.log(e);
-        console.log((e as Error).stack);
-        res.status(500).send(`${e}`);
+        sendResult(res, result);
+        return;
       }
-    });
-  });
 
-  if (staticContent) app.use(express.static(staticContent));
+      // Fall back to static file serving
+      if (staticContent && serveStaticFile(path.join(staticContent, url.pathname), res)) return;
 
-  app.listen(port, () => {
+      console.log(`Unmatched path: ${event.path}`);
+      res.writeHead(404);
+      res.end(`Path not matched: ${event.path} (${paths})`);
+    } catch (e) {
+      console.log(e);
+      console.log((e as Error).stack);
+      res.writeHead(500);
+      res.end(`${e}`);
+    }
+  }).listen(port, () => {
     console.log(`Lambda handler can be invoked at http://localhost:${port}`);
   });
 }

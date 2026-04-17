@@ -36,8 +36,6 @@
     "@tsconfig/node22": "*",
     "@types/aws-lambda": "*",
     "@types/chai": "*",
-    "@types/cors": "*",
-    "@types/express": "*",
     "@types/mocha": "*",
     "@types/node": "*",
     "chai": "*",
@@ -52,8 +50,6 @@
     "typescript-eslint": "*"
   },
   "dependencies": {
-    "@types/aws-lambda": "*",
-    "cors": "*",
-    "express": "*"
+    "@types/aws-lambda": "*"
   }
 }
