@@ -39,9 +39,10 @@ jobs:
 
       - name: Publish
         working-directory: ./${{ github.workflow }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          # npm version patch
-          npm publish --provenance --access public
+          # yarn publish --provenance --access public
 
       - name: Push
         working-directory: ./${{ github.workflow }}
@@ -51,6 +52,7 @@ jobs:
         run: |
           # Push updated pakage.json to Github
           # We need this to happen always to avoid the repo getting stuck on an already-published version
+          npm version patch
           git commit -am "Patch version" || true
           git pull --rebase
           git push
