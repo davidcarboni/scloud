@@ -24,5 +24,8 @@
       "./node_modules/@types"
     ],
     "outDir": "js",
+    "types": [
+      "node"
+    ],
   },
 }

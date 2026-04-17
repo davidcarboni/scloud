@@ -1,12 +1,16 @@
 {
   "extends": "@tsconfig/node22/tsconfig.json",
   "compilerOptions": {
+    "types": [
+      "node"
+    ],
     "declaration": true,
     "strictNullChecks": true,
     "noImplicitReturns": true,
     "inlineSources": true,
     "inlineSourceMap": true,
-    "outDir": "js",
+    "outDir": "dist",
+    "rootDir": "src",
     "paths": {
       "@/*": [
         "./src/*"

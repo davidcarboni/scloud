@@ -24,6 +24,9 @@
     "typeRoots": [
       "./node_modules/@types"
     ],
+    "types": [
+      "node"
+    ],
     "outDir": "js",
   },
   // No include or exclude as these seem to mess with resolving imports from tests

@@ -24,6 +24,9 @@
       "./node_modules/@types"
     ],
     "outDir": "dist/src",
+    "types": [
+      "node"
+    ],
   },
   "include": [
     "src/**/*.ts"
