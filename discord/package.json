@@ -19,6 +19,7 @@
   "devDependencies": {
     "@eslint/js": "*",
     "@tsconfig/node18": "*",
+    "@tsconfig/node24": "*",
     "@types/aws-lambda": "*",
     "@types/chai": "*",
     "@types/mocha": "*",

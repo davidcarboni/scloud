@@ -13,9 +13,10 @@
     "secrets": "ts-node src/github/github.ts"
   },
   "devDependencies": {
+    "@tsconfig/node24": "*",
     "@types/aws-lambda": "*",
     "@types/jest": "*",
-    "@types/libsodium-wrappers": "^0.7.10",
+    "@types/libsodium-wrappers": "*",
     "@types/lodash": "*",
     "@types/node": "*",
     "@typescript-eslint/eslint-plugin": "*",

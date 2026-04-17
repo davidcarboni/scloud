@@ -15,6 +15,7 @@
   "author": "David Carboni",
   "license": "ISC",
   "devDependencies": {
+    "@tsconfig/node24": "*",
     "@types/aws-lambda": "*",
     "@types/aws-sdk": "^2.7.0",
     "@types/chai": "*",

@@ -14,6 +14,7 @@
   "author": "David Carboni",
   "license": "ISC",
   "devDependencies": {
+    "@tsconfig/node24": "*",
     "@types/chai": "*",
     "@types/mocha": "*",
     "@types/node": "*",
