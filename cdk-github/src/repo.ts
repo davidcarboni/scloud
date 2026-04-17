@@ -14,10 +14,10 @@ const octokit = new Octokit({
 
 // See: https://github.com/octokit/types.ts
 type Repo = GetResponseDataTypeFromEndpointMethod<
-  typeof octokit.repos.get
+  InstanceType<typeof Octokit>['repos']['get']
 >;
 type PublicKey = GetResponseDataTypeFromEndpointMethod<
-  typeof octokit.actions.getRepoPublicKey
+  InstanceType<typeof Octokit>['actions']['getRepoPublicKey']
 >;
 
 let repoPublicKey: PublicKey;
@@ -179,7 +179,7 @@ export async function setRepoVariable(
     }
     // Looks like that didn't work.
     console.log(response);
-    throw new Error(`Error setting repo variable value: ${name}: status code ${response.status}`);
+    throw new Error(`Error setting repo variable value: ${name}: status code ${response.status}`, { cause: e });
   }
 }
 

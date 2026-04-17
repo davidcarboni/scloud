@@ -12,7 +12,7 @@ const octokit = new Octokit({
 
 // See: https://github.com/octokit/types.ts
 type EnvironmentPublicKey = GetResponseDataTypeFromEndpointMethod<
-  typeof octokit.actions.getEnvironmentPublicKey
+  InstanceType<typeof Octokit>['actions']['getEnvironmentPublicKey']
 >;
 
 const environmentPublicKeys: Record<string, EnvironmentPublicKey> = {};
@@ -175,7 +175,7 @@ export async function setEnvironmentVariable(
       return name;
     }
 
-    throw new Error(`Error setting environment variable value: ${name}: status code ${response.status} - ${environment}`);
+    throw new Error(`Error setting environment variable value: ${name}: status code ${response.status} - ${environment}`, { cause: e });
   }
 }
 
