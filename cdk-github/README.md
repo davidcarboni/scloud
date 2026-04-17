@@ -8,6 +8,7 @@ This is intended to provide you with the environment/variable/secret handling ca
 
 ## Release notes
 
+ * **0.3.2**: Update build process to improve package structure
  * **0.3.0**: Restructure so consumers don't need to include `/dist` in import paths
 
 ## Setup
