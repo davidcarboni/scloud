@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { tidy } from 'presigned';
+import { tidy } from '../src/presigned';
 
 // chai.use(require('chai-as-promised'));
 

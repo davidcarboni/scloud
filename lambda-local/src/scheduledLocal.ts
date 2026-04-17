@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import * as http from 'http';
 import {
   Context, SQSBatchResponse, ScheduledEvent,
 } from 'aws-lambda';
@@ -17,11 +17,9 @@ const eventTemplate: ScheduledEvent = {
 
 export function scheduledLocal(handler: (event: ScheduledEvent, context: Context) => Promise<SQSBatchResponse>, debug = false) {
   const port = +(process.env.port || '3000');
-  const app = express();
 
-  app.all('/*', async (req: Request, res: Response) => {
+  http.createServer(async (_req, res) => {
     try {
-      // Invoke the function handler:
       const result = await handler(eventTemplate, {} as Context);
 
       if (debug) {
@@ -29,18 +27,15 @@ export function scheduledLocal(handler: (event: ScheduledEvent, context: Context
         console.log(JSON.stringify(result, null, 2));
       }
 
-      // Body
-      res.status(200).send(JSON.stringify(result));
-
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(result));
     } catch (e) {
-      // Log the error and send a 500 response
       console.log(e);
       console.log((e as Error).stack);
-      res.status(500).send(`${e}`);
+      res.writeHead(500);
+      res.end(`${e}`);
     }
-  });
-
-  app.listen(port, () => {
-    console.log(`Scheduled Lambda handler can be invoked via POST http://localhost:${port}. The request body will be sent as an SQS message body`);
+  }).listen(port, () => {
+    console.log(`Scheduled Lambda handler can be invoked at http://localhost:${port}. Any request will trigger the handler with a synthetic ScheduledEvent`);
   });
 }

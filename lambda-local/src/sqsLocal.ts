@@ -1,25 +1,28 @@
-import express, { Request, Response } from 'express';
+import * as http from 'http';
 import {
   Context, SQSBatchResponse, SQSEvent, SQSRecord,
 } from 'aws-lambda';
+import { readBody } from './httpHelpers';
 
 export function sqsLocal(handler: (event: SQSEvent, context: Context) => Promise<SQSBatchResponse>, debug = false) {
   const port = +(process.env.port || '3000');
-  const app = express();
 
-  // https://stackoverflow.com/questions/12345166/how-to-force-parse-request-body-as-plain-text-instead-of-json-in-express
-  app.use(express.text({ type: '*/*' }));
+  http.createServer(async (req, res) => {
+    if (req.method !== 'POST') {
+      res.writeHead(405, { Allow: 'POST' });
+      res.end('Method Not Allowed');
+      return;
+    }
 
-  app.post('/*', async (req: Request, res: Response) => {
     try {
-      // Print out the event that will be sent to the handler
-      const event: SQSEvent = { Records: [{ body: req.body } as SQSRecord] };
+      const body = await readBody(req);
+      const event: SQSEvent = { Records: [{ body } as SQSRecord] };
+
       if (debug) {
         console.log('Event:');
         console.log(JSON.stringify(event, null, 2));
       }
 
-      // Invoke the function handler:
       const result = await handler(event, {} as Context);
 
       if (debug) {
@@ -27,17 +30,15 @@ export function sqsLocal(handler: (event: SQSEvent, context: Context) => Promise
         console.log(JSON.stringify(result, null, 2));
       }
 
-      // Send the response
-      res.status(200).send(JSON.stringify(result));
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(result));
     } catch (e) {
-      // Log the error and send a 500 response
       console.log(e);
       console.log((e as Error).stack);
-      res.status(500).send(`${e}`);
+      res.writeHead(500);
+      res.end(`${e}`);
     }
-  });
-
-  app.listen(port, () => {
+  }).listen(port, () => {
     console.log(`Lambda handler can be invoked via POST http://localhost:${port}. The request body will be sent as an SQS message body`);
   });
 }
