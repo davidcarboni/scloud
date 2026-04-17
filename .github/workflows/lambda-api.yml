@@ -38,13 +38,12 @@ jobs:
           yarn
           yarn lint
           yarn test
-          yarn compile
           yarn package
 
       - name: Publish
         working-directory: ./${{ github.workflow }}
         run: |
-          npm version patch
+          # npm version patch
           npm publish --provenance --access public
 
       - name: Push

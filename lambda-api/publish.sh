@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
 set -eu
 
-rm -rf js dist
+rm -rf dist
 
 yarn
 yarn upgrade
 yarn lint
 yarn test
-yarn compile
 yarn package
 yarn publish
 

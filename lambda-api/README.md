@@ -6,6 +6,7 @@ This is a piece of useful boilerplate to handle the mechanics of routing, header
 
 ## Releae notes
 
+ * '1.2.0': Restructure so we consumers don't need to include '/dist' in the import path
  * `1.1.8`: Trusted publishing enabled
  * `1.1.7`: Enable sending headers in ApiError
  * `1.1.4`: Simplify error console logging

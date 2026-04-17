@@ -9,11 +9,15 @@
     "noImplicitReturns": true,
     "inlineSources": true,
     "inlineSourceMap": true,
-    "outDir": "js",
+    "outDir": "dist",
+    "rootDir": "src",
     "paths": {
       "@/*": [
         "./src/*"
       ],
     },
   },
+  "include": [
+    "src/**/*"
+  ]
 }
