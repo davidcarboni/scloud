@@ -1,18 +1,31 @@
 {
   "name": "@scloud/cdk-patterns",
-  "version": "0.10.1",
+  "version": "0.11.0",
   "description": "Serverless CDK patterns for common infrastructure needs",
-  "main": "dist/index.js",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./*": {
+      "require": "./dist/*.js",
+      "import": "./dist/*.js",
+      "types": "./dist/*.d.ts"
+    }
+  },
   "files": [
-    "dist/*"
+    "dist"
   ],
   "bin": {
-    "cdk-patterns": "dist/deploy.sh"
+    "cdk-patterns": "./dist/deploy.sh"
   },
   "scripts": {
     "lint": "eslint --fix src",
     "compile": "tsc",
-    "package": "mkdir -p dist && cp -r js/* deploy.sh src/container src/edge src/express src/lambda dist/ "
+    "package": "yarn compile && cp deploy.sh dist/ && cp -r src/container src/edge src/express src/lambda dist/"
   },
   "repository": {
     "type": "git",

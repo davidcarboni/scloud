@@ -6,6 +6,10 @@ Takes outputs produced by the `githubActions().ghaOidcRole()` and `githubActions
 
 This is intended to provide you with the environment/variable/secret handling capabilities you'll mostly need. If you have an edge-case, the repo serves as example code you can reuse to help you get what you need done more easily.
 
+## Release notes
+
+ * **0.3.0**: Restructure so consumers don't need to include `/dist` in import paths
+
 ## Setup
 
 Assuming you've called the `ghaOidcRole` or `ghaUser` function, you should have some output files under your `.infrastructure/cdk.out` directory, e.g.:

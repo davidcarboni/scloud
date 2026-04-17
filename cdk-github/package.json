@@ -1,18 +1,31 @@
 {
   "name": "@scloud/cdk-github",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "Automates setting variables and secrets on a Github repo/environment based on output produced by the ghaUser() feature of @scloud/cdk-patterns",
-  "main": "dist/github.js",
+  "main": "./dist/github.js",
+  "types": "./dist/github.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/github.js",
+      "import": "./dist/github.js",
+      "types": "./dist/github.d.ts"
+    },
+    "./*": {
+      "require": "./dist/*.js",
+      "import": "./dist/*.js",
+      "types": "./dist/*.d.ts"
+    }
+  },
   "bin": {
-    "cdk-github": "dist/github.js"
+    "cdk-github": "./dist/github.js"
   },
   "files": [
-    "dist/*"
+    "dist"
   ],
   "scripts": {
     "lint": "eslint --fix src",
     "compile": "tsc",
-    "package": "mkdir -p dist && cp -r js/* dist/"
+    "package": "yarn compile"
   },
   "repository": {
     "type": "git",

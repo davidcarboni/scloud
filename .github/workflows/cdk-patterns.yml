@@ -31,7 +31,6 @@ jobs:
         run: |
           yarn
           yarn lint
-          yarn compile
           yarn package
 
       - name: Publish
@@ -39,7 +38,7 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          yarn publish --patch --access public
+          yarn publish --access public
 
       - name: Push
         working-directory: ./${{ github.workflow }}

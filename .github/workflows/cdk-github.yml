@@ -1,12 +1,12 @@
 name: cdk-github
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
-    # Build when there are changes in the directory that holds the component,
-    # or when this workflow file is changed
-    - 'cdk-github/**'
-    - '.github/workflows/cdk-github.yml'
+      # Build when there are changes in the directory that holds the component,
+      # or when this workflow file is changed
+      - "cdk-github/**"
+      - ".github/workflows/cdk-github.yml"
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -18,8 +18,8 @@ jobs:
       # Setup .npmrc file to publish to npm
       - uses: actions/setup-node@v4
         with:
-          node-version: 'lts/*'
-          registry-url: 'https://registry.npmjs.org'
+          node-version: "lts/*"
+          registry-url: "https://registry.npmjs.org"
 
       - name: git setup
         run: |
@@ -31,7 +31,6 @@ jobs:
         run: |
           yarn
           yarn lint
-          yarn compile
           yarn package
 
       - name: Publish
@@ -39,7 +38,7 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          yarn publish --patch --access public
+          yarn publish --access public
 
       - name: Push
         working-directory: ./${{ github.workflow }}
