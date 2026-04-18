@@ -1,6 +1,6 @@
 {
   "name": "@scloud/cdk-github",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "Automates setting variables and secrets on a Github repo/environment based on output produced by the ghaUser() feature of @scloud/cdk-patterns",
   "main": "./dist/github.js",
   "types": "./dist/github.d.ts",
