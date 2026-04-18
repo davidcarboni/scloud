@@ -3,6 +3,7 @@
 *.d.ts
 node_modules
 yarn.lock
+package-lock.json
 
 # CDK asset staging directory
 .cdk.staging

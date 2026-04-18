@@ -1,2 +1,9 @@
 node_modules
-js
+yarn-error.log
+
+# Packaging output
+dist
+
+# Lock files
+yarn.lock
+package-lock.json

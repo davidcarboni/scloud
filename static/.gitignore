@@ -1,3 +1,9 @@
 node_modules
+yarn-error.log
+
+# Packaging output
 dist
-public/stylesheets
+
+# Lock files
+yarn.lock
+package-lock.json

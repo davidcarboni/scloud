@@ -1,11 +1,9 @@
 node_modules
-
-# Compiler output
-js
+yarn-error.log
 
 # Packaging output
 dist
 
 # Lock files
-package.lock
 yarn.lock
+package-lock.json
