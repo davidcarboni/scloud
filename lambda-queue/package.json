@@ -33,6 +33,7 @@
   "license": "MIT",
   "devDependencies": {
     "@eslint/js": "*",
+    "@tsconfig/node24": "*",
     "@types/aws-lambda": "*",
     "@types/chai": "*",
     "@types/mocha": "*",

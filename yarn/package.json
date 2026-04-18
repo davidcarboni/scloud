@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "@eslint/js": "*",
+    "@tsconfig/node24": "*",
     "@types/chai": "*",
     "@types/mocha": "*",
     "@types/node": "*",
