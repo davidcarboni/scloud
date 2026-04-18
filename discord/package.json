@@ -26,12 +26,12 @@
     "@types/node": "*",
     "chai": "*",
     "eslint": "*",
+    "eslint-plugin-no-only-tests": "*",
     "mocha": "*",
     "ts-node": "*",
     "tsconfig-paths": "*",
     "tsx": "*",
     "typescript": "*",
     "typescript-eslint": "*"
-  },
-  "dependencies": {}
+  }
 }

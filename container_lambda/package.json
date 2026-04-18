@@ -14,20 +14,18 @@
   "author": "David Carboni",
   "license": "ISC",
   "devDependencies": {
+    "@eslint/js": "*",
     "@tsconfig/node24": "*",
     "@types/chai": "*",
     "@types/mocha": "*",
     "@types/node": "*",
-    "@typescript-eslint/eslint-plugin": "*",
-    "@typescript-eslint/parser": "*",
     "chai": "*",
     "eslint": "*",
-    "eslint-config-airbnb-base": "*",
-    "eslint-import-resolver-typescript": "*",
-    "eslint-plugin-import": "*",
+    "eslint-plugin-no-only-tests": "*",
     "mocha": "*",
     "ts-node": "*",
-    "typescript": "*"
+    "typescript": "*",
+    "typescript-eslint": "*"
   },
   "dependencies": {
     "@types/aws-lambda": "*",

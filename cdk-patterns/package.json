@@ -53,6 +53,7 @@
     "@types/node": "*",
     "aws-cdk": "*",
     "eslint": "*",
+    "eslint-plugin-no-only-tests": "*",
     "ts-node": "*",
     "typescript": "*",
     "typescript-eslint": "*"

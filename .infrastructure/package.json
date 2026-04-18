@@ -13,22 +13,20 @@
     "secrets": "ts-node src/github/github.ts"
   },
   "devDependencies": {
+    "@eslint/js": "*",
     "@tsconfig/node24": "*",
     "@types/aws-lambda": "*",
     "@types/jest": "*",
     "@types/libsodium-wrappers": "*",
     "@types/lodash": "*",
     "@types/node": "*",
-    "@typescript-eslint/eslint-plugin": "*",
-    "@typescript-eslint/parser": "*",
     "aws-cdk": "*",
     "eslint": "*",
-    "eslint-config-airbnb-base": "*",
-    "eslint-plugin-import": "*",
     "jest": "*",
     "ts-jest": "*",
     "ts-node": "*",
-    "typescript": "*"
+    "typescript": "*",
+    "typescript-eslint": "*"
   },
   "dependencies": {
     "@octokit/rest": "*",

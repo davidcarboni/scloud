@@ -24,8 +24,7 @@
   ],
   "scripts": {
     "lint": "eslint --fix src",
-    "compile": "tsc",
-    "package": "yarn compile"
+    "compile": "tsc"
   },
   "repository": {
     "type": "git",
@@ -51,6 +50,7 @@
     "@types/libsodium-wrappers": "*",
     "@types/node": "*",
     "eslint": "*",
+    "eslint-plugin-no-only-tests": "*",
     "source-map-support": "*",
     "ts-node": "*",
     "typescript": "*",

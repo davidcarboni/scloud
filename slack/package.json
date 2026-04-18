@@ -23,21 +23,19 @@
     "axios": "*"
   },
   "devDependencies": {
+    "@eslint/js": "*",
     "@types/aws-lambda": "*",
     "@types/chai": "*",
     "@types/mocha": "*",
     "@types/node": "*",
-    "@typescript-eslint/eslint-plugin": "*",
-    "@typescript-eslint/parser": "*",
     "chai": "*",
     "eslint": "*",
-    "eslint-config-airbnb-base": "*",
-    "eslint-import-resolver-typescript": "*",
-    "eslint-plugin-import": "*",
+    "eslint-plugin-no-only-tests": "*",
     "mocha": "*",
     "nodemon": "*",
     "source-map-support": "*",
     "ts-node": "*",
-    "typescript": "*"
-},
+    "typescript": "*",
+    "typescript-eslint": "*"
+  }
 }

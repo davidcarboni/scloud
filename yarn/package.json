@@ -19,24 +19,22 @@
   "dependencies": {
     "@types/aws-lambda": "*",
     "aws-lambda": "*",
-    "aws-sdk": "*",
-    "typescript": "*"
+    "aws-sdk": "*"
   },
   "devDependencies": {
+    "@eslint/js": "*",
     "@types/chai": "*",
     "@types/mocha": "*",
     "@types/node": "*",
-    "@typescript-eslint/eslint-plugin": "*",
-    "@typescript-eslint/parser": "*",
     "chai": "*",
     "esbuild": "*",
     "eslint": "*",
-    "eslint-config-airbnb-base": "*",
-    "eslint-import-resolver-typescript": "*",
-    "eslint-plugin-import": "*",
+    "eslint-plugin-no-only-tests": "*",
     "mocha": "*",
     "rimraf": "*",
     "source-map-support": "*",
-    "ts-node": "*"
+    "ts-node": "*",
+    "typescript": "*",
+    "typescript-eslint": "*"
   }
 }
