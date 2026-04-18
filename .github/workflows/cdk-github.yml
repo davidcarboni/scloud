@@ -32,16 +32,16 @@ jobs:
       - name: Build
         working-directory: ./${{ github.workflow }}
         run: |
-          yarn
-          yarn lint
-          yarn package
+          npm install
+          npm run lint
+          npm run compile
 
       - name: Publish
         working-directory: ./${{ github.workflow }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          yarn publish --provenance --access public
+          npm publish --provenance --access public
 
       - name: Push
         working-directory: ./${{ github.workflow }}

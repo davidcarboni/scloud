@@ -1,12 +1,12 @@
 name: utils
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
-    # Build when there are changes in the directory that holds the component,
-    # or when this workflow file is changed
-    - 'utils/**'
-    - '.github/workflows/utils.yml'
+      # Build when there are changes in the directory that holds the component,
+      # or when this workflow file is changed
+      - "utils/**"
+      - ".github/workflows/utils.yml"
 
 permissions:
   contents: write
@@ -20,8 +20,8 @@ jobs:
       # Setup .npmrc file to publish to npm
       - uses: actions/setup-node@v4
         with:
-          node-version: 'lts/*'
-          registry-url: 'https://registry.npmjs.org'
+          node-version: "lts/*"
+          registry-url: "https://registry.npmjs.org"
 
       - name: git setup
         run: |
@@ -42,7 +42,7 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          yarn publish --patch --access public
+          npm publish --patch --access public
 
       - name: Push
         working-directory: ./${{ github.workflow }}
