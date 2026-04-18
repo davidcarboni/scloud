@@ -16,11 +16,13 @@ cd ${root}
 for dir in $(find . -maxdepth 1 -mindepth 1 -type d)
 do
   echo "Checking ${dir}..."
-    if [ -f "${dir}/package.json" ]; then
+    if [ -f "${root}/${dir}/package.json" ]; then
       echo "Upgrading ${dir}..."
       cd ${root}/$dir
       rm -rf package-lock.json node_modules
       npm install
+    else
+      echo "Skipping ${dir}..."
     fi
 done
 cd ${root}
