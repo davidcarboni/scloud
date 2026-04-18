@@ -8,10 +8,10 @@ on:
       - main
       - staging
     paths:
-    # Build when there are changes in the directory that holds the component,
-    # or when this workflow file is changed
-    - 'auth/**'
-    - '.github/workflows/auth.yml'
+      # Build when there are changes in the directory that holds the component,
+      # or when this workflow file is changed
+      - "auth/**"
+      - ".github/workflows/auth.yml"
   schedule:
     # A weekly build to pick up updates to the base container image
     # A weekday at mid-day - when someone is likely to be working (avoid bank holidays)
@@ -23,7 +23,7 @@ on:
       - shared
     types:
       - completed
-    branches: [ main, staging ]
+    branches: [main, staging]
 
 jobs:
   setenv:
@@ -56,38 +56,37 @@ jobs:
       lambdaName: ${{ vars.AUTH_LAMBDA }}
 
     steps:
+      - uses: actions/checkout@v3
 
-    - uses: actions/checkout@v3
+      - uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-2
 
-    - uses: aws-actions/configure-aws-credentials@v2
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: eu-west-2
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "lts/*"
+          registry-url: "https://npm.pkg.github.com"
 
-    - uses: actions/setup-node@v3
-      with:
-        node-version: 'lts/*'
-        registry-url: 'https://npm.pkg.github.com'
+      - name: Build
+        working-directory: ./${{ env.component }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          npm install
+          npm run lint
+          npm run test
+          npm run compile
 
-    - name: Build
-      working-directory: ./${{ env.component }}
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        yarn
-        yarn lint
-        yarn test
-        yarn compile
+      - name: Package
+        working-directory: ./${{ env.component }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          npm run package
 
-    - name: Package
-      working-directory: ./${{ env.component }}
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        yarn package
-
-    - name: Update Lambda
-      working-directory: ./${{ env.component }}
-      run: |
-        aws lambda update-function-code --function-name=${{ env.lambdaName }} --zip-file fileb://dist/function.zip
+      - name: Update Lambda
+        working-directory: ./${{ env.component }}
+        run: |
+          aws lambda update-function-code --function-name=${{ env.lambdaName }} --zip-file fileb://dist/function.zip
