@@ -128,7 +128,7 @@ export async function findItems(
   const result: { [key: string]: any }[] = [];
   let items;
   do {
-    // eslint-disable-next-line no-await-in-loop
+     
     items = await ddb.query(params).promise();
     if (items.Items) items.Items.forEach((item) => result.push(item));
     params.ExclusiveStartKey = items.LastEvaluatedKey;
@@ -172,7 +172,7 @@ export async function findItemsIndex(
   const result: { [key: string]: any }[] = [];
   let items;
   do {
-    // eslint-disable-next-line no-await-in-loop
+     
     items = await ddb.query(params).promise();
     if (items.Items) items.Items.forEach((item) => result.push(item));
     params.ExclusiveStartKey = items.LastEvaluatedKey;
@@ -222,7 +222,7 @@ export async function findItemRange(
   const result: { [key: string]: any }[] = [];
   let items;
   do {
-    // eslint-disable-next-line no-await-in-loop
+     
     items = await ddb.query(params).promise();
     if (items.Items) items.Items.forEach((item) => result.push(item));
     params.ExclusiveStartKey = items.LastEvaluatedKey;
@@ -244,7 +244,7 @@ export async function listItems(tableName: string): Promise<{ [key: string]: any
   const result: { [key: string]: any }[] = [];
   let items;
   do {
-    // eslint-disable-next-line no-await-in-loop
+     
     items = await ddb.scan(params).promise();
     items.Items?.forEach((item) => result.push(item));
     params.ExclusiveStartKey = items.LastEvaluatedKey;
@@ -314,9 +314,9 @@ export async function migrate(update: Function, sourceTable: string, destination
   let count = 0;
   let result: DocumentClient.ScanOutput;
   do {
-    // eslint-disable-next-line no-await-in-loop
+     
     result = await ddb.scan(params).promise();
-    // eslint-disable-next-line no-await-in-loop
+     
     if (result.Items) count += await migratePage(`${destinationTable || sourceTable}`, result.Items, update);
     console.log(`Migrated ${count} items`);
     params.ExclusiveStartKey = result.LastEvaluatedKey;
