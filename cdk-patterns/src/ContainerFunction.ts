@@ -1,5 +1,4 @@
 import * as path from 'path';
-import * as logs from 'aws-cdk-lib/aws-logs';
 import { Construct } from 'constructs';
 import {
   DockerImageCode, DockerImageFunction, DockerImageFunctionProps,
@@ -8,6 +7,7 @@ import { IRepository } from 'aws-cdk-lib/aws-ecr';
 import { Duration } from 'aws-cdk-lib';
 import { EcrRepository } from './EcrRepository';
 import { githubActions } from './GithubActions';
+import { LogGroupRetention } from './LogGroupRetention';
 
 /**
  * @param environment Environment variables for the Lambda function
@@ -58,12 +58,13 @@ export class ContainerFunction extends DockerImageFunction {
       tagOrDigest: props?.tagOrDigest || 'latest',
     });
 
+    const logGroup = new LogGroupRetention(scope, `${id}LogGroup`, 'lambda');
     super(scope, id, {
       environment: props?.environment,
       memorySize: props?.memorySize || 1024,
       timeout: props?.timeout || Duration.seconds(30),
       code,
-      logRetention: logs.RetentionDays.TWO_YEARS,
+      logGroup,
       description: id,
       ...props?.dockerImageFunctionProps,
     });

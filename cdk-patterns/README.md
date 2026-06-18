@@ -19,6 +19,7 @@ A couple of highlights:
 
 ## Release notes
 
+ * **0.12.0**: Clear CDK deprecation warnings for Lambda log group
  * **0.11.2**: Update build process to improve package structure
  * **0.11.0**: Restructure so consumers don't need to include `/dist` in import paths
  * **0.10.0**: Generate a secret for Cognito user pools by default.

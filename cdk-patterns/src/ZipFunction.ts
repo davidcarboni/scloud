@@ -1,10 +1,10 @@
-import * as logs from 'aws-cdk-lib/aws-logs';
 import { Construct } from 'constructs';
 import {
   Code, Function, FunctionProps, Runtime,
 } from 'aws-cdk-lib/aws-lambda';
 import { Duration } from 'aws-cdk-lib';
 import { githubActions } from './GithubActions';
+import { LogGroupRetention } from './LogGroupRetention';
 
 /**
  * @param environment Optional: Environment variables for the Lambda function
@@ -33,13 +33,14 @@ export interface ZipFunctionProps {
  * Key settings are:
  *  - runtime: defaults to Runtime.NODEJS_18_X
  *  - handler: 'src/lambda.handler' - you'll need to make sure your zip package includes a file 'src/lambda.[js|py]' and contains a function named 'handler'
- *  - logRetention: default is logs.RetentionDays.TWO_YEARS
+ *  - logGroup: default is a LogGroupRetention with TWO_YEARS retention
  *
  * @param scope Parent CDK construct (typically 'this')
  * @param id A name for this function
  */
 export class ZipFunction extends Function {
   constructor(scope: Construct, id: string, props?: ZipFunctionProps) {
+    const logGroup = new LogGroupRetention(scope, id, 'lambda');
     super(scope, id, {
       environment: props?.environment,
       memorySize: props?.memorySize || 256,
@@ -48,7 +49,7 @@ export class ZipFunction extends Function {
       runtime: Runtime.NODEJS_18_X,
       handler: props?.handler || 'src/lambda.handler',
       code: Code.fromInline('Placeholder code'), // Asset(path.join(__dirname, './lambda/python')),
-      logRetention: logs.RetentionDays.TWO_YEARS,
+      logGroup,
       ...props?.functionProps,
     });
     githubActions(scope).addGhaLambda(id, this);
