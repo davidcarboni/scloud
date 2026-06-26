@@ -1,0 +1,10 @@
+node_modules
+
+# Compiler output
+js
+
+# Packaging output
+dist
+
+# Lock files
+package-lock.json
