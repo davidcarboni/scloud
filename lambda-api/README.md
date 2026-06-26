@@ -6,6 +6,7 @@ This is a piece of useful boilerplate to handle the mechanics of routing, header
 
 ## Releae notes
 
+ * `1.2.3`: Readme update
  * '1.2.0': Restructure so we consumers don't need to include '/dist' in the import path
  * `1.1.8`: Trusted publishing enabled
  * `1.1.7`: Enable sending headers in ApiError
@@ -40,15 +41,17 @@ const routes: types.Routes = {
 }
 ```
 
-Use `@scloud/lambda-api` in your Lambda handler:
+Use `@scloud/lambda-api` in your Lambda handler. `apiHandler` accepts both REST API (v1) and Function URL (v2) events and returns the matching response shape. When the event type is known at compile time, TypeScript infers the result type via overloads; you can also use `ApiGatewayProxyResultFor<E>`:
 
 ```
-import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
-import { apiHandler, helpers } from '@scloud/lambda-api';
+import { APIGatewayProxyEventV2, Context } from 'aws-lambda';
+import { apiHandler, ApiGatewayProxyResultFor } from '@scloud/lambda-api';
 
-export async function handler(event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> {
-  const result = await apiHandler(event, context, routes);
-  return result;
+export async function handler(
+  event: APIGatewayProxyEventV2,
+  context: Context,
+): Promise<ApiGatewayProxyResultFor<typeof event>> {
+  return apiHandler(event, context, routes);
 }
 ```
 

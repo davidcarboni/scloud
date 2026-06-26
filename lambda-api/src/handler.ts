@@ -1,17 +1,22 @@
 import {
   APIGatewayProxyEvent,
+  APIGatewayProxyEventV2,
   APIGatewayProxyResult,
+  APIGatewayProxyStructuredResultV2,
   Context,
 } from 'aws-lambda';
 import {
   Request, Response, Handler, Route, Routes,
   ApiError,
 } from './types';
-import { buildCookie, getHeader, matchRoute, parseRequest, setHeader } from './helpers';
+import { ApiGatewayProxyEventAny, isApiGatewayEventV2 } from './event';
+import { matchRoute, parseRequest } from './helpers';
+import { toApiGatewayResultV1, toApiGatewayResultV2 } from './result';
 import z from 'zod/v4';
 
+type ErrorHandler = (request: Request, e: Error) => Promise<Response | undefined>;
+
 function apiErrorResponse(e?: unknown): Response {
-  // Intentional API error response
   if (e instanceof ApiError) {
     return {
       headers: e.headers,
@@ -20,7 +25,6 @@ function apiErrorResponse(e?: unknown): Response {
     };
   }
 
-  // Unhandled error
   if (e) console.error(e);
   return {
     statusCode: 500,
@@ -28,16 +32,12 @@ function apiErrorResponse(e?: unknown): Response {
   };
 }
 
-/**
- * API route handler
- */
-export async function apiHandler(
-  event: APIGatewayProxyEvent,
-  context: Context,
+async function handleRequest(
+  event: ApiGatewayProxyEventAny,
   routes: Routes,
-  errorHandler: ((request: Request, e: Error) => Promise<Response | undefined>) | undefined = undefined,
-  catchAll: Handler | undefined = undefined,
-): Promise<APIGatewayProxyResult> {
+  errorHandler: ErrorHandler | undefined,
+  catchAll: Handler | undefined,
+): Promise<Response> {
   const request = parseRequest(event);
 
   let response: Response | undefined;
@@ -49,7 +49,6 @@ export async function apiHandler(
       const route = match.methods[request.method as keyof Route];
       if (!route) throw new ApiError(405, 'Method not allowed');
 
-      // Verify request body
       if (route.request?.body) {
         const parsed = route.request.body.safeParse(request.body);
         if (!parsed.success) {
@@ -60,18 +59,16 @@ export async function apiHandler(
 
       response = await route.handler(request);
 
-      // Verify response body
       if (route.response?.body) {
         const parsed = route.response.body.safeParse(response.body);
         if (!parsed.success) {
           console.error('Invalid response body:', request.method, request.path, JSON.stringify(z.treeifyError(parsed.error), null, 2));
-          response = undefined; // Remove the response so it can be replaced by the error handler
+          response = undefined;
           throw new ApiError(500, 'Internal server error');
         }
         response.body = parsed.data;
       }
     } else if (catchAll) {
-      // Catch-all / 404
       response = await catchAll.handler(request);
     } else {
       throw new ApiError(404, 'Not found');
@@ -79,45 +76,44 @@ export async function apiHandler(
   } catch (e) {
     if (errorHandler) {
       try {
-        // errorHandler can optionally return undefined to request standard error handling:
         response = await errorHandler(request, e as Error);
       } catch (ee) {
         response = apiErrorResponse(ee);
       }
     }
 
-    // Standard error handling
     response = response ?? apiErrorResponse(e);
   }
 
-  // Translate the response to an API Gateway Proxy result
-  let body: string | undefined;
-  const headers = response.headers || {};
-  if (typeof response.body === 'string') {
-    // Use the body as-is
-    // Add text/plain if no Content-Type header is set:
-    if (!getHeader('Content-Type', headers)) setHeader('Content-Type', 'text/plain', headers);
-    body = response.body;
-  } else if (response.body) {
-    // Stringify the response object
-    // API Gateway returns application/json by default
-    body = JSON.stringify(response.body);
-  }
+  return response;
+}
 
-  // Prepare response
-  const result: APIGatewayProxyResult = {
-    statusCode: response.statusCode ?? 200,
-    headers,
-    body: body || '',
-  };
-
-  // Add cookie headers
-  const cookieHeaders = buildCookie(response);
-  if (cookieHeaders) {
-    result.multiValueHeaders = {
-      'Set-Cookie': cookieHeaders,
-    };
-  }
-
-  return result;
+/**
+ * API route handler
+ */
+export async function apiHandler(
+  event: APIGatewayProxyEventV2,
+  context: Context,
+  routes: Routes,
+  errorHandler?: ErrorHandler,
+  catchAll?: Handler,
+): Promise<APIGatewayProxyStructuredResultV2>;
+export async function apiHandler(
+  event: APIGatewayProxyEvent,
+  context: Context,
+  routes: Routes,
+  errorHandler?: ErrorHandler,
+  catchAll?: Handler,
+): Promise<APIGatewayProxyResult>;
+export async function apiHandler(
+  event: ApiGatewayProxyEventAny,
+  context: Context,
+  routes: Routes,
+  errorHandler?: ErrorHandler,
+  catchAll?: Handler,
+): Promise<APIGatewayProxyResult | APIGatewayProxyStructuredResultV2> {
+  const response = await handleRequest(event, routes, errorHandler, catchAll);
+  return isApiGatewayEventV2(event)
+    ? toApiGatewayResultV2(response)
+    : toApiGatewayResultV1(response);
 }

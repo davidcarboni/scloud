@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { APIGatewayProxyEvent } from "aws-lambda";
 import z from "zod/v4";
+import { ApiGatewayProxyEventAny } from './event';
 
 export interface Request<B = any> {
   method: string,
@@ -11,7 +11,7 @@ export interface Request<B = any> {
   pathParameters: Record<string, string>;
   body: B;
   context: {
-    event: APIGatewayProxyEvent;
+    event: ApiGatewayProxyEventAny;
     [key: string]: any;
   },
 }

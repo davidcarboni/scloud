@@ -31,7 +31,7 @@ export interface ZipFunctionProps {
  * If you would like a different runtime this can be set using the props parameter.
  *
  * Key settings are:
- *  - runtime: defaults to Runtime.NODEJS_18_X
+ *  - runtime: defaults to Runtime.NODEJS_24_X
  *  - handler: 'src/lambda.handler' - you'll need to make sure your zip package includes a file 'src/lambda.[js|py]' and contains a function named 'handler'
  *  - logGroup: default is a LogGroupRetention with TWO_YEARS retention
  *
@@ -46,7 +46,7 @@ export class ZipFunction extends Function {
       memorySize: props?.memorySize || 256,
       timeout: props?.timeout || Duration.seconds(30),
       description: id, // Provides something readable in the AWS console view
-      runtime: Runtime.NODEJS_18_X,
+      runtime: Runtime.NODEJS_24_X,
       handler: props?.handler || 'src/lambda.handler',
       code: Code.fromInline('Placeholder code'), // Asset(path.join(__dirname, './lambda/python')),
       logGroup,
@@ -56,7 +56,7 @@ export class ZipFunction extends Function {
   }
 
   static node(scope: Construct, id: string, props?: ZipFunctionProps): ZipFunction {
-    return new ZipFunction(scope, id, { ...props, functionProps: { runtime: Runtime.NODEJS_LATEST, ...props?.functionProps } });
+    return new ZipFunction(scope, id, { ...props, functionProps: { runtime: Runtime.NODEJS_24_X, ...props?.functionProps } });
   }
 
   static python(scope: Construct, id: string, props?: ZipFunctionProps): ZipFunction {

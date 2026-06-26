@@ -3,8 +3,14 @@ import { describe, it } from 'mocha';
 import {
   buildCookie,
   getHeader,
+  isApiGatewayEventV2,
   matchRoute,
-  parseBody, parseCookie, setHeader, standardHeaders, standardPath,
+  parseBody,
+  parseCookie,
+  parseRequest,
+  setHeader,
+  standardHeaders,
+  standardPath,
   standardQueryParameters,
 } from '../src/helpers';
 import { Routes } from '@/types';
@@ -232,6 +238,66 @@ describe('helpers.ts', () => {
       const result = matchRoute(routes, '/camelCase/camelCaseValue');
       expect(result.methods).to.equal(route6);
       expect(result.params).to.deep.equal({ camelCaseParam: 'camelCaseValue' });
+    });
+  });
+
+  describe('parseRequest', () => {
+    it('Should parse a v1 REST API event', () => {
+      const request = parseRequest({
+        httpMethod: 'GET',
+        path: '/ping',
+        headers: { Authorization: 'Bearer token' },
+        queryStringParameters: { test: 'true' },
+        body: null,
+        isBase64Encoded: false,
+      } as import('aws-lambda').APIGatewayProxyEvent);
+
+      expect(request.method).to.equal('GET');
+      expect(request.path).to.equal('/ping');
+      expect(request.query).to.deep.equal({ test: 'true' });
+      expect(request.headers.Authorization).to.equal('Bearer token');
+    });
+
+    it('Should parse a v2 Function URL event', () => {
+      const request = parseRequest({
+        version: '2.0',
+        routeKey: '$default',
+        rawPath: '/ping',
+        rawQueryString: 'test=true',
+        headers: { authorization: 'Bearer token' },
+        requestContext: {
+          http: { method: 'GET', path: '/ping', protocol: 'HTTP/1.1', sourceIp: '127.0.0.1', userAgent: 'test' },
+        },
+        isBase64Encoded: false,
+      } as import('aws-lambda').APIGatewayProxyEventV2);
+
+      expect(request.method).to.equal('GET');
+      expect(request.path).to.equal('/ping');
+      expect(request.query).to.deep.equal({ test: 'true' });
+      expect(request.headers.authorization).to.equal('Bearer token');
+    });
+
+    it('Should parse cookies from a v2 event cookies array', () => {
+      const request = parseRequest({
+        version: '2.0',
+        rawPath: '/ping',
+        rawQueryString: '',
+        headers: {},
+        cookies: ['session=abc123'],
+        requestContext: {
+          http: { method: 'GET', path: '/ping', protocol: 'HTTP/1.1', sourceIp: '127.0.0.1', userAgent: 'test' },
+        },
+        isBase64Encoded: false,
+      } as import('aws-lambda').APIGatewayProxyEventV2);
+
+      expect(request.cookies.session).to.equal('abc123');
+    });
+  });
+
+  describe('isApiGatewayEventV2', () => {
+    it('Should detect v2 events by rawPath', () => {
+      expect(isApiGatewayEventV2({ rawPath: '/ping' } as import('aws-lambda').APIGatewayProxyEventV2)).to.equal(true);
+      expect(isApiGatewayEventV2({ path: '/ping', httpMethod: 'GET' } as import('aws-lambda').APIGatewayProxyEvent)).to.equal(false);
     });
   });
 });

@@ -1,6 +1,9 @@
-import { APIGatewayProxyEvent } from 'aws-lambda';
+import { APIGatewayProxyEvent, APIGatewayProxyEventV2 } from 'aws-lambda';
 import * as cookie from 'cookie';
+import { ApiGatewayProxyEventAny, isApiGatewayEventV2 } from './event';
 import { Request, Response, Route, Routes } from './types';
+
+export { ApiGatewayProxyEventAny, ApiGatewayProxyResultFor, isApiGatewayEventV2 } from './event';
 
 /**
  * Ensures the path always has a leading slash and never a trailing slash
@@ -147,7 +150,29 @@ export function setHeader(name: string, value: string, headers: { [key: string]:
   if (!set) headers[name] = value;
 }
 
-export function parseRequest(event: APIGatewayProxyEvent): Request {
+function parseCookiesArray(cookies: string[] | undefined): Record<string, string> {
+  if (!cookies) return {};
+  const result: Record<string, string> = {};
+  cookies.forEach((entry) => {
+    const separator = entry.indexOf('=');
+    if (separator === -1) return;
+    const name = entry.slice(0, separator);
+    const value = entry.slice(separator + 1);
+    if (name) result[name] = value;
+  });
+  return result;
+}
+
+function standardPathParameters(params: Record<string, string | undefined> | undefined): Record<string, string> {
+  if (!params) return {};
+  const result: Record<string, string> = {};
+  Object.entries(params).forEach(([key, value]) => {
+    if (value) result[key] = value;
+  });
+  return result;
+}
+
+function parseRequestV1(event: APIGatewayProxyEvent): Request {
   return {
     method: event.httpMethod,
     path: standardPath(event.path),
@@ -155,9 +180,38 @@ export function parseRequest(event: APIGatewayProxyEvent): Request {
     headers: standardHeaders(event.headers),
     body: parseBody(event.body, event.isBase64Encoded, getHeader('Content-Type', event.headers)),
     cookies: parseCookie(event.headers),
-    pathParameters: {}, // These need to be parsed as part of route matching
-    context: { event }, // You can add any custom values you need to the request via this context
+    pathParameters: {},
+    context: { event },
   };
+}
+
+function parseRequestV2(event: APIGatewayProxyEventV2): Request {
+  const headers = standardHeaders(event.headers);
+  const cookies = {
+    ...parseCookie(event.headers),
+    ...parseCookiesArray(event.cookies),
+  };
+  const query = event.queryStringParameters
+    ?? (event.rawQueryString ? Object.fromEntries(new URLSearchParams(event.rawQueryString)) : null);
+
+  return {
+    method: event.requestContext.http.method,
+    path: standardPath(event.rawPath),
+    query: standardQueryParameters(query),
+    headers,
+    body: parseBody(event.body ?? null, event.isBase64Encoded, getHeader('content-type', headers)),
+    cookies,
+    pathParameters: standardPathParameters(event.pathParameters),
+    context: { event },
+  };
+}
+
+/**
+ * Parses a REST API (v1) or HTTP API / Function URL (v2) proxy event into a Request.
+ */
+export function parseRequest(event: ApiGatewayProxyEventAny): Request {
+  if (isApiGatewayEventV2(event)) return parseRequestV2(event);
+  return parseRequestV1(event);
 }
 
 export function matchRoute(routes: Routes, path: string): { methods: Route | undefined, params?: { [name: string]: string; }; } {
