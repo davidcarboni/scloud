@@ -257,6 +257,6 @@ export async function downloadTemp(bucket: string, key: string, path?: string): 
     fs.writeFileSync(temppath, await body?.transformToByteArray() || '');
     return temppath;
   } catch (err) {
-    throw new Error(`Error downloading ${key} from ${bucket}:\n${(err as Error).stack}`);
+    throw new Error(`Error downloading ${key} from ${bucket}:\n${(err as Error).stack}`, { cause: err });
   }
 }
