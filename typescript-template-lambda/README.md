@@ -27,8 +27,8 @@ Scripts in `package.json`:
 * `lint`: run ESLint on the codebase
 * `test`: run Typescript unit tests (no nees to compiile to Javascript at this point)
 * `test:integration`: run integration tests - these are intended to programmatically exercise the API this Lambda provides
-* `compile`: conpile Typescript to `/js` output directory
-* `package`: package Javascript code from the `js` directory and create `dist/function.zip` build package
+* `compile`: typecheck Typescript (no Javascript output)
+* `package`: bundle with `@scloud/lambda-bundle` and create `dist/function.zip` (handler: `lambda.handler`, output: `dist/lambda.js`)
 
 ## Build
 
@@ -36,5 +36,5 @@ To build the function for deployment, run:
 
 * `npm run lint` - linting check
 * `npm run test` - unit tests
-* `npm run compile` - compile TS to JS
-* `npm run package` - build deployment package fropm compiled Javascript
+* `npm run compile` - typecheck Typescript
+* `npm run package` - bundle with `@scloud/lambda-bundle` and create deployment zip
