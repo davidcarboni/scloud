@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "Processes Github webhook messages.",
   "scripts": {
-    "compile": "tsc",
+    "compile": "tsc --noEmit",
+    "package": "lambda-bundle",
     "test": "mocha -r ts-node/register test/**/*.spec.ts",
     "lint": "eslint --fix --ext ts"
   },
@@ -14,6 +15,7 @@
   "author": "David Carboni",
   "license": "ISC",
   "devDependencies": {
+    "@scloud/lambda-bundle": "file:../lambda-bundle",
     "@eslint/js": "*",
     "@tsconfig/node24": "*",
     "@types/chai": "*",
@@ -24,6 +26,7 @@
     "eslint-plugin-no-only-tests": "*",
     "mocha": "*",
     "ts-node": "*",
+    "tsx": "*",
     "typescript": "*",
     "typescript-eslint": "*"
   },

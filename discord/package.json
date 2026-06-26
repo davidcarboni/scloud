@@ -6,9 +6,9 @@
   "scripts": {
     "lint": "eslint --fix src test",
     "test": "mocha --import=tsx -r tsconfig-paths/register 'test/unit/**/*.spec.ts' # tsconfig-paths/register helps resolve imports in tests",
-    "compile": "tsc",
-    "package": "mkdir -p dist && cp -r js/src dist && cp package*.json dist && cd dist && npm install --omit=dev && echo $(git rev-parse --short HEAD) > COMMIT_HASH && zip -r function.zip .",
-    "verify": "rm -rf js dist && npm run lint && npm run test && npm run compile && npm run package"
+    "compile": "tsc --noEmit",
+    "package": "lambda-bundle && cd dist && zip -r function.zip .",
+    "verify": "rm -rf dist && npm run lint && npm run test && npm run compile && npm run package"
   },
   "repository": {
     "type": "git",
@@ -17,6 +17,7 @@
   "author": "David Carboni",
   "license": "UNLICENSED",
   "devDependencies": {
+    "@scloud/lambda-bundle": "file:../lambda-bundle",
     "@eslint/js": "*",
     "@tsconfig/node24": "*",
     "@types/aws-lambda": "*",

@@ -6,7 +6,8 @@
   "scripts": {
     "lint": "eslint --fix --ext ts .",
     "test": "mocha -r ts-node/register test/**/*.spec.ts",
-    "compile": "tsc"
+    "compile": "tsc --noEmit",
+    "package": "lambda-bundle && cd dist && zip -r function.zip ."
   },
   "repository": {
     "type": "git",
@@ -15,6 +16,7 @@
   "author": "David Carboni",
   "license": "ISC",
   "devDependencies": {
+    "@scloud/lambda-bundle": "file:../lambda-bundle",
     "@eslint/js": "*",
     "@tsconfig/node24": "*",
     "@types/aws-lambda": "*",
@@ -27,6 +29,7 @@
     "eslint-plugin-no-only-tests": "*",
     "mocha": "*",
     "ts-node": "*",
+    "tsx": "*",
     "typescript": "*",
     "typescript-eslint": "*"
   },
