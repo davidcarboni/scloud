@@ -25,7 +25,7 @@
   "scripts": {
     "lint": "eslint --fix src",
     "compile": "tsc",
-    "package": "yarn compile && cp deploy.sh dist/ && cp -r src/container src/edge src/express src/lambda dist/"
+    "package": "npm run compile && cp deploy.sh dist/ && cp -r src/container src/edge src/express src/lambda dist/"
   },
   "repository": {
     "type": "git",

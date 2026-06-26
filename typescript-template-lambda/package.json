@@ -9,7 +9,7 @@
     "test": "mocha --import=tsx -r tsconfig-paths/register 'test/unit/**/*.spec.ts' # tsconfig-paths/register helps resolve imports in tests",
     "test:integration": "mocha --import=tsx --timeout 10000 -r tsconfig-paths/register 'test/integration/**/*.spec.ts'",
     "compile": "tsc",
-    "package": "mkdir -p dist && cp -r js/src dist && cp package*.json dist && cd dist && yarn --prod && zip -r function.zip ."
+    "package": "mkdir -p dist && cp -r js/src dist && cp package*.json dist && cd dist && npm install --omit=dev && zip -r function.zip ."
   },
   "repository": {
     "type": "git",

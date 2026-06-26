@@ -6,7 +6,7 @@
     "lint": "eslint --fix --ext ts src test",
     "test": "mocha -r ts-node/register test/**/*.spec.ts",
     "compile": "tsc",
-    "package": "rimraf dist && mkdir -p dist/src && cp package.json dist/ && cp -r js/* dist/src/ && cd dist && yarn --prod && echo $(git rev-parse --short HEAD) > COMMIT_HASH && zip -r function.zip ."
+    "package": "rimraf dist && mkdir -p dist/src && cp package.json dist/ && cp -r js/* dist/src/ && cd dist && npm install --omit=dev && echo $(git rev-parse --short HEAD) > COMMIT_HASH && zip -r function.zip ."
   },
   "repository": {
     "type": "git",

@@ -32,10 +32,11 @@ jobs:
       - name: Build
         working-directory: ./${{ github.workflow }}
         run: |
-          yarn
-          yarn lint
-          yarn test
-          yarn package
+          npm install
+          npm run lint
+          npm run test
+          npm run compile
+          npm run package
 
       - name: Publish
         working-directory: ./${{ github.workflow }}

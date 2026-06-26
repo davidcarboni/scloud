@@ -23,7 +23,7 @@
     "lint": "eslint --fix src/**/*",
     "test": "mocha --import=tsx -r tsconfig-paths/register 'test/**/*.spec.ts' # tsconfig-paths/register helps resolve imports in tests",
     "compile": "tsc",
-    "package": "yarn compile"
+    "package": "npm run compile"
   },
   "repository": {
     "type": "git",

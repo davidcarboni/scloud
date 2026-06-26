@@ -34,7 +34,7 @@ Scripts in `package.json`:
 
 To build the function for deployment, run:
 
-* `yarn lint` - linting check
-* `yarn test` - unit tests
-* `yarn compile` - compile TS to JS
-* `yarn package` - build deployment package fropm compiled Javascript
+* `npm run lint` - linting check
+* `npm run test` - unit tests
+* `npm run compile` - compile TS to JS
+* `npm run package` - build deployment package fropm compiled Javascript
