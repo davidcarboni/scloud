@@ -1,29 +1,31 @@
 # Based on: https://docs.aws.amazon.com/lambda/latest/dg/images-create.html#images-create-1
 
 
-# Lint and test
+# Lint, test and bundle
 
-FROM node:lts-alpine as build
+FROM node:24-alpine as build
 
 WORKDIR /build
-ADD . .
+COPY lambda-bundle ./lambda-bundle
+COPY container_lambda ./container_lambda
 
+WORKDIR /build/container_lambda
 RUN npm install
 RUN npm run lint
 RUN npm run test
-RUN npm run compile
+RUN npm run package
 
 
 # Package
 
-FROM amazon/aws-lambda-nodejs as package
+FROM amazon/aws-lambda-nodejs
 
 # Store the current commit, if provided:
 ARG COMMIT_HASH
 ENV COMMIT_HASH=${COMMIT_HASH}
 
-# Copy in compiled JS and install dependencies
-COPY --from=build /build/js/* /build/package*.json ./
-RUN npm ci
+# Copy bundled handler (no node_modules needed — dependencies are bundled)
+COPY --from=build /build/container_lambda/dist/lambda.js ./
+COPY --from=build /build/container_lambda/dist/COMMIT_HASH ./
 
 CMD [ "lambda.handler" ]
