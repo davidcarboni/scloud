@@ -45,9 +45,17 @@ jobs:
         working-directory: ./${{ github.workflow }}
         if: always()
         run: |
-          # Push updated pakage.json to Github
+          # Push updated package.json to Github
           # We need this to happen always to avoid the repo getting stuck on an already-published version
           npm version patch
           git commit -am "Patch version" || true
-          git pull --rebase
-          git push
+          for attempt in 1 2 3 4 5; do
+            git pull --rebase origin main
+            if git push origin main; then
+              exit 0
+            fi
+            echo "Push rejected (attempt $attempt/5), retrying..."
+            sleep $((attempt * 2))
+          done
+          echo "Failed to push after 5 attempts"
+          exit 1
