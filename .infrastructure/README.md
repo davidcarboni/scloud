@@ -123,7 +123,7 @@ Update `bin/project-stack.ts` something like this:
 
 You may want to make the following changes to the `compilerOptions` section of `tsconfig.json`:
 
- * Add `"outDir": "js"` to avoid generating .js files in amongst your Typescript source
+ * Add `"outDir": "dist"` if you publish a library, or use `tsc --noEmit` for Lambda functions bundled with `@scloud/lambda-bundle`
  * Add `"esModuleInterop": true` - hard to say why but it occasionally seems to help
 
 ## Useful commands
