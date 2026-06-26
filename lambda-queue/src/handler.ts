@@ -1,5 +1,3 @@
-/* eslint-disable import/prefer-default-export */
- 
 import {
   Context, SQSBatchResponse, SQSEvent, SQSRecord,
 } from 'aws-lambda';
