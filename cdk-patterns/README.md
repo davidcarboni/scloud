@@ -19,6 +19,8 @@ A couple of highlights:
 
 ## Release notes
 
+ * **0.13.1**: Republish after 0.13.0 was already on npm (no code changes)
+ * **0.13.0**: Update `ZipFunction` default Node runtime from `NODEJS_18_X` to `NODEJS_24_X`; `ZipFunction.node()` now uses `NODEJS_24_X` explicitly instead of `NODEJS_LATEST`
  * **0.12.0**: Clear CDK deprecation warnings for Lambda log group
  * **0.11.2**: Update build process to improve package structure
  * **0.11.0**: Restructure so consumers don't need to include `/dist` in import paths
