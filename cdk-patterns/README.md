@@ -19,6 +19,7 @@ A couple of highlights:
 
 ## Release notes
 
+ * **1.0.0**: Change `ZipFunction` default handler from `src/lambda.handler` to `lambda.handler` to match `@scloud/lambda-bundle` output (`dist/lambda.js`).
  * **0.13.1**: Republish after 0.13.0 was already on npm (no code changes)
  * **0.13.0**: Update `ZipFunction` default Node runtime from `NODEJS_18_X` to `NODEJS_24_X`; `ZipFunction.node()` now uses `NODEJS_24_X` explicitly instead of `NODEJS_LATEST`
  * **0.12.0**: Clear CDK deprecation warnings for Lambda log group
@@ -89,7 +90,7 @@ Note that props are optional and this construct defaults to:
  * 256M memory
  * 30s timeout
  * Runtime of Node, or Python if using `ZipFunction.python()`
- * Handler `src/lambda.handler`
+ * Handler `lambda.handler` (bundled to `lambda.js` at the zip root via `@scloud/lambda-bundle`)
  * Two year log retention
  * Inline code (which intentionally will not execute: `'Placeholder code'`)
  * The function description is set to the same value as the construct id to provide a human-friendly display in the AWS console listing
@@ -110,7 +111,7 @@ Note that props are optional and this construct defaults to:
  * 1024M memory
  * 30s timeout
  * Runtime of Node, or Python if using `ZipFunction.python()`
- * Handler `src/lambda.handler`
+ * Handler `lambda.handler` (bundled to `lambda.js` at the zip root via `@scloud/lambda-bundle`)
  * Two year log retention
  * Creating an `EcrRepository` (accessible via the `repository` property of the construct)
  * The function description is set to the same value as the construct id to provide a human-friendly display in the AWS console listing
