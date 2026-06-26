@@ -15,7 +15,7 @@
     "dist"
   ],
   "bin": {
-    "lambda-bundle": "./dist/cli.js"
+    "lambda-bundle": "dist/cli.js"
   },
   "scripts": {
     "lint": "eslint --fix src",
