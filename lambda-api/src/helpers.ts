@@ -1,5 +1,5 @@
 import { APIGatewayProxyEvent, APIGatewayProxyEventV2 } from 'aws-lambda';
-import * as cookie from 'cookie';
+import { parseCookie as parseCookieHeader, stringifySetCookie } from 'cookie';
 import { ApiGatewayProxyEventAny, isApiGatewayEventV2 } from './event';
 import { Request, Response, Route, Routes } from './types';
 
@@ -73,7 +73,7 @@ export function parseBody(body: string | null, isBase64Encoded: boolean, content
  */
 export function parseCookie(headers: { [name: string]: string | undefined; }): { [name: string]: string; } {
   const header = getHeader('Cookie', headers);
-  const values = header ? cookie.parse(header) : {};
+  const values = header ? parseCookieHeader(header) : {};
 
   // Ensure we don't return any undefined values
   const result: { [name: string]: string; } = {};
@@ -104,13 +104,13 @@ export function buildCookie(
     const value = cookies[key];
     if (value === '') {
       // If explicitly unset, expire the cookie value
-      header.push(cookie.serialize(key, '', {
-        expires: new Date(), secure, httpOnly, sameSite,
+      header.push(stringifySetCookie({
+        name: key, value: '', expires: new Date(), secure, httpOnly, sameSite,
       }));
     } else if (value) {
       // Otherwise, set it only if a value was given
-      header.push(cookie.serialize(key, value, {
-        maxAge, expires, secure, httpOnly, sameSite,
+      header.push(stringifySetCookie({
+        name: key, value, maxAge, expires, secure, httpOnly, sameSite,
       }));
     }
   });

@@ -49,7 +49,6 @@
     "@eslint/js": "*",
     "@tsconfig/node24": "*",
     "@types/chai": "*",
-    "@types/cookie": "*",
     "@types/mocha": "*",
     "@types/node": "^24",
     "@types/nunjucks": "*",
