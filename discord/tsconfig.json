@@ -1,22 +1,10 @@
 {
   "extends": "@tsconfig/node24/tsconfig.json",
   "compilerOptions": {
-    "types": [
-      "node"
-    ],
-    "declaration": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "noImplicitThis": true,
-    "alwaysStrict": true,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
+    "types": ["node"],
     "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": false,
-    "inlineSources": true,
-    "experimentalDecorators": true,
-    "strictPropertyInitialization": false,
     "inlineSourceMap": true,
-    "outDir": "js",
-  },
+    "inlineSources": true,
+    "outDir": "js"
+  }
 }

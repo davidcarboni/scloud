@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Processes Github webhook messages.",
   "scripts": {
-    "compile": "tsc src/*.ts --outdir js",
+    "compile": "tsc",
     "test": "mocha -r ts-node/register test/**/*.spec.ts",
     "lint": "eslint --fix --ext ts"
   },
