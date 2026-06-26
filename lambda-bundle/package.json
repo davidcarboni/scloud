@@ -1,32 +1,53 @@
 {
   "name": "@scloud/lambda-bundle",
   "version": "1.0.0",
-  "private": true,
-  "description": "Shared esbuild bundler for Lambda deployment packages.",
-  "keywords": [
-    "esbuild",
-    "lambda",
-    "bundle"
+  "description": "esbuild bundler for Lambda deployment packages.",
+  "main": "./dist/bundle.js",
+  "types": "./dist/bundle.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/bundle.js",
+      "import": "./dist/bundle.js",
+      "types": "./dist/bundle.d.ts"
+    }
+  },
+  "files": [
+    "dist"
   ],
-  "homepage": "https://github.com/davidcarboni/scloud#readme",
-  "bugs": {
-    "url": "https://github.com/davidcarboni/scloud/issues"
+  "bin": {
+    "lambda-bundle": "./dist/cli.js"
+  },
+  "scripts": {
+    "lint": "eslint --fix src",
+    "compile": "tsc",
+    "package": "npm run compile",
+    "prepare": "npm run compile"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/davidcarboni/scloud.git"
   },
-  "license": "ISC",
+  "keywords": [
+    "AWS",
+    "esbuild",
+    "Lambda",
+    "bundle"
+  ],
   "author": "David Carboni",
-  "type": "commonjs",
-  "main": "src/bundle.ts",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/davidcarboni/scloud/issues"
+  },
+  "homepage": "https://github.com/davidcarboni/scloud#readme",
+  "devDependencies": {
+    "@eslint/js": "*",
+    "@tsconfig/node24": "*",
+    "@types/node": "^24",
+    "eslint": "*",
+    "typescript": "*",
+    "typescript-eslint": "*"
   },
   "dependencies": {
     "esbuild": "*"
-  },
-  "devDependencies": {
-    "@types/node": "^24"
   }
 }

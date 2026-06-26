@@ -1,0 +1,48 @@
+name: lambda-bundle
+on:
+  push:
+    branches: [main]
+    paths:
+      - "lambda-bundle/**"
+      - ".github/workflows/lambda-bundle.yml"
+
+permissions:
+  id-token: write
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: git setup
+        run: |
+          git config --global user.name "${{ github.workflow }}"
+          git config --global user.email "gha@scloud/${{ github.workflow }}"
+
+      - name: Build
+        working-directory: ./${{ github.workflow }}
+        run: |
+          npm install
+          npm run lint
+          npm run compile
+          npm run package
+
+      - name: Publish
+        working-directory: ./${{ github.workflow }}
+        run: |
+          npm publish --provenance --access public
+
+      - name: Push
+        working-directory: ./${{ github.workflow }}
+        if: always()
+        run: |
+          npm version patch
+          git commit -am "Patch version" || true
+          git pull --rebase
+          git push

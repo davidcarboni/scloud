@@ -11,9 +11,8 @@ export interface LambdaBundleOptions {
   /** Entry point relative to root (default: 'src/lambda.ts') */
   entryPoint?: string;
   /**
-   * Bundled handler file relative to root.
-   * Default 'dist/src/lambda.js' matches ZipFunction handler 'src/lambda.handler'.
-   * Use 'dist/lambda.js' for container images with handler 'lambda.handler'.
+   * Bundled handler file relative to root (default: 'dist/lambda.js').
+   * Matches ZipFunction handler 'lambda.handler'.
    */
   outfile?: string;
   /** Paths relative to root copied into dist after bundling (files or directories) */
@@ -38,7 +37,7 @@ function commitHash(): string {
 export async function bundleLambda(options: LambdaBundleOptions = {}): Promise<void> {
   const root = resolve(options.root ?? process.cwd());
   const entryPoint = options.entryPoint ?? 'src/lambda.ts';
-  const outfile = options.outfile ?? 'dist/src/lambda.js';
+  const outfile = options.outfile ?? 'dist/lambda.js';
   const assets = options.assets ?? [];
   const external = options.external ?? ['aws-sdk'];
 
