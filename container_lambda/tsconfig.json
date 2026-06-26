@@ -12,6 +12,7 @@
     "src/**/*.ts"
   ],
   "exclude": [
-    "js"
+    "dist",
+    "node_modules"
   ]
 }
