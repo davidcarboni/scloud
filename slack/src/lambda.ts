@@ -1,13 +1,11 @@
-/* eslint-disable import/prefer-default-export */
 import * as fs from 'fs';
+import { sqsLocal } from '@scloud/lambda-local';
 import { sqsHandler } from '@scloud/lambda-queue';
 import {
   Context, SQSBatchResponse, SQSEvent, SQSRecord,
 } from 'aws-lambda';
 import axios from 'axios';
-import * as fs from 'fs';
-import { sqsLocal } from '@scloud/lambda-local';
-import sqsHandler from '@scloud/lambda-queue';
+
 // Provided by the container/environment/file
 if (fs.existsSync('COMMIT_HASH')) {
   process.env.COMMIT_HASH = fs.readFileSync('COMMIT_HASH').toString().trim();
@@ -22,7 +20,7 @@ export async function processMessage(message: SQSRecord) {
   if (slackWebhook) {
     await axios.post(slackWebhook, { text: `${message.body}` });
   } else {
-    console.log(`Message would be sent to Slack: ${e.body} (process.env.SLACK_WEBHOOK isn't set)`);
+    console.log(`Message would be sent to Slack: ${message.body} (process.env.SLACK_WEBHOOK isn't set)`);
   }
 }
 
