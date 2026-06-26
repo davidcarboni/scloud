@@ -3,6 +3,7 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { APIGatewayProxyEvent, APIGatewayProxyEventV2, Context } from 'aws-lambda';
 import { apiHandler } from '../src/handler';
+import { ApiGatewayProxyEventAny } from '../src/event';
 import { Request } from '../src/types';
 import z from 'zod/v4';
 
@@ -262,6 +263,24 @@ describe('handler.ts', () => {
       };
       const result = await apiHandler(request, context, routes);
       expect(result.cookies?.[0]).to.include('session=abc123');
+    });
+  });
+
+  describe('apiHandler with ApiGatewayProxyEventAny', () => {
+    it('Should handle v1 and v2 events', async () => {
+      const routes = {
+        '/ok': {
+          GET: { handler: async () => ({ statusCode: 200, body: '' }) },
+        },
+      };
+
+      const v1: ApiGatewayProxyEventAny = { ...event, path: '/ok', httpMethod: 'GET' };
+      const v1Result = await apiHandler(v1, context, routes);
+      expect(v1Result.statusCode).to.equal(200);
+
+      const v2: ApiGatewayProxyEventAny = v2Event({ path: '/ok', method: 'GET' });
+      const v2Result = await apiHandler(v2, context, routes);
+      expect(v2Result.statusCode).to.equal(200);
     });
   });
 });

@@ -9,7 +9,7 @@ import {
   Request, Response, Handler, Route, Routes,
   ApiError,
 } from './types';
-import { ApiGatewayProxyEventAny, isApiGatewayEventV2 } from './event';
+import { ApiGatewayProxyEventAny, ApiGatewayProxyResultFor, isApiGatewayEventV2 } from './event';
 import { matchRoute, parseRequest } from './helpers';
 import { toApiGatewayResultV1, toApiGatewayResultV2 } from './result';
 import z from 'zod/v4';
@@ -105,6 +105,13 @@ export async function apiHandler(
   errorHandler?: ErrorHandler,
   catchAll?: Handler,
 ): Promise<APIGatewayProxyResult>;
+export async function apiHandler<E extends ApiGatewayProxyEventAny>(
+  event: E,
+  context: Context,
+  routes: Routes,
+  errorHandler?: ErrorHandler,
+  catchAll?: Handler,
+): Promise<ApiGatewayProxyResultFor<E>>;
 export async function apiHandler(
   event: ApiGatewayProxyEventAny,
   context: Context,
