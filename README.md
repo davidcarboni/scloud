@@ -27,6 +27,10 @@ These packages focus on clipping together serverless infrastructure with AWS CDK
 
 ### Standard Lambda handlers
 
+These packages help you bundle and deploy Lambda function code:
+
+ * *@scloud/lambda-bundle* - bundles a Lambda handler to `dist/lambda.js` with esbuild for zip or container deployment: https://www.npmjs.com/package/@scloud/lambda-bundle
+
 These packages give you template Lambda handlers so you can develop for common use-cases with more consistency and less boilerplate:
 
  * *@scloud/lambda-queue* - a helper function to take the boilerplate out of building Lambda functions that handle SQS messages
