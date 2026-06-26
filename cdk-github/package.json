@@ -48,7 +48,7 @@
     "@eslint/js": "*",
     "@tsconfig/node24": "*",
     "@types/libsodium-wrappers": "*",
-    "@types/node": "*",
+    "@types/node": "^24",
     "eslint": "*",
     "eslint-plugin-no-only-tests": "*",
     "source-map-support": "*",

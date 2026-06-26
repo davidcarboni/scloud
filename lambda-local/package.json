@@ -46,12 +46,11 @@
   "homepage": "https://github.com/davidcarboni/scloud#readme",
   "devDependencies": {
     "@eslint/js": "*",
-    "@tsconfig/node22": "*",
     "@tsconfig/node24": "*",
     "@types/aws-lambda": "*",
     "@types/chai": "*",
     "@types/mocha": "*",
-    "@types/node": "*",
+    "@types/node": "^24",
     "chai": "*",
     "esbuild": "*",
     "eslint": "*",

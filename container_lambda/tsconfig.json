@@ -1,12 +1,6 @@
 {
   "extends": "@tsconfig/node24/tsconfig.json",
   "compilerOptions": {
-    "target": "ES2022",
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "lib": [
-      "es2018"
-    ],
     "declaration": true,
     "strict": true,
     "noImplicitAny": true,

@@ -19,7 +19,7 @@
     "@types/jest": "*",
     "@types/libsodium-wrappers": "*",
     "@types/lodash": "*",
-    "@types/node": "*",
+    "@types/node": "^24",
     "aws-cdk": "*",
     "eslint": "*",
     "jest": "*",

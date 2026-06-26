@@ -1,11 +1,6 @@
 {
   "extends": "@tsconfig/node24/tsconfig.json",
   "compilerOptions": {
-    "target": "es2021",
-    "module": "CommonJS",
-    "lib": [
-      "es2021"
-    ],
     "esModuleInterop": true,
     "declaration": true,
     "strict": true,

@@ -37,7 +37,7 @@
     "@tsconfig/node24": "*",
     "@types/chai": "*",
     "@types/mocha": "*",
-    "@types/node": "*",
+    "@types/node": "^24",
     "chai": "*",
     "eslint": "*",
     "eslint-plugin-no-only-tests": "*",
