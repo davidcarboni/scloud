@@ -1,6 +1,6 @@
 {
   "name": "@scloud/utils",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Useful functions, mainly for building Lambdas.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
