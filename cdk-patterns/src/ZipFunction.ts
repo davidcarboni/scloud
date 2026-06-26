@@ -10,7 +10,7 @@ import { LogGroupRetention } from './LogGroupRetention';
  * @param environment Optional: Environment variables for the Lambda function
  * @param memorySize Default 256: the amount of memory to allocate to the Lambda function
  * @param timeout Default 10 seconds: the amount of time the Lambda function has to run before it times out
- * @param handler Default 'src/lambda.handler': the name of the lambda handler function
+ * @param handler Default 'lambda.handler': the name of the lambda handler function
  * @param functionProps Optional: If you need to specify any detailed properties for the Lambda function, you can do so here and they will override any defaults e.g. { runtime: Runtime.PYTHON_3_10 }
  */
 export interface ZipFunctionProps {
@@ -32,7 +32,7 @@ export interface ZipFunctionProps {
  *
  * Key settings are:
  *  - runtime: defaults to Runtime.NODEJS_24_X
- *  - handler: 'src/lambda.handler' - you'll need to make sure your zip package includes a file 'src/lambda.[js|py]' and contains a function named 'handler'
+ *  - handler: 'lambda.handler' - you'll need to make sure your zip package includes a file 'lambda.[js|py]' at the zip root and contains a function named 'handler'
  *  - logGroup: default is a LogGroupRetention with TWO_YEARS retention
  *
  * @param scope Parent CDK construct (typically 'this')
@@ -47,7 +47,7 @@ export class ZipFunction extends Function {
       timeout: props?.timeout || Duration.seconds(30),
       description: id, // Provides something readable in the AWS console view
       runtime: Runtime.NODEJS_24_X,
-      handler: props?.handler || 'src/lambda.handler',
+      handler: props?.handler || 'lambda.handler',
       code: Code.fromInline('Placeholder code'), // Asset(path.join(__dirname, './lambda/python')),
       logGroup,
       ...props?.functionProps,

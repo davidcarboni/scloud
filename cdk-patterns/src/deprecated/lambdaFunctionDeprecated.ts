@@ -54,7 +54,7 @@ export function containerFunction(
  * A Lambda function packaged as a zip file.
  * Key defaults are:
  *  - runtime: Runtime.NODEJS_18_X
- *  - handler: 'src/lambda.handler'
+ *  - handler: 'lambda.handler'
  *  - logRetention: logs.RetentionDays.TWO_YEARS
  * @param construct Parent CDK construct (typically 'this')
  * @param name The name for this function
@@ -70,7 +70,7 @@ export function zipFunction(
 ): Function {
   const lambda = new Function(construct, `${name}Function`, {
     runtime: Runtime.NODEJS_18_X,
-    handler: 'src/lambda.handler',
+    handler: 'lambda.handler',
     code: Code.fromInline('Placeholder code'), // Asset(path.join(__dirname, './lambda/python')),
     logRetention: logs.RetentionDays.TWO_YEARS,
     environment,
@@ -105,7 +105,7 @@ export function edgeFunction(
       functionName: name, // Resolves "...the resource's physical name must be explicit set..."
       runtime: Runtime.NODEJS_14_X,
       code: Code.fromAsset(path.join(__dirname, './edge')),
-      handler: 'src/lambda.handler',
+      handler: 'lambda.handler',
       memorySize: 256,
       logRetention: logs.RetentionDays.THREE_MONTHS,
       environment,
