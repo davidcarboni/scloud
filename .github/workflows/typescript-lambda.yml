@@ -1,0 +1,48 @@
+name: typescript-lambda
+
+on:
+  workflow_call:
+    inputs:
+      component:
+        required: true
+        type: string
+      lambdaName:
+        required: true
+        type: string
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+
+jobs:
+  deploy:
+    name: Lambda
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-2
+
+      - name: Build
+        working-directory: ./${{ inputs.component }}
+        run: |
+          npm install
+          npm run lint
+          npm run test
+          npm run compile
+          npm run package
+
+      - name: Update Lambda
+        working-directory: ./${{ inputs.component }}
+        run: |
+          aws lambda update-function-code --function-name=${{ inputs.lambdaName }} --zip-file fileb://dist/function.zip

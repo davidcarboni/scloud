@@ -8,6 +8,7 @@ on:
     # Build when there are changes in the directory that holds the component,
     # or when this workflow file is changed
     - 'zip_lambda/**'
+    - 'lambda-bundle/**'
     - '.github/workflows/zip_lambda.yml'
   schedule:
     # A weekly build to pick up any security updates
@@ -24,28 +25,26 @@ jobs:
 
     steps:
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
-    - uses: aws-actions/configure-aws-credentials@v1
+    - uses: actions/setup-node@v4
+      with:
+        node-version: "24"
+
+    - uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: eu-west-2
 
-    - name: Compile typescript
+    - name: Build
       working-directory: ./${{ env.component }}
       run: |
         npm ci
+        npm run lint
+        npm run test
         npm run compile
-
-    - name: Package
-      working-directory: ./${{ env.component }}
-      run: |
-        cp package*.json dist/
-        cd dist
-        npm ci --production
-        echo $(git rev-parse HEAD) > COMMIT_HASH
-        zip -r function.zip .
+        npm run package
 
     - name: Update Lambda
       working-directory: ./${{ env.component }}

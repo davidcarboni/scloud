@@ -8,6 +8,7 @@ on:
       # Build when there are changes in the directory that holds the component,
       # or when this workflow file is changed
       - "container_lambda/**"
+      - "lambda-bundle/**"
       - ".github/workflows/container_lambda.yml"
   schedule:
     # A weekly build to pick up updates to the base container image
@@ -48,7 +49,7 @@ jobs:
           # For simplicity, we're only building "latest" on the basis that we can
           # fix-forward by rolling back to the state of an earlier commit in the repo:
           COMMIT_HASH=$(git rev-parse HEAD)
-          docker build --build-arg COMMIT_HASH=$COMMIT_HASH -t $ECR_REGISTRY/$ECR_REPOSITORY:$TAG ./${{ env.component }}
+          docker build --build-arg COMMIT_HASH=$COMMIT_HASH -t $ECR_REGISTRY/$ECR_REPOSITORY:$TAG -f container_lambda/Dockerfile .
 
       - name: Push image
         env:

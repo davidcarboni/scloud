@@ -8,6 +8,7 @@ on:
     # Build when there are changes in the directory that holds the component,
     # or when this workflow file is changed
     - 'slack/**'
+    - 'lambda-bundle/**'
     - '.github/workflows/slack.yml'
   schedule:
     # A weekly build to pick up updates to the base container image
@@ -19,6 +20,7 @@ jobs:
   deploy:
     uses: davidcarboni/scloud/.github/workflows/typescript-lambda.yml@main
     with:
+      component: slack
       lambdaName: ${{ vars.SLACK_LAMBDA }}
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
