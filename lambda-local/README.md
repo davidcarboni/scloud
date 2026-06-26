@@ -73,7 +73,8 @@ You can now invoke your Lambda handler function with e.g.:
 The following havdlers are available:
 
  * `sqsHandler` - takes the boby of a post as the content of an SQS message to be dlievered to your handler
- * `webappLocal` - takes the method, path, headers, query string and body of a request and delivers them to your handler. You can optionally add a local direcory to be served as static content, under a specific path on your app, as if it were an s3 bucket (e.g. `/static`)
+ * `webApiLocal` - delivers HTTP requests to your handler as Function URL (v2) events. Use with `@scloud/lambda-api` `apiHandler`, which returns the matching v2 response shape.
+ * `webappLocal` - takes the method, path, headers, query string and body of a request and delivers them to your handler as REST API (v1) events. You can optionally add a local direcory to be served as static content, under a specific path on your app, as if it were an s3 bucket (e.g. `/static`)
  * `webappRoutesLocal` - works the same as `webappLocal` but allows you to pass multiple cloudfront path mappings to multiple handler functions (like a microservices setup). You can optionally add a local direcory to be served as a static content fallback, as if it were an s3 bucket. In other words, if a request doesn't match a mapped path, it will fall back to static content.
  * `scheduledLocal` - for Lambdas that run in response to scheduled Cloudwatch events. An http request on any method/path will call your Lambda handler with a placeholder event.
 

@@ -1,7 +1,12 @@
 import * as fs from 'fs';
 import * as http from 'http';
 import * as path from 'path';
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import {
+  APIGatewayProxyEvent,
+  APIGatewayProxyEventV2,
+  APIGatewayProxyResult,
+  APIGatewayProxyResultV2,
+} from 'aws-lambda';
 
 export async function readBody(req: http.IncomingMessage): Promise<string> {
   const chunks: Buffer[] = [];
@@ -11,8 +16,8 @@ export async function readBody(req: http.IncomingMessage): Promise<string> {
   return Buffer.concat(chunks).toString('utf8');
 }
 
+/** Builds a REST API (v1) proxy event for CloudFront-style local runners. */
 export function buildEvent(req: http.IncomingMessage, body: string, url: URL): APIGatewayProxyEvent {
-  // Headers
   const headers: Record<string, string | undefined> = {};
   const multiValueHeaders: Record<string, string[] | undefined> = {};
   for (const [key, value] of Object.entries(req.headers)) {
@@ -27,7 +32,6 @@ export function buildEvent(req: http.IncomingMessage, body: string, url: URL): A
     }
   }
 
-  // Query string
   const queryStringParameters: Record<string, string | undefined> = {};
   const multiValueQueryStringParameters: Record<string, string[] | undefined> = {};
   const seen = new Set<string>();
@@ -58,14 +62,80 @@ export function buildEvent(req: http.IncomingMessage, body: string, url: URL): A
   } as unknown as APIGatewayProxyEvent;
 }
 
-export function sendResult(res: http.ServerResponse, result: APIGatewayProxyResult): void {
-  res.statusCode = result.statusCode;
-  for (const [key, values] of Object.entries(result.multiValueHeaders || {})) {
-    if (values) res.setHeader(key, values.map((v) => `${v}`));
+/** Builds an HTTP API payload format 2.0 event, matching Lambda Function URLs. */
+export function buildEventV2(req: http.IncomingMessage, body: string, url: URL): APIGatewayProxyEventV2 {
+  const headers: Record<string, string | undefined> = {};
+  for (const [key, value] of Object.entries(req.headers)) {
+    if (value === undefined) {
+      headers[key] = undefined;
+    } else if (typeof value === 'string') {
+      headers[key] = value;
+    } else if (Array.isArray(value)) {
+      headers[key] = value.join(', ');
+    }
   }
+
+  const queryStringParameters: Record<string, string | undefined> = {};
+  for (const [key, value] of url.searchParams.entries()) {
+    if (!(key in queryStringParameters)) queryStringParameters[key] = value;
+  }
+
+  const protocol = (req.socket as unknown as { encrypted?: boolean }).encrypted ? 'https' : 'http';
+  const method = req.method || 'GET';
+  const rawPath = url.pathname;
+
+  return {
+    version: '2.0',
+    routeKey: '$default',
+    rawPath,
+    rawQueryString: url.search.startsWith('?') ? url.search.slice(1) : url.search,
+    headers,
+    queryStringParameters,
+    cookies: headers.cookie ? headers.cookie.split(';').map((c) => c.trim()) : undefined,
+    body: body || undefined,
+    isBase64Encoded: false,
+    requestContext: {
+      accountId: 'local',
+      apiId: 'local',
+      domainName: 'localhost',
+      domainPrefix: 'local',
+      http: {
+        method,
+        path: rawPath,
+        protocol,
+        sourceIp: '127.0.0.1',
+        userAgent: headers['user-agent'] || 'local',
+      },
+      requestId: 'local',
+      routeKey: '$default',
+      stage: '$default',
+      time: new Date().toUTCString(),
+      timeEpoch: Date.now(),
+    },
+  };
+}
+
+export function sendResult(res: http.ServerResponse, result: APIGatewayProxyResultV2): void {
+  if (typeof result === 'string') {
+    res.end(result);
+    return;
+  }
+
+  res.statusCode = result.statusCode ?? 200;
   for (const [key, value] of Object.entries(result.headers || {})) {
     if (value !== undefined) res.setHeader(key, `${value}`);
   }
+
+  if ('multiValueHeaders' in result && result.multiValueHeaders) {
+    const multiValueHeaders = (result as APIGatewayProxyResult).multiValueHeaders;
+    for (const [key, values] of Object.entries(multiValueHeaders || {})) {
+      if (values) res.setHeader(key, values.map((v) => `${v}`));
+    }
+  }
+  if ('cookies' in result && result.cookies) {
+    res.setHeader('Set-Cookie', result.cookies);
+  }
+
   res.end(result.body ?? '');
 }
 

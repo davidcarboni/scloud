@@ -1,27 +1,30 @@
 import * as http from 'http';
-import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
-import { buildEvent, readBody, sendResult } from './httpHelpers';
+import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, Context } from 'aws-lambda';
+import { buildEventV2, readBody, sendResult } from './httpHelpers';
 
-export function webApiLocal(lambdaHandler: (event: APIGatewayProxyEvent, context: Context) => Promise<APIGatewayProxyResult>, debug = false) {
+export function webApiLocal(
+  lambdaHandler: (event: APIGatewayProxyEventV2, context: Context) => Promise<APIGatewayProxyResultV2>,
+  debug = false,
+) {
   const port = +(process.env.port || '3000');
 
   http.createServer(async (req, res) => {
     const url = new URL(req.url || '/', `http://localhost:${port}`);
     const body = await readBody(req);
-    const event = buildEvent(req, body, url);
+    const event = buildEventV2(req, body, url);
 
     if (debug) {
       console.log('Event:');
-      console.log(event.httpMethod, event.path);
+      console.log(event.requestContext.http.method, event.rawPath);
       console.log(JSON.stringify(event, null, 2));
     }
 
     try {
       const result = await lambdaHandler(event, {} as Context);
 
-      if (debug) {
+      if (debug && typeof result !== 'string') {
         console.log('Result:');
-        console.log(event.httpMethod, event.path, result.statusCode);
+        console.log(event.requestContext.http.method, event.rawPath, result.statusCode);
         console.log(JSON.stringify(result.body, null, 2));
       }
 
