@@ -46,7 +46,7 @@ describe('sqsHandler', () => {
   });
 
   it('Should process a batch of records', async () => {
-    const calls: any[] = [];
+    const calls: string[] = [];
     event.Records = [record, record, record];
     await sqsHandler(event, context, async (m: SQSRecord, c?: Context): Promise<void> => {
       calls.push(m.body);
