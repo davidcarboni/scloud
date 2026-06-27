@@ -24,7 +24,7 @@ npm i \
 #   "scripts": {
 #    ...,
 #    "lint": "eslint --fix --ext ts bin lib",
-#    "secrets": "ts-node lib/github.ts"
+#    "secrets": "cdk-github --delete"
 #
 # find (regex): "\^?~?\d{1,3}\.\d{1,3}\.\d{1,3}"
 # replace: "*" (except package version)

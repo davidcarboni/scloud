@@ -1,5 +1,1 @@
-import { updateGithub } from './github';
-
-(async () => {
-  updateGithub();
-})();
+export { updateGithub } from './github';

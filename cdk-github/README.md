@@ -8,6 +8,7 @@ This is intended to provide you with the environment/variable/secret handling ca
 
 ## Release notes
 
+ * **0.4.0**: Add `cdk-github` CLI (`dist/cli.js`); library entry is `updateGithub` from the package root
  * **0.3.2**: Update build process to improve package structure
  * **0.3.0**: Restructure so consumers don't need to include `/dist` in import paths
 
@@ -22,21 +23,15 @@ Assuming you've called the `ghaOidcRole` or `ghaUser` function, you should have 
 
 ## Running
 
-To set variables and/or secrets, you can use the following example code:
+From your `.infrastructure` directory (after `cdk deploy` has written `cdk.out/cdk-outputs.json`):
 
-```
-import { updateGithub } from '@scloud/cdk-github';
-
-(async () => {
-  await updateGithub();
-})();
+```bash
+cdk-github --delete
 ```
 
-The key part is the call to the `updateGithub` function.
+Pass `--delete` to remove orphaned repo/environment secrets and variables that are no longer specified by the stack. Omit it to leave manually-added values in place.
 
-You can optionally pass `true` to this function if you would like this process to delete any "leftover" (orphaned) values. This removes secrets and variables if they are no longer specified by the stack. However, be aware tht this will delete any variables you've set manually! Passing `true` is recommended to fully automate and keep the set of variables and secrets clean.
-
-You will also need the following environment variables, or pass an object with these values when you call the function:
+Set credentials via environment variables (e.g. from `secrets/github.sh`):
 
 ```
 export USERNAME=octocat
@@ -45,13 +40,12 @@ export OWNER=organization
 export REPO=repository
 ```
 
-or
+You can also call the library from code:
 
 ```
-{
-  username: 'octocat',
-  personalAccessToken: 'github_ghp_xxxxxxxxxxx',
-  owner: 'organization',
-  repo: 'repository',
-}
+import { updateGithub } from '@scloud/cdk-github';
+
+await updateGithub(true);
 ```
+
+The key part is the call to `updateGithub`, or the `cdk-github` CLI equivalent.
