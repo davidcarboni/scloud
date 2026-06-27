@@ -17,8 +17,14 @@ export interface LambdaBundleOptions {
   outfile?: string;
   /** Paths relative to root copied into dist after bundling (files or directories) */
   assets?: string[];
-  /** npm packages to leave external (default: ['aws-sdk']) */
+  /** npm packages to leave external (merged with `aws-sdk`; default externals are always included) */
   external?: string[];
+}
+
+const DEFAULT_EXTERNAL = ['aws-sdk'];
+
+function mergeExternal(external?: string[]): string[] {
+  return [...new Set([...DEFAULT_EXTERNAL, ...(external ?? [])])];
 }
 
 function commitHash(): string {
@@ -39,7 +45,7 @@ export async function bundleLambda(options: LambdaBundleOptions = {}): Promise<v
   const entryPoint = options.entryPoint ?? 'src/lambda.ts';
   const outfile = options.outfile ?? 'dist/lambda.js';
   const assets = options.assets ?? [];
-  const external = options.external ?? ['aws-sdk'];
+  const external = mergeExternal(options.external);
 
   const distDir = join(root, 'dist');
   const outfilePath = join(root, outfile);
