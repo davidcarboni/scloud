@@ -8,7 +8,6 @@ on:
     # Build when there are changes in the directory that holds the component,
     # or when this workflow file is changed
     - 'zip_lambda/**'
-    - 'lambda-bundle/**'
     - '.github/workflows/zip_lambda.yml'
   schedule:
     # A weekly build to pick up any security updates

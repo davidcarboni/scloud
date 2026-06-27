@@ -16,7 +16,7 @@
   "author": "David Carboni",
   "license": "ISC",
   "devDependencies": {
-    "@scloud/lambda-bundle": "file:../lambda-bundle",
+    "@scloud/lambda-bundle": "*",
     "@eslint/js": "*",
     "@tsconfig/node24": "*",
     "@types/aws-lambda": "*",
