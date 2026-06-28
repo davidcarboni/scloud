@@ -1,7 +1,7 @@
 {
   "name": "@scloud/lambda-bundle",
-  "version": "1.1.2",
-  "description": "esbuild bundler for Lambda deployment packages.",
+  "version": "1.2.0",
+  "description": "esbuild bundler for Lambda deployment packages and CloudFront Functions.",
   "main": "./dist/bundle.js",
   "types": "./dist/bundle.d.ts",
   "exports": {
@@ -15,7 +15,8 @@
     "dist"
   ],
   "bin": {
-    "lambda-bundle": "dist/cli.js"
+    "lambda-bundle": "dist/cli.js",
+    "cf-bundle": "dist/cf-cli.js"
   },
   "scripts": {
     "lint": "eslint --fix src",
@@ -29,6 +30,7 @@
   },
   "keywords": [
     "AWS",
+    "CloudFront",
     "esbuild",
     "Lambda",
     "bundle"

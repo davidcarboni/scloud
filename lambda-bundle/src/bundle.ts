@@ -75,3 +75,9 @@ export async function bundleLambda(options: LambdaBundleOptions = {}): Promise<v
 
   writeFileSync(join(distDir, 'COMMIT_HASH'), commitHash());
 }
+
+export {
+  bundleCloudFrontFunctions,
+  type CloudFrontBundleOptions,
+  type CloudFrontFunctionSpec,
+} from './cfBundle';
