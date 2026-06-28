@@ -1,6 +1,6 @@
 {
   "name": "@scloud/lambda-bundle",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "esbuild bundler for Lambda deployment packages and CloudFront Functions.",
   "main": "./dist/bundle.js",
   "types": "./dist/bundle.d.ts",
