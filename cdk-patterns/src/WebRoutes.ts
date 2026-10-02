@@ -46,7 +46,7 @@ export interface WebRoutesProps {
  *
  * NB This will create an s3 bucket to serve static content and the bucket will be automatically deleted, including all contents, when this construct is deleted, on the basis the contents are assumed to be produced by a CI build.
  *
- * This construct can also be used for a Web API.
+ * This construct can also be used for a Web API where different routes are handles by different Lambdas.
  *
  * NB us-east-1 is required for Cloudfront certificates:
  * https://docs.aws.amazon.com/cdk/api/v1/docs/aws-cloudfront-readme.html

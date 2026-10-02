@@ -40,7 +40,8 @@ export interface WebApiProps {
  * Builds a web API, backed by a single Lambda function - a kind of "Lambda-lith" (https://github.com/cdk-patterns/serverless/blob/main/the-lambda-trilogy/README.md)
  *
  * This construct sends requests that don't have a file extension to the Lambda. Static content is handled by routing requests that match *.* (eg *.js. *.css) to an S3 bucket.
- * Dumping requests with file expensions means the majority of spam requests will not invoke your Lambda.
+ * 
+ * NB dumping requests with file expensions to s3 filters out a lot of spam requests that would otherwise invoke your Lambda.
  * Typically spam requests are probing for wordpress *.xml files, *.php files, .env files etc.
  */
 export class WebApi extends Construct {
