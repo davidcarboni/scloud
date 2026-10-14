@@ -19,9 +19,6 @@
   "files": [
     "dist"
   ],
-  "bin": {
-    "cdk-patterns": "./dist/deploy.sh"
-  },
   "scripts": {
     "lint": "eslint --fix src",
     "compile": "tsc",
