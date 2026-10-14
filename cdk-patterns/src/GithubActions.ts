@@ -174,13 +174,14 @@ class GithubActions extends Construct {
         'ecs:UpdateService',
       ]);
 
-      // Cloudfront distribution - cache invalidation
+      // Cloudfront distribution - cache invalidation (and wait for it to complete)
       const distributionArns = this.ghaInfo.resources.distributions
         .filter((distribution) => distribution !== undefined)
         // Not sure where to 'properly' get a distribution ARN from?
         .map((distribution) => `arn:aws:cloudfront::${this.account}:distribution/${distribution.distributionId}`);
       this.addToPolicy('distributions', distributionArns, [
         'cloudfront:CreateInvalidation',
+        'cloudfront:GetInvalidation',
       ]);
 
       // DynamoDB tables - read
