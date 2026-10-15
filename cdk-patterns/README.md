@@ -19,6 +19,8 @@ A couple of highlights:
 
 ## Release notes
 
+ * **1.1.0**: Retire `SecretString` as it's too easy for this to be insecure and add `SecretObject` instead, which only accepts `SecretValue` constructs.
+ * **1.0.4**: Allow the GitHub Actions role to get a Cloudfront invalidation (in addition to triggering one) so that it's possible to wait for an invalidation to complete.
  * **1.0.0**: Change `ZipFunction` default handler from `src/lambda.handler` to `lambda.handler` to match `@scloud/lambda-bundle` output (`dist/lambda.js`).
  * **0.13.1**: Republish after 0.13.0 was already on npm (no code changes)
  * **0.13.0**: Update `ZipFunction` default Node runtime from `NODEJS_18_X` to `NODEJS_24_X`; `ZipFunction.node()` now uses `NODEJS_24_X` explicitly instead of `NODEJS_LATEST`
