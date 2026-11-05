@@ -15,7 +15,13 @@ You can add a script to your `package.json` to trigger the code. Add `nodemon` a
   }
 ```
 
-If you'd like to run on a different port, you can set a `PORT` environment variable.
+If you'd like to run on a different port, you can set a `PORT` environment variable (default `3000`).
+
+The server only accepts connections from your own machine (`127.0.0.1`). To accept connections from the network, for example when running in a container, set `HOST=0.0.0.0`. Be careful with this: anything on the network that can reach your IP can call your handler.
+
+## Release notes
+
+ * **0.5.0**: Listen on `127.0.0.1` by default rather than all network interfaces. Set `HOST=0.0.0.0` for the previous behaviour. All handlers now use `PORT` (previously only `webappLocal` did; the rest used lowercase `port`, which still works for backward compatibility).
 
 ### A web app example
 

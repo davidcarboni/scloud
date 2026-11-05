@@ -2,6 +2,7 @@ import * as http from 'http';
 import {
   Context, SQSBatchResponse, ScheduledEvent,
 } from 'aws-lambda';
+import { listenAddress } from './httpHelpers';
 
 const eventTemplate: ScheduledEvent = {
   version: '0',
@@ -16,7 +17,7 @@ const eventTemplate: ScheduledEvent = {
 };
 
 export function scheduledLocal(handler: (event: ScheduledEvent, context: Context) => Promise<SQSBatchResponse>, debug = false) {
-  const port = +(process.env.port || '3000');
+  const { port, host } = listenAddress();
 
   http.createServer(async (_req, res) => {
     try {
@@ -35,7 +36,7 @@ export function scheduledLocal(handler: (event: ScheduledEvent, context: Context
       res.writeHead(500);
       res.end(`${e}`);
     }
-  }).listen(port, () => {
+  }).listen(port, host, () => {
     console.log(`Scheduled Lambda handler can be invoked at http://localhost:${port}. Any request will trigger the handler with a synthetic ScheduledEvent`);
   });
 }

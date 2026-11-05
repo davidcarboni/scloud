@@ -2,10 +2,10 @@ import * as http from 'http';
 import {
   Context, SQSBatchResponse, SQSEvent, SQSRecord,
 } from 'aws-lambda';
-import { readBody } from './httpHelpers';
+import { listenAddress, readBody } from './httpHelpers';
 
 export function sqsLocal(handler: (event: SQSEvent, context: Context) => Promise<SQSBatchResponse>, debug = false) {
-  const port = +(process.env.port || '3000');
+  const { port, host } = listenAddress();
 
   http.createServer(async (req, res) => {
     if (req.method !== 'POST') {
@@ -38,7 +38,7 @@ export function sqsLocal(handler: (event: SQSEvent, context: Context) => Promise
       res.writeHead(500);
       res.end(`${e}`);
     }
-  }).listen(port, () => {
+  }).listen(port, host, () => {
     console.log(`Lambda handler can be invoked via POST http://localhost:${port}. The request body will be sent as an SQS message body`);
   });
 }

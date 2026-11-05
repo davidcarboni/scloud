@@ -1,13 +1,13 @@
 import * as http from 'http';
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
-import { buildEvent, readBody, sendResult } from './httpHelpers';
+import { buildEvent, listenAddress, readBody, sendResult } from './httpHelpers';
 
 export interface CloudfrontPathMappings {
   [key: string]: (event: APIGatewayProxyEvent, context: Context) => Promise<APIGatewayProxyResult>;
 }
 
 export function cloudfrontLocal(cloudfrontPathMappings: CloudfrontPathMappings, debug = false) {
-  const port = +(process.env.port || '3000');
+  const { port, host } = listenAddress();
 
   http.createServer(async (req, res) => {
     const url = new URL(req.url || '/', `http://localhost:${port}`);
@@ -58,7 +58,7 @@ export function cloudfrontLocal(cloudfrontPathMappings: CloudfrontPathMappings, 
       res.writeHead(500);
       res.end(`${e}`);
     }
-  }).listen(port, () => {
+  }).listen(port, host, () => {
     console.log(`Lambda handler can be invoked at http://localhost:${port}`);
   });
 }

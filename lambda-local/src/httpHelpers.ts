@@ -8,6 +8,19 @@ import {
   APIGatewayProxyResultV2,
 } from 'aws-lambda';
 
+/**
+ * Where a local server listens.
+ * PORT defaults to 3000 (the older lowercase `port` is still accepted).
+ * HOST defaults to 127.0.0.1, so only this machine can connect. Set HOST=0.0.0.0 to accept
+ * connections from the network, e.g. when running in a container.
+ */
+export function listenAddress(): { port: number; host: string; } {
+  return {
+    port: +(process.env.PORT || process.env.port || '3000'),
+    host: process.env.HOST || '127.0.0.1',
+  };
+}
+
 export async function readBody(req: http.IncomingMessage): Promise<string> {
   const chunks: Buffer[] = [];
   for await (const chunk of req) {

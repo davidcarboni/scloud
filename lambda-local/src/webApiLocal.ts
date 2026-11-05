@@ -1,12 +1,12 @@
 import * as http from 'http';
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, Context } from 'aws-lambda';
-import { buildEventV2, readBody, sendResult } from './httpHelpers';
+import { buildEventV2, listenAddress, readBody, sendResult } from './httpHelpers';
 
 export function webApiLocal(
   lambdaHandler: (event: APIGatewayProxyEventV2, context: Context) => Promise<APIGatewayProxyResultV2>,
   debug = false,
 ) {
-  const port = +(process.env.port || '3000');
+  const { port, host } = listenAddress();
 
   http.createServer(async (req, res) => {
     const url = new URL(req.url || '/', `http://localhost:${port}`);
@@ -35,7 +35,7 @@ export function webApiLocal(
       res.writeHead(500);
       res.end(`${e}`);
     }
-  }).listen(port, () => {
+  }).listen(port, host, () => {
     console.log(`Lambda handler can be invoked at http://localhost:${port}`);
   });
 }
