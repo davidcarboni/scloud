@@ -14,7 +14,7 @@ export * from './RedirectDomain';
 export * from './RedirectWww';
 export * from './ScheduledFunction';
 export * from './SecretJson';
-export * from './SecretString';
+export * from './SecretObject';
 export * from './VpcEndpoint';
 export * from './WebApi';
 export * from './WebApp';
